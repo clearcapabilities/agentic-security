@@ -1,0 +1,14 @@
+{
+  "name": "agentic-security",
+  "version": "0.1.0",
+  "description": "Defensive AppSec for Claude Code: SAST, SCA, and Secret scanning with auto-remediation.",
+  "author": { "name": "Ross Young" },
+  "vendor": "Clear Capabilities Inc.",
+  "homepage": "https://github.com/clearcapabilities/agentic-security",
+  "license": "MIT",
+  "keywords": ["security", "sast", "sca", "secrets", "cve", "osv", "claude-code", "appsec"],
+  "commands": "./commands",
+  "agents": "./agents",
+  "skills": "./skills",
+  "hooks": "./hooks/hooks.json"
+}

@@ -1,0 +1,35 @@
+{
+  "name": "@clearcapabilities/agentic-security-scanner",
+  "version": "0.1.0",
+  "description": "Scanner engine for the agentic-security Claude Code plugin (SAST + SCA + Secrets).",
+  "type": "module",
+  "main": "src/index.js",
+  "bin": {
+    "agentic-security": "bin/agentic-security.js"
+  },
+  "exports": {
+    ".": "./src/index.js",
+    "./engine": "./src/engine.js",
+    "./sast": "./src/sast/index.js",
+    "./sca": "./src/sca/index.js",
+    "./secrets": "./src/secrets/index.js",
+    "./report": "./src/report/index.js"
+  },
+  "files": ["src/", "bin/"],
+  "engines": { "node": ">=20.0.0" },
+  "dependencies": {
+    "@babel/core": "^7.24.0",
+    "@babel/preset-react": "^7.24.0",
+    "@babel/preset-typescript": "^7.24.0",
+    "fast-glob": "^3.3.2"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0"
+  },
+  "scripts": {
+    "test": "node --test test/smoke.test.js",
+    "smoke": "node bin/agentic-security.js scan test/fixtures/vulnerable-js"
+  },
+  "author": "Ross Young <ross@clearcapabilities.com>",
+  "license": "MIT"
+}

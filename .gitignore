@@ -1,0 +1,5 @@
+scanner/node_modules/
+scanner/test/fixtures/vulnerable-js/.agentic-security/
+.agentic-security/
+*.log
+.DS_Store
