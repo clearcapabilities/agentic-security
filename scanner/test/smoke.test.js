@@ -110,6 +110,34 @@ test('FP-5: entropy-fp fixture suppresses UUIDs / integrity hashes / data URIs /
     `expected entropy-prefixed suppression reason, got: ${ents.map(s=>s.reason).join(', ')}`);
 });
 
+test('FP-7: NoSQL operator no longer fires on PHP $vars / jQuery / regex literals', async () => {
+  for (const fixture of ['nosql/php-vars.php', 'nosql/jquery.js', 'nosql/mongo-safe.js']) {
+    const tmpDir = await fs.mkdtemp(path.join(os.tmpdir(), 'agsec-nosql-'));
+    try {
+      await fs.cp(FIX(fixture), path.join(tmpDir, fixture.split('/').pop()));
+      const { scan } = await runScan(tmpDir);
+      const ns = normalizeFindings(scan).filter(f => /NoSQL/i.test(f.vuln));
+      assert.equal(ns.length, 0, `${fixture}: expected 0 NoSQL findings, got ${ns.length}`);
+    } finally {
+      await fs.rm(tmpDir, { recursive: true, force: true });
+    }
+  }
+});
+
+test('FP-7: NoSQL operator still fires on real Mongo $where / $or with user input', async () => {
+  const tmpDir = await fs.mkdtemp(path.join(os.tmpdir(), 'agsec-nosql-vuln-'));
+  try {
+    await fs.cp(FIX('nosql/mongo-vuln.js'), path.join(tmpDir, 'mongo-vuln.js'));
+    const { scan } = await runScan(tmpDir);
+    const ns = normalizeFindings(scan).filter(f => /NoSQL/i.test(f.vuln));
+    assert.ok(ns.length >= 1, `expected ≥1 NoSQL Injection finding, got ${ns.length}`);
+    assert.ok(ns.every(f => f.severity === 'high' || f.severity === 'critical'),
+      `expected all NoSQL findings to be high/critical, got: ${ns.map(f=>f.severity).join(', ')}`);
+  } finally {
+    await fs.rm(tmpDir, { recursive: true, force: true });
+  }
+});
+
 test('finding IDs are stable hashes', async () => {
   const a = await runScan(FIX('vulnerable-js'));
   const b = await runScan(FIX('vulnerable-js'));
