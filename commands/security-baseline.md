@@ -6,7 +6,7 @@ argument-hint: "save|diff [path]"
 Manage the security baseline so /security-scan can highlight only NEW findings.
 
 ```bash
-node ${CLAUDE_PLUGIN_ROOT}/scanner/bin/agentic-security.js baseline ${1} ${2:-.}
+node ${CLAUDE_PLUGIN_ROOT}/scanner/dist/agentic-security.mjs baseline ${1} ${2:-.}
 ```
 
 - `save` — copy `.agentic-security/last-scan.json` to `.agentic-security/baseline.json`. Run after the codebase has been triaged and acknowledged findings have been accepted.

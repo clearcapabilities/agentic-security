@@ -6,7 +6,7 @@ argument-hint: "[--format json|md|sarif] [--output <file>]"
 Re-emit `.agentic-security/last-scan.json` in the requested format without re-scanning.
 
 ```bash
-node ${CLAUDE_PLUGIN_ROOT}/scanner/bin/agentic-security.js scan . --format ${1:-md}
+node ${CLAUDE_PLUGIN_ROOT}/scanner/dist/agentic-security.mjs scan . --format ${1:-md}
 ```
 
 Common uses:

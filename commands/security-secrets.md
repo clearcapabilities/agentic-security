@@ -6,7 +6,7 @@ argument-hint: "[path]"
 Run only the Secret-scanning pillar against `${1:-.}`. Values are masked in output by default; pass `--unmask` only when you need to verify a specific finding.
 
 ```bash
-node ${CLAUDE_PLUGIN_ROOT}/scanner/bin/agentic-security.js scan ${1:-.} --only secrets --format cli
+node ${CLAUDE_PLUGIN_ROOT}/scanner/dist/agentic-security.mjs scan ${1:-.} --only secrets --format cli
 ```
 
 For any genuine hit:

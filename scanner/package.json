@@ -5,7 +5,7 @@
   "type": "module",
   "main": "src/index.js",
   "bin": {
-    "agentic-security": "bin/agentic-security.js"
+    "agentic-security": "dist/agentic-security.mjs"
   },
   "exports": {
     ".": "./src/index.js",
@@ -15,7 +15,7 @@
     "./secrets": "./src/secrets/index.js",
     "./report": "./src/report/index.js"
   },
-  "files": ["src/", "bin/"],
+  "files": ["src/", "bin/", "dist/"],
   "engines": { "node": ">=20.0.0" },
   "dependencies": {
     "@babel/core": "^7.24.0",
@@ -24,9 +24,11 @@
     "fast-glob": "^3.3.2"
   },
   "devDependencies": {
-    "@types/node": "^20.0.0"
+    "@types/node": "^20.0.0",
+    "@vercel/ncc": "^0.38.3"
   },
   "scripts": {
+    "build": "ncc build bin/agentic-security.js -o dist --minify && mv dist/index.js dist/agentic-security.mjs && rm -f dist/package.json && chmod +x dist/agentic-security.mjs",
     "test": "node --test test/smoke.test.js",
     "smoke": "node bin/agentic-security.js scan test/fixtures/vulnerable-js"
   },
