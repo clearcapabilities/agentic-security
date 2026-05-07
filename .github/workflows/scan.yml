@@ -4,10 +4,21 @@ name: agentic-security scan
 #
 #   jobs:
 #     security:
+#       permissions:
+#         contents: read         # required: checkout
+#         security-events: write # required: SARIF upload to Security tab
+#         pull-requests: write   # required: PR comment
 #       uses: clearcapabilities/agentic-security/.github/workflows/scan.yml@main
 #       with:
 #         fail-on: critical
 #         baseline: main
+#
+# IMPORTANT: GitHub will reject the workflow with
+#   "Error calling workflow ... The nested job is requesting
+#    'pull-requests: write, security-events: write', but is only
+#    allowed 'pull-requests: none, security-events: none'"
+# unless the calling job declares the permissions block above. A reusable
+# workflow can only USE permissions the caller has granted.
 
 on:
   workflow_call:

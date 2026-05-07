@@ -379,16 +379,50 @@ exit $?
 
 Returns exit code `3` if any new critical finding lands → commit aborted.
 
-### GitHub Actions
+### GitHub Actions — reusable workflow (recommended)
+
+Drop this into `.github/workflows/security.yml` in any consumer repo:
 
 ```yaml
-# .github/workflows/security.yml
-name: Security Scan
+name: Security
+on:
+  pull_request: {}
+  push:
+    branches: [main]
+
+jobs:
+  security:
+    # IMPORTANT: a reusable workflow can only use permissions the calling job grants.
+    permissions:
+      contents: read          # checkout
+      security-events: write  # SARIF upload to Security tab
+      pull-requests: write    # findings summary comment on PRs
+    uses: clearcapabilities/agentic-security/.github/workflows/scan.yml@main
+    with:
+      fail-on: critical                          # critical | high | medium | low | none
+      baseline: ${{ github.event.pull_request.base.sha || 'HEAD~1' }}
+      output-sarif: 'true'
+```
+
+You get: SARIF upload to the Security tab, a PR comment with the severity table + top critical/high findings, and a job-level fail when severity ≥ `fail-on`.
+
+> ⚠️ **Common error:** *"The nested job 'scan' is requesting 'pull-requests: write, security-events: write', but is only allowed 'pull-requests: none, security-events: none'."*
+> Fix: add the `permissions:` block to the calling job (as shown above). GitHub Actions reusable workflows can only *use* permissions the caller has granted — they can't escalate.
+
+### GitHub Actions — inline (no reusable workflow)
+
+If you don't want a reusable workflow, run the bundled CLI directly:
+
+```yaml
+name: Security
 on: [push, pull_request]
 
 jobs:
   agentic-security:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      security-events: write
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4

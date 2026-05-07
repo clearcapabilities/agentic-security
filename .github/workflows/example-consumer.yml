@@ -5,10 +5,20 @@ name: Example consumer of agentic-security scan
 
 on:
   pull_request: {}
-  push: { branches: [main] }
+  push:
+    branches: [main]
 
 jobs:
   security:
+    # Reusable workflows can only USE permissions the calling job has granted.
+    # The scan workflow needs:
+    #   contents: read         (to checkout code)
+    #   security-events: write (to upload the SARIF report to the Security tab)
+    #   pull-requests: write   (to post the findings comment on PRs)
+    permissions:
+      contents: read
+      security-events: write
+      pull-requests: write
     uses: clearcapabilities/agentic-security/.github/workflows/scan.yml@main
     with:
       fail-on: critical
