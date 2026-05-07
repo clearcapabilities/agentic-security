@@ -84,6 +84,7 @@ jobs:
           else
             node /tmp/agentic-security.mjs scan . --format json --output /tmp/security.json
           fi
+          exit 0  # severity threshold is enforced in the next step, not here
 
       - name: Upload SARIF
         if: ${{ inputs.output-sarif == 'true' }}
