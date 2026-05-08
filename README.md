@@ -85,20 +85,6 @@ One self-contained 1.9 MB file. No `npm install`, no dependencies.
 
 ---
 
-## Commands
-
-```
-/agentic-security:security-scan-all               scan everything — SAST + dependencies + secrets
-/agentic-security:security-fix-all --severity high  fix everything high and above
-/agentic-security:security-baseline save          lock in current findings; only show NEW problems after this
-/agentic-security:security-report                 open an interactive HTML report
-/agentic-security:security-secrets                secrets-only scan
-/agentic-security:security-sca                    dependency vulnerabilities only
-/agentic-security:security-fix <id>               fix a single finding by ID
-```
-
----
-
 ## What's inside
 
 **Commands**
