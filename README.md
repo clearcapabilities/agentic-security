@@ -198,7 +198,7 @@ From now on, scans only show *new* findings added after this point. The pre-comm
 open after.html
 ```
 
-Put `before.html` and `after.html` side by side. In about 10 minutes you went from 69 critical findings to near-zero, and now have a gate that prevents regressions.
+Put `before.html` and `after.html` side by side. In about 10 minutes you went from 69 critical findings to 23 — a 67% reduction. The remaining findings fall into three categories the fixer intentionally leaves alone: confirmed false positives (server-managed keys flagged as IDOR after line numbers shifted), and Juice Shop's own challenge distractor files that are pedagogically intentional. You now have a gate that prevents regressions on everything that was fixed.
 
 ---
 
