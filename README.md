@@ -238,30 +238,9 @@ That's a real codebase. Run `/agentic-security:security-baseline save`, commit t
 
 ## Troubleshooting
 
-**"Unknown command: /security-scan-all"** — either use the fully-qualified form (`/agentic-security:security-scan-all`) which is always available, or run the setup step in your project to install the short forms:
-```bash
-node $(find ~/.claude/plugins -name "agentic-security.mjs" | sort | tail -1) setup
-```
-
 **Short-form commands disappear mid-session** — Claude Code can evict plugin commands from the active session after long-running tool calls (large scans, multi-file fixes). Two options:
 - Run `/reload-plugins` to restore all short-form commands for the rest of the session.
 - Use the fully-qualified form instead: `/agentic-security:security-fix-all`, `/agentic-security:security-scan-all`, etc. — these resolve through the plugin skill system and are always available.
-
-**CI fails with `'pull-requests: write' but only allowed 'none'`** — add the `permissions:` block shown in the GitHub Actions install section above.
-
-**Scan is slow on a large repo** — use `--changed-since HEAD~5` to scan only modified files.
-
-**Want to see what got suppressed** — run with `--include-suppressed --format json` and inspect the `suppressed` array.
-
----
-
-## For security engineers
-
-The technical details: AST-based cross-file taint tracking for JS/TS (BFS up to 5 hops), inter-procedural taint for Python, vulnerable-call-depth filtering on every CVE, EPSS + CVSS overlay, 4-gate credential FP filter, structural recognizers for high-entropy non-secrets (UUIDs, hex digests, JWT samples), MD5/SHA1 context classifier, sanitizer effectiveness by data-flow.
-
-CWE coverage: 22, 78, 79, 89, 94, 113, 200, 204, 208, 209, 250, 307, 311, 321, 327, 330, 338, 347, 362, 367, 434, 470, 489, 502, 601, 611, 614, 620, 639, 732, 798, 829, 840, 862, 863, 915, 916, 918, 942, 943, 1004, 1321, 1333, 1336.
-
-The 8 false-positive-reduction specs are in the [GitHub issues](https://github.com/clearcapabilities/agentic-security/issues?q=is%3Aissue+label%3Afp-reduction) — each is a self-contained PRD with the problem, algorithm, and test cases.
 
 ---
 
