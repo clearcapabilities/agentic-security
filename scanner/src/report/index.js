@@ -191,11 +191,12 @@ export function toMarkdown(scan, meta={}){
     if (!bySev[sev]) continue;
     lines.push(`## ${sev.toUpperCase()} (${bySev[sev].length})`);
     lines.push('');
-    lines.push('| File:Line | Vulnerability | CWE | Fix |');
-    lines.push('|---|---|---|---|');
+    lines.push('| File:Line | Vulnerability | CWE | EPSS | Fix |');
+    lines.push('|---|---|---|---|---|');
     for (const f of bySev[sev]) {
       const fix = f.fix?.description || '';
-      lines.push(`| \`${f.file}:${f.line}\` | ${f.vuln} | ${f.cwe||'—'} | ${fix.replace(/\|/g,'\\|').slice(0,140)} |`);
+      const epss = f.epssScore != null ? `${Math.round(f.epssScore*100)}%` : '—';
+      lines.push(`| \`${f.file}:${f.line}\` | ${f.vuln} | ${f.cwe||'—'} | ${epss} | ${fix.replace(/\|/g,'\\|').slice(0,140)} |`);
     }
     lines.push('');
   }
@@ -441,7 +442,8 @@ export function toCLI(scan, { verbose=false, color=true }={}){
   lines.push('');
   for (const f of findings) {
     const sevTag = c(`[${f.severity.toUpperCase()}]`, SEV_COLOR[f.severity]||'');
-    lines.push(`${sevTag} ${c(f.cwe||'    ', DIM)}  ${f.file}:${f.line}  ${BOLD}${f.vuln}${RESET}`);
+    const epssTag = f.epssScore != null ? c(`  EPSS:${Math.round(f.epssScore*100)}%`, DIM) : '';
+    lines.push(`${sevTag} ${c(f.cwe||'    ', DIM)}  ${f.file}:${f.line}  ${BOLD}${f.vuln}${RESET}${epssTag}`);
     if (f.masked) lines.push(`        ${c('value:', DIM)} ${f.masked}`);
     if (verbose && f.fix?.description) {
       lines.push(`        ${c('fix:', DIM)} ${f.fix.description}`);
@@ -500,7 +502,9 @@ export function toSummary(scan, { color=true }={}){
       const prefix = isLast ? '└──' : '├──';
       const examples = instances.slice(0, 2).map(f => `${f.file}:${f.line}`).join(', ');
       const more = instances.length > 2 ? c(` +${instances.length - 2} more`, DIM) : '';
-      lines.push(`  ${prefix} ${c(`${vuln} ×${instances.length}`, BOLD)}  ${c(examples, DIM)}${more}`);
+      const epssScores = instances.map(f => f.epssScore).filter(s => s != null);
+      const epssTag = epssScores.length ? c(`  EPSS:${Math.round(Math.max(...epssScores)*100)}%`, DIM) : '';
+      lines.push(`  ${prefix} ${c(`${vuln} ×${instances.length}`, BOLD)}  ${c(examples, DIM)}${more}${epssTag}`);
     }
     if (hiddenTypes > 0) {
       lines.push(`  └── ${c(`…and ${hiddenTypes} more vulnerability type${hiddenTypes > 1 ? 's' : ''}`, DIM)}`);

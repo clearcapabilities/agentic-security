@@ -187,7 +187,7 @@ Put `before.html` and `after.html` side by side. In less than 20 minutes you wen
 
 **Forward-only taint flow.** The taint engine enforces direction — a source defined *after* the sink cannot create a phantom finding. Cross-file taint tracks up to 5 hops (BFS), following imports and call chains across files and showing the full propagation path.
 
-**CVEs ranked by real-world exploitation.** Every CVE gets an [EPSS](https://www.first.org/epss/) score — the probability it's being actively exploited in the next 30 days. Two CVEs both labeled "high" might have `epssScore: 0.87` vs. `epssScore: 0.02`. Fix the right one first.
+**CVEs ranked by real-world exploitation.** Every CVE gets an [EPSS](https://www.first.org/epss/) score — the probability it's being actively exploited in the next 30 days. Two CVEs both labeled "high" might show `EPSS:87%` vs `EPSS:2%` in the scan output. Within the same severity tier, the highest-EPSS finding always appears first. Fix the right one first.
 
 **Your code never leaves your machine.** The only network calls are to OSV.dev (dependency CVE lookups) and first.org (EPSS scores). We send only `package@version` strings to OSV — no source code, no file paths.
 
