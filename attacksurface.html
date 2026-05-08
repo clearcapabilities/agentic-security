@@ -3140,9 +3140,9 @@ function generateRecs(findings,routes,sinks,sources,logicVulns,supplyChain,compo
   if(supplyChain)for(const sc of supplyChain){
     if(sc.type==="vulnerable_dep"){
       const isDevUnreachable=sc.reachable===false&&sc.scope==="optional";
-      const effSev=isDevUnreachable&&sc.severity==="high"?"medium":isDevUnreachable&&sc.severity==="critical"?"high":sc.severity;
+      const effSev=sc.severity||"high";
       const effPri=effSev==="critical"?"Critical":effSev==="high"?"High":"Medium";
-      const reachTag=isDevUnreachable?"[Dev-only, not reachable in app code] ":"";
+      const reachTag=isDevUnreachable?"[Dev-only] ":"";
       const exploitNote=sc.hasKnownExploit?"⚠ Known exploit available. ":"";
       const cveStr=sc.cveAliases&&sc.cveAliases.length?` (${sc.cveAliases[0]})`:"";
       const fixRec=sc.fixedVersions&&sc.fixedVersions.length?`Upgrade ${sc.name} to ${sc.fixedVersions[0]}.`:`Update ${sc.name} to the latest patched version.`;
@@ -3353,8 +3353,8 @@ function MultiSelect({options,value,onChange,placeholder}){const T=useContext(Th
 function RecsView({recs,routes,findings,search,setSearch}){const T=useContext(ThemeCtx);const[catF,setCatF]=useState([]);const[prioF,setPrioF]=useState("all");const[strideF,setStrideF]=useState("all");const[dataClassF,setDataClassF]=useState("all");const[exp,setExp]=useState(null);
   const matchSearch = r => !search || `${r.title} ${r.file} ${r.cwe} ${r.description||""}`.toLowerCase().includes(search.toLowerCase());
   const allS=recs.filter(matchSearch);
-  const prioCounts={Critical:allS.filter(r=>r.priority==="Critical").length,High:allS.filter(r=>r.priority==="High").length,Medium:allS.filter(r=>r.priority==="Medium").length};
-  const afterPrio=prioF==="all"?allS:allS.filter(r=>r.priority===prioF);
+  const prioCounts={Critical:allS.filter(r=>r.severity==="critical").length,High:allS.filter(r=>r.severity==="high").length,Medium:allS.filter(r=>r.severity==="medium").length};
+  const afterPrio=prioF==="all"?allS:allS.filter(r=>r.severity===(prioF==="Critical"?"critical":prioF==="High"?"high":"medium"));
   const availStrides=STRIDE_ORDER.filter(s=>afterPrio.some(r=>r.stride===s));
   const afterStride=strideF==="all"?afterPrio:afterPrio.filter(r=>r.stride===strideF);
   const availCats=[...new Set(afterStride.map(r=>r.category))].sort((a,b)=>a.toLowerCase().localeCompare(b.toLowerCase()));
@@ -3803,7 +3803,7 @@ function App(){const[state,setState]=useState("idle");const[progress,setProgress
           {n:results.components?.length||0,l:"Software Components",c:"#c084fc",sub:`${results.components?.filter(c=>c.hasVulns)?.length||0} CVEs · ${results.components?.filter(c=>c.hasExploit)?.length||0} exploit paths`},
           {n:results.sources.length,l:"Input Sources",c:"#60a5fa",sub:`${results.sources.filter(s=>(s.flowStatus||"safe")!=="safe").length} unsanitized inputs`},
           {n:(results.secrets||[]).length,l:"Secrets Found",c:"#fb923c",sub:`exposed credentials`},
-          {n:results.recs.length,l:"Recommendations",c:"#34d058",sub:`${results.recs.filter(r=>r.severity==="critical").length} crit · ${results.recs.filter(r=>r.severity==="high").length} high · ${results.recs.filter(r=>r.severity==="medium").length} med`},
+          {n:results.recs.length,l:"Recommendations",c:"#34d058",sub:(()=>{const all=[...(results.findings||[]),...(results.logicVulns||[]),...(results.secrets||[]),...(results.supplyChain||[])];return`${all.filter(f=>f.severity==='critical').length} crit · ${all.filter(f=>f.severity==='high').length} high · ${all.filter(f=>f.severity==='medium').length} med findings`;})()},
         ].map(({n,l,c,sub},i,arr)=><div key={l} style={{flex:"1 1 120px",padding:"14px 20px",borderRight:i<arr.length-1?`1px solid ${T.border}`:"none",display:"flex",flexDirection:"column",gap:2}}>
           <span style={{fontSize:26,fontWeight:700,color:c,lineHeight:1,letterSpacing:"-0.5px"}}>{n}</span>
           <span style={{fontSize:11,fontWeight:600,color:T.text2,textTransform:"uppercase",letterSpacing:"0.06em",marginTop:3}}>{l}</span>
