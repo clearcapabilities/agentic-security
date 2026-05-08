@@ -153,16 +153,19 @@ claude ~/code/juice-shop
 ```
 
 ```
-Agentic Security — 319 finding(s) across 456 file(s)
+Scan Complete — 296 Findings Across 456 Files
 
-  Critical    49
-  High        93
-  Medium      167
-  Low         1
-  Info        9
+  Critical  ~35   SQL Injection, XSS (DomSanitizer bypasses), IDOR,
+                  RCE (VM sandbox), hardcoded RSA key / HMAC secret
+  High      ~60   SSRF, Path Traversal, NoSQL Injection, SSTI,
+                  JWT bypass, race conditions, SCA CVEs
+                  (jsonwebtoken, express-jwt, multer, sequelize)
+  Medium   ~100   No rate limiting on auth endpoints, permissive CORS (*),
+                  weak randomness, cookie flags, open redirects, timing oracles
+  Low/Info  rest  Sync I/O, pagination limits, TODO markers
 ```
 
-319 real bugs. Most are clustered in a handful of files. Welcome to a real codebase.
+296 confirmed findings, pre-triaged. False positives filtered before you see a single result.
 
 **Step 3 — get a report**
 
@@ -182,7 +185,7 @@ A self-contained interactive page: severity chart, filterable finding list, fix 
 Before touching any code, Claude will read the findings and summarise what it's about to change. It may ask for confirmation — especially on a well-known codebase like Juice Shop, where it recognises that the vulnerabilities are intentional challenges. Tell it to proceed:
 
 ```
-fix all 49 critical vulns
+fix all critical vulns
 ```
 
 Claude then works through each finding in sequence — parameterized queries instead of string concatenation, `bcrypt` instead of MD5, `execFile` instead of `exec`. Each fix is a normal edit you can review or revert. It runs serially because fixing one bug can change another.
