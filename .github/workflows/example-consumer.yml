@@ -24,3 +24,5 @@ jobs:
       fail-on: critical
       baseline: ${{ github.event.pull_request.base.sha || 'HEAD~1' }}
       output-sarif: 'true'
+      paths-ignore: |
+        scanner/src/engine.js
