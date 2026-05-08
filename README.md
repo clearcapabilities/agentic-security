@@ -134,7 +134,7 @@ git clone https://github.com/juice-shop/juice-shop ~/code/juice-shop
 **Step 2 — scan it**
 
 ```
-/security-scan-all ~/code/juice-shop
+/security-scan-all <code_directory_path>
 ```
 
 ```
