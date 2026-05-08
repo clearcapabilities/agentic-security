@@ -137,6 +137,7 @@ One self-contained 1.9 MB file. No `npm install`, no dependencies.
 
 ```bash
 git clone https://github.com/juice-shop/juice-shop ~/code/juice-shop
+cd ~/code/juice-shop
 ```
 
 **Step 2 — open Claude Code in the cloned repo**
