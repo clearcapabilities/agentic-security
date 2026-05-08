@@ -603,12 +603,16 @@ function _isSafeExecFileCall(args){
   if(!args) return false;
   return /^\s*['"][^'"]*['"]\s*,\s*\[/.test(args);
 }
+// Ownership clause: server-sourced user/owner ID co-present with the user-controlled ID
+const _IDOR_OWNERSHIP_RE = /(?:userId|UserId|user_id|ownerId|owner_id|owner|customerId|customer_id|accountId|account_id)\s*:\s*(?:req\.user\.|token\.|decoded\.|jwt\.|payload\.|auth\.|user\.id\b|session\.(?:user|userId))/;
+
 function _detectSafeSinkShape(vuln, args){
   if(/SQL Injection|NoSQL Injection/.test(vuln) && _isParameterizedDbCall(args)) return 'parameterized-db';
   if(/Command Injection/.test(vuln)) {
     if (_isSafeSubprocessCall(args)) return 'subprocess-list';
     if (_isSafeExecFileCall(args)) return 'execFile-list';
   }
+  if(/IDOR/.test(vuln) && _IDOR_OWNERSHIP_RE.test(args)) return 'ownership-clause';
   return null;
 }
 
@@ -709,7 +713,7 @@ function _detectAllowlistGuard(lines, varName, srcLine, sinkLine) {
   return null;
 }
 
-function performRegexAnalysis(fp,raw){const cleaned=stripNoise(raw);const lines=raw.split("\n");const findings=[],sources=[],sinks=[],sanitizers=[];
+function performRegexAnalysis(fp,raw){if(_INTENTIONAL_VULN_PATH_RE.test(fp.replace(/\\/g,'/')))return{findings:[],sources:[],sinks:[],sanitizers:[]};const cleaned=stripNoise(raw);const lines=raw.split("\n");const findings=[],sources=[],sinks=[],sanitizers=[];
   for(const sp of SOURCE_PATTERNS){const re=new RegExp(sp.regex.source,sp.regex.flags);let m;while((m=re.exec(cleaned))){const line=lineAt(cleaned,m.index);const lt=lines[line-1]||"";const am=lt.match(/(?:const|let|var|)\s*(\w+)\s*=/)||lt.match(/(\w+)\s*=/);sources.push({label:sp.getLabel(m),category:sp.category,inputType:sp.inputType(m),variable:am?am[1]:null,line,file:fp,snippet:lt.trim()});}}
   // Feat-1: in-file Python helper-taint propagation. Pushes synthetic sources
   // for function parameters that are tainted via call-site argument flow.
@@ -1104,7 +1108,12 @@ function _authRateLimitPredicate(matchText, ctx) {
 }
 
 // Structural vulnerability scanner, no source-sink taint chain required
+// Paths containing intentionally vulnerable code (challenge solutions, training apps).
+// SAST findings here are expected by design — suppress to avoid noise.
+const _INTENTIONAL_VULN_PATH_RE = /(?:^|\/)(?:codefixes|challenge[_\-]?(?:solution|code|fix|answer)|intentional[_\-]?vuln|ctf[_\-]?solution|vulnerable[_\-]?(?:example|sample|code))(?:\/|$)/i;
+
 function scanStructuralVulns(fp, raw) {
+  if (_INTENTIONAL_VULN_PATH_RE.test(fp.replace(/\\/g, '/'))) return [];
   const cleaned = stripNoise(raw);
   const lines = raw.split('\n');
   const findings = [];
