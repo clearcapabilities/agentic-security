@@ -385,6 +385,68 @@ test('Feat-6: PR-comment script produces well-formed Markdown summary from a sca
   }
 });
 
+test('FP-10: IDOR ownership clause via locally-extracted auth variable is downgraded; pure req.params.id remains critical/high', async () => {
+  const { scan } = await runScan(FIX('idor-ownership'));
+  const all = normalizeFindings(scan).filter(f => /IDOR/.test(f.vuln));
+  const safe = all.filter(f => /safe-via-local-var/.test(f.file));
+  const vuln = all.filter(f => /vulnerable\.ts$/.test(f.file));
+  const safeCH = safe.filter(f => f.severity === 'critical' || f.severity === 'high');
+  const vulnCH = vuln.filter(f => f.severity === 'critical' || f.severity === 'high');
+  assert.equal(safeCH.length, 0,
+    `expected 0 critical/high IDOR on safe-via-local-var, got ${safeCH.length}: ${safeCH.map(f=>f.severity+'/'+f.vuln).join(', ')}`);
+  assert.ok(vulnCH.length >= 1,
+    `expected ≥1 critical/high IDOR on vulnerable.ts, got ${vulnCH.length}`);
+});
+
+test('FP-11: Hardcoded Secret rule ignores SQL template literals and codefixes/ educational fixtures', async () => {
+  const { scan } = await runScan(FIX('secret-context'));
+  const findings = normalizeFindings(scan);
+  // codefixes/* should produce zero Secret-class findings (suppressed via path-filter)
+  const onCodefixes = findings.filter(f => /Secret|Credential/.test(f.vuln) && /codefixes\//.test(f.file));
+  assert.equal(onCodefixes.length, 0,
+    `expected 0 Secret findings under codefixes/, got ${onCodefixes.length}`);
+  // The real-secret.ts fixture must still fire (≥1 critical Secret-class finding)
+  const onReal = findings.filter(f => /Secret|Credential/.test(f.vuln) && /real-secret\.ts$/.test(f.file) && f.severity === 'critical');
+  assert.ok(onReal.length >= 1, 'real-secret.ts must still produce a critical Secret finding');
+  // OAuth-fragment file is silent
+  const onOauth = findings.filter(f => /Secret|Credential/.test(f.vuln) && /oauth-fragment\.ts$/.test(f.file));
+  assert.equal(onOauth.length, 0, 'oauth-fragment.ts should produce 0 Secret findings');
+});
+
+test('FP-12: XSS regex distinguishes assignment from comparison (innerHTML === value is not a sink)', async () => {
+  const { scan } = await runScan(FIX('xss-dom-sink'));
+  const xss = normalizeFindings(scan).filter(f => /XSS/.test(f.vuln));
+  // Only the real-xss.ts fixture should fire critical XSS
+  const onReal = xss.filter(f => /real-xss\.ts$/.test(f.file) && f.severity === 'critical');
+  assert.ok(onReal.length >= 1, 'real-xss.ts should fire critical XSS');
+  // helpers-no-sink.ts should produce 0 XSS findings (innerHTML === comparison is not a sink)
+  const onHelpers = xss.filter(f => /helpers-no-sink\.ts$/.test(f.file));
+  assert.equal(onHelpers.length, 0,
+    `expected 0 XSS findings on helpers-no-sink.ts (no DOM sink), got ${onHelpers.length}`);
+});
+
+test('FP-13: SCA findings honor rules.yml suppressions (supplyChain pipeline)', async () => {
+  // Synthesize a scan with one supplyChain finding matching the suppression rule.
+  const synthetic = {
+    findings: [], secrets: [], logicVulns: [], suppressions: [], components: [],
+    routes: [], filesScanned: 0,
+    supplyChain: [
+      { type: 'vulnerable_dep', name: 'fakelib', version: '0.0.1', ecosystem: 'npm',
+        severity: 'critical', cveAliases: ['CVE-9999-0001'],
+        vuln: 'GHSA-test-1234, Demo Vuln in fakelib',
+        description: 'A demo SCA vuln', filePath: 'package.json' },
+    ],
+  };
+  // Load custom rules from the fixture's rules.yml so the suppression is registered
+  const { _loadCustomRules } = await import('../src/engine.js');
+  await _loadCustomRules(FIX('sca-suppression'));
+  const { normalizeFindings } = await import('../src/report/index.js');
+  const out = normalizeFindings(synthetic);
+  assert.equal(out.length, 0, `expected the SCA finding to be suppressed, got ${out.length}`);
+  assert.ok((synthetic.suppressions||[]).length >= 1,
+    `expected ≥1 recorded suppression, got ${(synthetic.suppressions||[]).length}`);
+});
+
 test('finding IDs are stable hashes', async () => {
   const a = await runScan(FIX('vulnerable-js'));
   const b = await runScan(FIX('vulnerable-js'));

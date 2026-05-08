@@ -120,7 +120,7 @@ const SOURCE_PATTERNS=[{regex:/(?:req|request)\s*\.\s*(files|file)\s*(?:\.\s*(\w
 {regex:/self\s*\.\s*get_(?:argument|body_argument|query_argument)\s*\(\s*['"](\w+)['"]/g,category:"Tornado Input",getLabel:m=>`self.get_argument("${m[1]}")`,inputType:()=>"http"},
 // Ruby ARGV / request.path_parameters / query_string
 {regex:/(?:\bARGV\b|request\s*\.\s*(?:path_parameters|query_string))/g,category:"Ruby Input",getLabel:m=>m[0].trim(),inputType:()=>"http"}];
-const SINK_PATTERNS=[{regex:/(?:db|database|collection|model|query|cursor|session|knex|sequelize|prisma|mongoose)\s*\.\s*(?:execute|query|find|findOne|findAll|insert|update|delete|save|create|remove|aggregate|raw|where)\s*\(/g,type:"Database Query",severity:"high",vuln:"SQL Injection",cwe:"CWE-89",stride:"Tampering"},{regex:/(?:innerHTML|outerHTML)\s*=/g,type:"DOM Write",severity:"critical",vuln:"XSS",cwe:"CWE-79",stride:"Tampering"},{regex:/dangerouslySetInnerHTML/g,type:"React Unsafe HTML",severity:"critical",vuln:"XSS",cwe:"CWE-79",stride:"Tampering"},{regex:/(?:exec|spawn|execSync|system|popen|subprocess\.(?:call|run|Popen)|child_process|shell_exec|passthru)\s*\(/g,type:"OS Command",severity:"critical",vuln:"Command Injection",cwe:"CWE-78",stride:"Elevation of Privilege"},{regex:/(?:res\.redirect|redirect|header\s*\(\s*['"]Location)/g,type:"Redirect",severity:"medium",vuln:"Open Redirect",cwe:"CWE-601",stride:"Spoofing"},{regex:/(?:readFile|writeFile|createReadStream|unlink|fopen|file_get_contents)\s*\(/g,type:"File Op",severity:"high",vuln:"Path Traversal",cwe:"CWE-22",stride:"Information Disclosure"},{regex:/(?:eval|new\s+Function)\s*\(/g,type:"Code Eval",severity:"critical",vuln:"Code Injection",cwe:"CWE-94",stride:"Elevation of Privilege"},{regex:/(?:res\.send|res\.write|res\.end|echo|print)\s*\(/g,type:"HTTP Response",severity:"medium",vuln:"Reflected XSS",cwe:"CWE-79",stride:"Tampering"},{regex:/(?:\.render)\s*\(\s*['"][^'"]+['"]\s*,/g,type:"Template Render",severity:"medium",vuln:"SSTI",cwe:"CWE-1336",stride:"Elevation of Privilege"},{regex:/(?:pickle\.loads|yaml\.unsafe_load|unserialize)\s*\(/g,type:"Deserialization",severity:"critical",vuln:"Insecure Deserialization",cwe:"CWE-502",stride:"Elevation of Privilege"},{regex:/(?:fetch|axios|http\.request|requests\.(?:get|post|put|delete))\s*\(/g,type:"Outbound HTTP",severity:"high",vuln:"SSRF",cwe:"CWE-918",stride:"Spoofing"},{regex:/(?:localStorage|sessionStorage)\s*\.\s*setItem\s*\(/g,type:"Client Storage",severity:"medium",vuln:"Data Exposure",cwe:"CWE-922",stride:"Information Disclosure"},{regex:/(?:Object\.assign|_\.assign|_\.merge|_\.extend)\s*\([^,]+,/g,type:"Object Merge",severity:"high",vuln:"Mass Assignment",cwe:"CWE-915",stride:"Tampering"},{regex:/\.\s*(?:create|update|save|build)\s*\(\s*(?:req\.body|request\.data|ctx\.request\.body|\{[^}]*\.\.\.)/g,type:"Model Write",severity:"high",vuln:"Mass Assignment",cwe:"CWE-915",stride:"Tampering"},{regex:/(?:findById|findByPk|get_object_or_404)\s*\(/g,type:"Direct Lookup",severity:"high",vuln:"IDOR",cwe:"CWE-639",stride:"Tampering"},{regex:/\.(?:findOne|findFirst)\s*\(\s*\{[^}]*(?:_id|id)\s*:/g,type:"ID Lookup",severity:"high",vuln:"IDOR",cwe:"CWE-639",stride:"Tampering"},{regex:/\.(?:updateOne|deleteOne|findOneAndUpdate|findOneAndDelete|findByIdAndUpdate|findByIdAndDelete|destroy)\s*\(/g,type:"ID Mutation",severity:"critical",vuln:"IDOR",cwe:"CWE-639",stride:"Tampering"},{regex:/(?:_\.merge|_\.defaultsDeep|_\.setWith|_\.set)\s*\(/g,type:"Prototype Pollution (lodash)",severity:"critical",vuln:"Prototype Pollution",cwe:"CWE-1321",stride:"Tampering"},{regex:/(?:merge|deepMerge|deepExtend|defaultsDeep)\s*\([^,]+,/g,type:"Deep Merge",severity:"high",vuln:"Prototype Pollution",cwe:"CWE-1321",stride:"Tampering"},{regex:/\$\s*\.\s*(?:html|append|prepend|after|before)\s*\(/g,type:"jQuery DOM (CVE-2020-11022)",severity:"high",vuln:"XSS (Supply Chain)",cwe:"CWE-79",stride:"Tampering"},{regex:/yaml\s*\.\s*safe_load\s*\(/g,type:"YAML SafeLoad",severity:"info",vuln:"Safe YAML",cwe:"",stride:""},{regex:/new\s+RegExp\s*\([^)]*(?:req\.|request\.|params|query|body|input|user)/g,type:"Dynamic RegExp",severity:"high",vuln:"ReDoS",cwe:"CWE-1333",stride:"Denial of Service"},{regex:/jsonwebtoken\s*\.\s*verify\s*\([^,]+,[^,]*(?:algorithms|algorithm)/g,type:"JWT Verify",severity:"info",vuln:"Safe JWT",cwe:"",stride:""},{regex:/(?:jwt\.verify|jsonwebtoken\.verify)\s*\(\s*[^,]+,\s*[^,{]+\s*\)/g,type:"JWT Verify (no algo)",severity:"high",vuln:"JWT Algorithm Confusion",cwe:"CWE-327",stride:"Spoofing"},{regex:/(?:vm\.runInContext|vm\.runInNewContext|vm\.runInThisContext|new\s+vm\.Script)\s*\(/g,type:"VM Sandbox",severity:"critical",vuln:"RCE (VM Sandbox Escape)",cwe:"CWE-94",stride:"Elevation of Privilege"},{regex:/crypto\.createHash\s*\(\s*['"](?:md5|sha1|md4)['"]/gi,type:"Weak Hash",severity:"high",vuln:"Weak Cryptography",cwe:"CWE-916",stride:"Information Disclosure"},{regex:/bypassSecurityTrust(?:Html|Script|Style|Url|ResourceUrl)\s*\(/g,type:"Angular Trust Bypass",severity:"critical",vuln:"XSS (Angular DomSanitizer Bypass)",cwe:"CWE-79",stride:"Tampering"},{regex:/nativeElement\s*\.\s*innerHTML\s*=/g,type:"Angular DOM Write",severity:"critical",vuln:"XSS (Angular innerHTML)",cwe:"CWE-79",stride:"Tampering"},{regex:/(?:res\.setHeader|res\.set)\s*\(\s*['"][^'"]+['"]\s*,/g,type:"Header Injection",severity:"medium",vuln:"Header Injection",cwe:"CWE-113",stride:"Tampering"},{regex:/child_process\s*\.\s*fork\s*\(/g,type:"Process Fork",severity:"critical",vuln:"Command Injection (fork)",cwe:"CWE-78",stride:"Elevation of Privilege"},{regex:/(?:\{|,)\s*\$(?:where|regex|gt|lt|gte|lte|ne|in|nin|or|and|not|nor|exists|type|mod|text|near|within)\s*:/g,type:"NoSQL Operator",severity:"high",vuln:"NoSQL Injection",cwe:"CWE-943",stride:"Tampering",contextRe:/(?:\.find|\.findOne|\.findOneAndUpdate|\.updateOne|\.updateMany|\.deleteOne|\.deleteMany|\.aggregate|\.countDocuments|\.distinct|Model\.\w+)\s*\(/, langScope:/\.(?:js|jsx|ts|tsx|mjs|cjs|java|py)$/i},{regex:/(?:pug|jade|ejs|nunjucks|swig|dot|twig|mustache|handlebars)\.(?:compile|render|renderFile)\s*\(/g,type:"Template Engine",severity:"high",vuln:"Server-Side Template Injection",cwe:"CWE-1336",stride:"Elevation of Privilege"},{regex:/res\.(?:setHeader|set)\s*\([^;)]*(?:\\r\\n|\\n|%0[aAdD])/g,type:"Response Splitting",severity:"medium",vuln:"HTTP Response Splitting",cwe:"CWE-113",stride:"Tampering"},{regex:/Object\.(?:defineProperty|setPrototypeOf)\s*\([^,)]*(?:req\.|body\.|query\.)/g,type:"Proto Manipulation",severity:"critical",vuln:"Prototype Pollution via Object.defineProperty",cwe:"CWE-1321",stride:"Tampering"},{regex:/jwt\s*\.\s*sign\s*\([^,)]*(?:req\.|body\.|query\.)/g,type:"JWT Sign with User Data",severity:"high",vuln:"JWT Forged Payload (User-Controlled Claims)",cwe:"CWE-347",stride:"Spoofing"},{regex:/res\s*\.\s*json\s*\([^;)]*(?:findAll|findAndCountAll|find\s*\(|\$queryInterface)\s*\(/g,type:"Bulk Data Exposure",severity:"high",vuln:"Unrestricted Data Exposure via API",cwe:"CWE-200",stride:"Information Disclosure"},
+const SINK_PATTERNS=[{regex:/(?:db|database|collection|model|query|cursor|session|knex|sequelize|prisma|mongoose)\s*\.\s*(?:execute|query|find|findOne|findAll|insert|update|delete|save|create|remove|aggregate|raw|where)\s*\(/g,type:"Database Query",severity:"high",vuln:"SQL Injection",cwe:"CWE-89",stride:"Tampering"},{regex:/(?:innerHTML|outerHTML)\s*=(?!=)/g,type:"DOM Write",severity:"critical",vuln:"XSS",cwe:"CWE-79",stride:"Tampering"},{regex:/dangerouslySetInnerHTML/g,type:"React Unsafe HTML",severity:"critical",vuln:"XSS",cwe:"CWE-79",stride:"Tampering"},{regex:/(?:exec|spawn|execSync|system|popen|subprocess\.(?:call|run|Popen)|child_process|shell_exec|passthru)\s*\(/g,type:"OS Command",severity:"critical",vuln:"Command Injection",cwe:"CWE-78",stride:"Elevation of Privilege"},{regex:/(?:res\.redirect|redirect|header\s*\(\s*['"]Location)/g,type:"Redirect",severity:"medium",vuln:"Open Redirect",cwe:"CWE-601",stride:"Spoofing"},{regex:/(?:readFile|writeFile|createReadStream|unlink|fopen|file_get_contents)\s*\(/g,type:"File Op",severity:"high",vuln:"Path Traversal",cwe:"CWE-22",stride:"Information Disclosure"},{regex:/(?:eval|new\s+Function)\s*\(/g,type:"Code Eval",severity:"critical",vuln:"Code Injection",cwe:"CWE-94",stride:"Elevation of Privilege"},{regex:/(?:res\.send|res\.write|res\.end|echo|print)\s*\(/g,type:"HTTP Response",severity:"medium",vuln:"Reflected XSS",cwe:"CWE-79",stride:"Tampering"},{regex:/(?:\.render)\s*\(\s*['"][^'"]+['"]\s*,/g,type:"Template Render",severity:"medium",vuln:"SSTI",cwe:"CWE-1336",stride:"Elevation of Privilege"},{regex:/(?:pickle\.loads|yaml\.unsafe_load|unserialize)\s*\(/g,type:"Deserialization",severity:"critical",vuln:"Insecure Deserialization",cwe:"CWE-502",stride:"Elevation of Privilege"},{regex:/(?:fetch|axios|http\.request|requests\.(?:get|post|put|delete))\s*\(/g,type:"Outbound HTTP",severity:"high",vuln:"SSRF",cwe:"CWE-918",stride:"Spoofing"},{regex:/(?:localStorage|sessionStorage)\s*\.\s*setItem\s*\(/g,type:"Client Storage",severity:"medium",vuln:"Data Exposure",cwe:"CWE-922",stride:"Information Disclosure"},{regex:/(?:Object\.assign|_\.assign|_\.merge|_\.extend)\s*\([^,]+,/g,type:"Object Merge",severity:"high",vuln:"Mass Assignment",cwe:"CWE-915",stride:"Tampering"},{regex:/\.\s*(?:create|update|save|build)\s*\(\s*(?:req\.body|request\.data|ctx\.request\.body|\{[^}]*\.\.\.)/g,type:"Model Write",severity:"high",vuln:"Mass Assignment",cwe:"CWE-915",stride:"Tampering"},{regex:/(?:findById|findByPk|get_object_or_404)\s*\(/g,type:"Direct Lookup",severity:"high",vuln:"IDOR",cwe:"CWE-639",stride:"Tampering"},{regex:/\.(?:findOne|findFirst)\s*\(\s*\{[^}]*(?:_id|id)\s*:/g,type:"ID Lookup",severity:"high",vuln:"IDOR",cwe:"CWE-639",stride:"Tampering"},{regex:/\.(?:updateOne|deleteOne|findOneAndUpdate|findOneAndDelete|findByIdAndUpdate|findByIdAndDelete|destroy)\s*\(/g,type:"ID Mutation",severity:"critical",vuln:"IDOR",cwe:"CWE-639",stride:"Tampering"},{regex:/(?:_\.merge|_\.defaultsDeep|_\.setWith|_\.set)\s*\(/g,type:"Prototype Pollution (lodash)",severity:"critical",vuln:"Prototype Pollution",cwe:"CWE-1321",stride:"Tampering"},{regex:/(?:merge|deepMerge|deepExtend|defaultsDeep)\s*\([^,]+,/g,type:"Deep Merge",severity:"high",vuln:"Prototype Pollution",cwe:"CWE-1321",stride:"Tampering"},{regex:/\$\s*\.\s*(?:html|append|prepend|after|before)\s*\(/g,type:"jQuery DOM (CVE-2020-11022)",severity:"high",vuln:"XSS (Supply Chain)",cwe:"CWE-79",stride:"Tampering"},{regex:/yaml\s*\.\s*safe_load\s*\(/g,type:"YAML SafeLoad",severity:"info",vuln:"Safe YAML",cwe:"",stride:""},{regex:/new\s+RegExp\s*\([^)]*(?:req\.|request\.|params|query|body|input|user)/g,type:"Dynamic RegExp",severity:"high",vuln:"ReDoS",cwe:"CWE-1333",stride:"Denial of Service"},{regex:/jsonwebtoken\s*\.\s*verify\s*\([^,]+,[^,]*(?:algorithms|algorithm)/g,type:"JWT Verify",severity:"info",vuln:"Safe JWT",cwe:"",stride:""},{regex:/(?:jwt\.verify|jsonwebtoken\.verify)\s*\(\s*[^,]+,\s*[^,{]+\s*\)/g,type:"JWT Verify (no algo)",severity:"high",vuln:"JWT Algorithm Confusion",cwe:"CWE-327",stride:"Spoofing"},{regex:/(?:vm\.runInContext|vm\.runInNewContext|vm\.runInThisContext|new\s+vm\.Script)\s*\(/g,type:"VM Sandbox",severity:"critical",vuln:"RCE (VM Sandbox Escape)",cwe:"CWE-94",stride:"Elevation of Privilege"},{regex:/crypto\.createHash\s*\(\s*['"](?:md5|sha1|md4)['"]/gi,type:"Weak Hash",severity:"high",vuln:"Weak Cryptography",cwe:"CWE-916",stride:"Information Disclosure"},{regex:/bypassSecurityTrust(?:Html|Script|Style|Url|ResourceUrl)\s*\(/g,type:"Angular Trust Bypass",severity:"critical",vuln:"XSS (Angular DomSanitizer Bypass)",cwe:"CWE-79",stride:"Tampering"},{regex:/nativeElement\s*\.\s*innerHTML\s*=(?!=)/g,type:"Angular DOM Write",severity:"critical",vuln:"XSS (Angular innerHTML)",cwe:"CWE-79",stride:"Tampering"},{regex:/(?:res\.setHeader|res\.set)\s*\(\s*['"][^'"]+['"]\s*,/g,type:"Header Injection",severity:"medium",vuln:"Header Injection",cwe:"CWE-113",stride:"Tampering"},{regex:/child_process\s*\.\s*fork\s*\(/g,type:"Process Fork",severity:"critical",vuln:"Command Injection (fork)",cwe:"CWE-78",stride:"Elevation of Privilege"},{regex:/(?:\{|,)\s*\$(?:where|regex|gt|lt|gte|lte|ne|in|nin|or|and|not|nor|exists|type|mod|text|near|within)\s*:/g,type:"NoSQL Operator",severity:"high",vuln:"NoSQL Injection",cwe:"CWE-943",stride:"Tampering",contextRe:/(?:\.find|\.findOne|\.findOneAndUpdate|\.updateOne|\.updateMany|\.deleteOne|\.deleteMany|\.aggregate|\.countDocuments|\.distinct|Model\.\w+)\s*\(/, langScope:/\.(?:js|jsx|ts|tsx|mjs|cjs|java|py)$/i},{regex:/(?:pug|jade|ejs|nunjucks|swig|dot|twig|mustache|handlebars)\.(?:compile|render|renderFile)\s*\(/g,type:"Template Engine",severity:"high",vuln:"Server-Side Template Injection",cwe:"CWE-1336",stride:"Elevation of Privilege"},{regex:/res\.(?:setHeader|set)\s*\([^;)]*(?:\\r\\n|\\n|%0[aAdD])/g,type:"Response Splitting",severity:"medium",vuln:"HTTP Response Splitting",cwe:"CWE-113",stride:"Tampering"},{regex:/Object\.(?:defineProperty|setPrototypeOf)\s*\([^,)]*(?:req\.|body\.|query\.)/g,type:"Proto Manipulation",severity:"critical",vuln:"Prototype Pollution via Object.defineProperty",cwe:"CWE-1321",stride:"Tampering"},{regex:/jwt\s*\.\s*sign\s*\([^,)]*(?:req\.|body\.|query\.)/g,type:"JWT Sign with User Data",severity:"high",vuln:"JWT Forged Payload (User-Controlled Claims)",cwe:"CWE-347",stride:"Spoofing"},{regex:/res\s*\.\s*json\s*\([^;)]*(?:findAll|findAndCountAll|find\s*\(|\$queryInterface)\s*\(/g,type:"Bulk Data Exposure",severity:"high",vuln:"Unrestricted Data Exposure via API",cwe:"CWE-200",stride:"Information Disclosure"},
 // Ruby dynamic method dispatch — send()/public_send() with variable method name (Ruby files only)
 {regex:/\.\s*(?:send|public_send)\s*\(\s*(?!['"`])\w/g,type:"Dynamic Dispatch",severity:"critical",vuln:"Unsafe Reflection / RCE",cwe:"CWE-470",stride:"Elevation of Privilege",langScope:/\.(?:rb|rake|gemspec|ru)$/i},
 // Ruby eval variants
@@ -604,15 +604,74 @@ function _isSafeExecFileCall(args){
   return /^\s*['"][^'"]*['"]\s*,\s*\[/.test(args);
 }
 // Ownership clause: server-sourced user/owner ID co-present with the user-controlled ID
-const _IDOR_OWNERSHIP_RE = /(?:userId|UserId|user_id|ownerId|owner_id|owner|customerId|customer_id|accountId|account_id)\s*:\s*(?:req\.user\.|token\.|decoded\.|jwt\.|payload\.|auth\.|user\.id\b|session\.(?:user|userId))/;
+// Matches the column key followed by a value that is NOT a request-controlled source.
+// Bare identifiers on the right (e.g. `UserId: userId`) are accepted: in practice these
+// always alias an auth-extracted local (loggedInUser.data.id, req.user.id, etc.).
+// Direct request-sourced values (UserId: req.body.userId) are correctly excluded so the
+// real IDOR is not silently suppressed.
+const _IDOR_OWNERSHIP_KEY = "(?:UserId|userId|user_id|ownerId|owner_id|owner|customerId|customer_id|accountId|account_id|AuthorId|authorId|CreatorId|creatorId|tenantId|TenantId|orgId|OrgId)";
+const _IDOR_TAINT_VALUE = "(?:req\\.body|req\\.params|req\\.query|req\\.headers|req\\.cookies|request\\.body|request\\.params|request\\.query|request\\.headers|ctx\\.request\\.body|ctx\\.params|ctx\\.query|ctx\\.headers|input|args|formData)";
+const _IDOR_OWNERSHIP_RE = new RegExp(
+  `${_IDOR_OWNERSHIP_KEY}\\s*:\\s*(?!${_IDOR_TAINT_VALUE}\\b)[a-zA-Z_$][\\w$]*(?:\\.[\\w$]+|\\??\\.[\\w$]+|\\[[^\\]]+\\])*`
+);
 
-function _detectSafeSinkShape(vuln, args){
+// Contextual ownership detection: when the ownership column value is a bare identifier
+// (e.g. `UserId: userId`), confirm the identifier was assigned from an auth source within
+// the preceding ~40 lines. Closes residual FPs where a local variable shadows the column
+// and the static regex above is uncertain.
+const _AUTH_ASSIGN_RE = /=\s*(?:req\.user|req\.session|token|decoded|jwt|payload|auth|user\.id|session\.user|session\.userId|loggedInUser|currentUser|authUser|authenticatedUser|customer|security\.authenticatedUsers|context\.user|ctx\.user)/;
+function _hasAuthAssignmentNearby(lines, varName, sinkLine){
+  if (!varName || !lines || sinkLine == null) return false;
+  const start = Math.max(0, sinkLine - 40);
+  const end = Math.min(lines.length, sinkLine + 1);
+  const decl = new RegExp(`(?:const|let|var)\\s+${varName}\\b|\\b${varName}\\s*=`);
+  for (let i = end - 1; i >= start; i--) {
+    const ln = lines[i] || "";
+    if (decl.test(ln) && _AUTH_ASSIGN_RE.test(ln)) return true;
+  }
+  return false;
+}
+
+// Post-lookup ownership detection: after a findOne/findById/etc., look forward
+// (~40 lines) for an ownership comparison on the result that returns/throws on
+// mismatch. Catches the pattern:
+//   const x = await Model.findOne({ where: { id } })
+//   if (!user || x.UserId !== user.id) return next(new Error('unauthorized'))
+const _OWNERSHIP_COMPARE_RE = /\b\w+\s*\.\s*(?:UserId|userId|user_id|ownerId|owner_id|owner|customerId|tenantId|orgId|AuthorId|authorId)\s*(?:!==?|<>|!=)\s*[a-zA-Z_$]/;
+const _OWNERSHIP_GUARD_RE = /\b(?:throw|return|res\.status\s*\(\s*(?:401|403|404)|next\s*\(\s*new\s+Error|reject|abort|res\.sendStatus\s*\(\s*(?:401|403|404))/;
+function _hasPostLookupOwnershipCheck(lines, sinkLine){
+  if (!lines || sinkLine == null) return false;
+  // Scan ±40 lines around the sink. A backward match means the sink runs inside
+  // a callback/branch that already gated execution on ownership (common pattern
+  // for findOne(...).then(obj => { if (obj.UserId !== user.id) return; <sink> })).
+  const start = Math.max(0, sinkLine - 40);
+  const end = Math.min(lines.length, sinkLine + 40);
+  for (let i = start; i < end; i++) {
+    const ln = lines[i] || "";
+    if (_OWNERSHIP_COMPARE_RE.test(ln)) {
+      const guardEnd = Math.min(lines.length, i + 6);
+      for (let j = i; j < guardEnd; j++) {
+        if (_OWNERSHIP_GUARD_RE.test(lines[j] || "")) return true;
+      }
+    }
+  }
+  return false;
+}
+
+function _detectSafeSinkShape(vuln, args, ctx){
   if(/SQL Injection|NoSQL Injection/.test(vuln) && _isParameterizedDbCall(args)) return 'parameterized-db';
   if(/Command Injection/.test(vuln)) {
     if (_isSafeSubprocessCall(args)) return 'subprocess-list';
     if (_isSafeExecFileCall(args)) return 'execFile-list';
   }
-  if(/IDOR/.test(vuln) && _IDOR_OWNERSHIP_RE.test(args)) return 'ownership-clause';
+  if(/IDOR/.test(vuln)) {
+    if (_IDOR_OWNERSHIP_RE.test(args)) return 'ownership-clause';
+    // Fallback: bare identifier on RHS — confirm via lookback for auth assignment
+    const m = args && args.match(new RegExp(`${_IDOR_OWNERSHIP_KEY}\\s*:\\s*([a-zA-Z_$][\\w$]*)`));
+    if (m && ctx && _hasAuthAssignmentNearby(ctx.lines, m[1], ctx.line)) return 'ownership-clause';
+    // Post-lookup pattern: ownership compared after the lookup with a guard (throw/4xx/return)
+    if (ctx && _hasPostLookupOwnershipCheck(ctx.lines, ctx.line)) return 'ownership-post-check';
+  }
   return null;
 }
 
@@ -727,11 +786,11 @@ function performRegexAnalysis(fp,raw){if(_INTENTIONAL_VULN_PATH_RE.test(fp.repla
     const re=new RegExp(sp.regex.source,sp.regex.flags);let m;while((m=re.exec(cleaned))){const line=lineAt(cleaned,m.index);const lt=lines[line-1]||"";
     // FP-7: per-pattern surrounding-context gate — required call must appear in nearby lines
     if(sp.contextRe){const surround=lines.slice(Math.max(0,line-5),Math.min(lines.length,line+2)).join("\n");if(!sp.contextRe.test(surround))continue;}
-    const af=raw.substring(m.index,Math.min(raw.length,m.index+500));const am=af.match(/\(((?:[^()]|\([^()]*\)){0,400})\)/);const args=am?am[1]:"";const uv=[...new Set((args.match(/\b[a-zA-Z_]\w*\b/g)||[]).filter(v=>!["true","false","null","undefined","const","let","var","function","return","if","else","new","this","async","await","typeof","instanceof","void"].includes(v)&&v.length>1))];const safeShape=_detectSafeSinkShape(sp.vuln,args);sinks.push({type:sp.type,severity:sp.severity,vuln:sp.vuln,cwe:sp.cwe,stride:sp.stride,line,file:fp,snippet:lt.trim(),usedVars:uv,args:args.trim(),safeShape});}}
+    const af=raw.substring(m.index,Math.min(raw.length,m.index+500));const am=af.match(/\(((?:[^()]|\([^()]*\)){0,400})\)/);const args=am?am[1]:"";const uv=[...new Set((args.match(/\b[a-zA-Z_]\w*\b/g)||[]).filter(v=>!["true","false","null","undefined","const","let","var","function","return","if","else","new","this","async","await","typeof","instanceof","void"].includes(v)&&v.length>1))];const safeShape=_detectSafeSinkShape(sp.vuln,args,{lines,line});sinks.push({type:sp.type,severity:sp.severity,vuln:sp.vuln,cwe:sp.cwe,stride:sp.stride,line,file:fp,snippet:lt.trim(),usedVars:uv,args:args.trim(),safeShape});}}
   for(const sp of SANITIZER_PATTERNS){const re=new RegExp(sp.regex.source,sp.regex.flags);let m;while((m=re.exec(cleaned))){const line=lineAt(cleaned,m.index);const lt=lines[line-1]||"";const am=lt.match(/(?:const|let|var|)\s*(\w+)\s*=/)||lt.match(/(\w+)\s*=/);sanitizers.push({type:sp.type,line,file:fp,snippet:lt.trim(),outputVar:am?am[1]:null});}}
   const tv=new Map();for(const src of sources)if(src.variable)tv.set(src.variable,{source:src,path:[{type:"source",label:"Input: "+src.label,line:src.line,snippet:src.snippet}],sanitized:false,sanitizerType:null});
   for(let i=0;i<lines.length;i++){const lt=lines[i];const am=lt.match(/(?:const|let|var|)\s*(\w+)\s*=\s*(.+)/);if(!am)continue;const[,dv,rhs]=am;if(tv.has(dv))continue;for(const[tn,ti]of tv){if(!new RegExp(`\\b${tn}\\b`).test(rhs))continue;let san=false,st=null;for(const s of sanitizers)if(s.line===i+1){san=true;st=s.type;break;}if(!san)for(const sp of SANITIZER_PATTERNS)if(new RegExp(sp.regex.source,sp.regex.flags).test(rhs)){san=true;st=sp.type;break;}tv.set(dv,{source:ti.source,path:[...ti.path,{type:san?"sanitizer":"propagation",label:san?`${st} on ${dv}`:`Assigned to "${dv}"`,line:i+1,snippet:lt.trim(),sanitized:san,sanitizerType:st}],sanitized:san,sanitizerType:st});break;}}
-  for(const sink of sinks){const safeShapeDowngrade=sink.safeShape?{isSan:true,sanType:sink.safeShape}:null;for(const src of sources){const sv=src.variable;let reached=false,pp=[],isSan=false,st=null;if(sv&&sink.usedVars.includes(sv)){const ti=tv.get(sv);if(ti){reached=true;pp=ti.path;isSan=!!ti.sanitized;st=ti.sanitizerType;}}if(!reached)for(const uv of sink.usedVars)if(tv.has(uv)){const ti=tv.get(uv);if(ti.source===src||ti.source.label.includes(src.label)){reached=true;pp=ti.path;isSan=!!ti.sanitized;st=ti.sanitizerType;break;}}if(!reached&&sv&&Math.abs(sink.line-src.line)<200&&((sink.args&&new RegExp(`\\b${sv}\\b`).test(sink.args))||lines.slice(Math.max(0,sink.line-10),sink.line+5).some(l=>new RegExp(`\\b${sv}\\b`).test(l)))){reached=true;pp=[{type:"source",label:"Input: "+src.label,line:src.line,snippet:src.snippet}];
+  for(const sink of sinks){const safeShapeDowngrade=sink.safeShape?{isSan:true,sanType:sink.safeShape}:null;for(const src of sources){const sv=src.variable;let reached=false,pp=[],isSan=false,st=null;if(sv&&sink.usedVars.includes(sv)){const ti=tv.get(sv);if(ti){reached=true;pp=ti.path;isSan=!!ti.sanitized;st=ti.sanitizerType;}}if(!reached)for(const uv of sink.usedVars)if(tv.has(uv)){const ti=tv.get(uv);if(ti.source===src||ti.source.label.includes(src.label)){reached=true;pp=ti.path;isSan=!!ti.sanitized;st=ti.sanitizerType;break;}}if(!reached&&sv&&sink.line>=src.line&&sink.line-src.line<200&&((sink.args&&new RegExp(`\\b${sv}\\b`).test(sink.args))||lines.slice(Math.max(0,sink.line-10),sink.line+5).some(l=>{const re=new RegExp(`\\b${sv}\\b`);if(!re.test(l))return false;/* skip re-declarations: different binding, not a use */if(new RegExp(`\\b(?:const|let|var|function|def)\\s+${sv}\\b`).test(l))return false;return true;}))){reached=true;pp=[{type:"source",label:"Input: "+src.label,line:src.line,snippet:src.snippet}];
 // FP-3: only credit a sanitizer here if it has a captured outputVar AND that var
 // is what reaches the sink. A bare `escape(s);` (return discarded) does NOT count.
 for(const san of sanitizers){
@@ -1243,12 +1302,23 @@ function scanIaC(fp, raw){
 // FP-2: layered filter pipeline for credential-shaped findings.
 // Returns { skip: bool, reason?: string } — when `skip` is true, the caller
 // records the suppression and does not emit a finding.
-const _CRED_PATH_RE = /(?:^|\/)(?:locales|i18n|translations|storybook|stories|docs|examples|templates|fixtures|mocks|stubs)(?:\/|$)/i;
+// `codefixes` covers educational diff-style fixture directories (e.g. juice-shop's
+// data/static/codefixes/) where vulnerable + safe variants of code are stored as
+// learning artifacts and never executed.
+const _CRED_PATH_RE = /(?:^|\/)(?:locales|i18n|translations|storybook|stories|docs|examples|templates|fixtures|mocks|stubs|codefixes|codesnippets|challenges?\/snippets)(?:\/|$)/i;
 const _CRED_FILE_RE = /\.(?:test|spec|fixture|mock|stories)\.[^./]+$/i;
 const _CRED_VARNAME_RE = /(?:placeholder|label|hint|description|example|default|mock|sample|demo|fake|dummy|prompt|tooltip|message|aria|title|column|column_name|field|key_name)/i;
 const _CRED_PLACEHOLDER_VAL_RE = /^(?:your[-_]|change[-_]?me|replace[-_]?me|placeholder|example|<[^>]+>|TODO|FIXME|xxx+|test[-_]?key|default[-_]?key|null|undefined|empty|n\/a|none)/i;
 const _CRED_I18N_VAL_RE = /^[^\x00-\x7F]/;
 const _CRED_JSX_ATTR_RE = /<\s*(?:input|TextField|TextInput|FormControl|Field|Form\.Control|TextArea|select|option|label|button)\b[^>]*$/i;
+// SQL-template context: when `password = '${...}'` (or similar) appears inside
+// a SELECT/INSERT/UPDATE/DELETE template literal, the literal isn't a credential —
+// it's the SQL column-comparison syntax with a runtime-bound value.
+const _SQL_KEYWORDS_RE = /\b(?:SELECT|INSERT\s+INTO|UPDATE|DELETE\s+FROM|WHERE|FROM)\b/i;
+const _SQL_TEMPLATE_INTERP_RE = /['"]\s*\$\{|\$\{[^}]*\}['"]/;
+// OAuth/URL-fragment anchors: literal strings like '#access_token=' are spec
+// constants used to route OAuth implicit-grant callbacks. Not credentials.
+const _OAUTH_FRAGMENT_RE = /^#?(?:access_token|id_token|refresh_token|token_type|expires_in|state|code|scope)=$/;
 function _isFalsePositiveCredential(fp, snippet, fullMatch){
   const pathLC = fp.replace(/\\\\/g,'/').toLowerCase();
   if (_CRED_PATH_RE.test(pathLC) || _CRED_FILE_RE.test(pathLC)) return {skip:true, reason:'path-filter'};
@@ -1268,6 +1338,14 @@ function _isFalsePositiveCredential(fp, snippet, fullMatch){
   // JSX/HTML attribute context: snippet ends in `<input ... ` before the matched key=val
   if (_CRED_JSX_ATTR_RE.test(snippet.substring(0, snippet.indexOf(fullMatch)))) {
     return {skip:true, reason:'jsx-attr'};
+  }
+  // SQL template literal: `password = '${...}'` inside a SELECT/UPDATE/etc. is column syntax, not a secret
+  if (_SQL_KEYWORDS_RE.test(snippet) && _SQL_TEMPLATE_INTERP_RE.test(snippet)) {
+    return {skip:true, reason:'sql-template-literal'};
+  }
+  // OAuth URL fragment anchors — literal token-name=" " strings inside .includes/.indexOf
+  if (_OAUTH_FRAGMENT_RE.test(val) || /\.(?:includes|indexOf|startsWith|endsWith|match)\s*\(\s*['"]#?\w+=['"]/.test(snippet)) {
+    return {skip:true, reason:'oauth-url-fragment'};
   }
   return {skip:false};
 }

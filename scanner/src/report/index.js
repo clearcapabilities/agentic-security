@@ -69,14 +69,17 @@ export function normalizeFindings(scan){
     });
   }
   for (const sc of (scan.supplyChain||[])) {
+    const scVuln = sc.vuln || sc.advisory || 'Vulnerable Dependency';
+    const scFile = sc.filePath || sc.file || 'package.json';
+    if (suppress(scVuln, scFile, 0, sc.description || '')) continue;
     out.push({
       id: fingerprint(sc),
       kind: 'sca',
       severity: sc.severity || 'high',
-      vuln: sc.vuln || sc.advisory || 'Vulnerable Dependency',
+      vuln: scVuln,
       cwe: sc.cwe || null,
       stride: null,
-      file: sc.filePath || sc.file || 'package.json',
+      file: scFile,
       line: 0,
       ecosystem: sc.ecosystem,
       package: sc.name,
