@@ -139,7 +139,13 @@ One self-contained 1.9 MB file. No `npm install`, no dependencies.
 git clone https://github.com/juice-shop/juice-shop ~/code/juice-shop
 ```
 
-**Step 2 — scan it**
+**Step 2 — open Claude Code in the cloned repo**
+
+```bash
+claude ~/code/juice-shop
+```
+
+**Step 3 — scan it**
 
 ```
 /security-scan-all <code_directory_path>
