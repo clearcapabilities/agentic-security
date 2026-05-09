@@ -2,7 +2,7 @@
 
 **Ship fast. Stay secure. Automatically.**
 
-The security layer built for AI-written code. Catches vulnerabilities the moment they're introduced — same session, same agent — and fixes them before you move on.
+The security layer built for AI-written code. Catches vulnerabilities the moment they're introduced, in the same session with the same agent, and fixes them before you move on.
 
 [![License: ELv2](https://img.shields.io/badge/license-Elastic--2.0-blue)](./LICENSE)
 [![Tests](https://img.shields.io/badge/tests-24%2F24%20passing-brightgreen)]()
@@ -13,7 +13,7 @@ The security layer built for AI-written code. Catches vulnerabilities the moment
 
 ## The problem
 
-AI writes code faster than any security review can keep up with. It glues user input into SQL queries, commits API keys, copies vulnerable patterns from Stack Overflow. You don't find out until two weeks later — or someone else does first.
+AI writes code faster than any security review can keep up with. It glues user input into SQL queries, commits API keys, copies vulnerable patterns from Stack Overflow. You don't find out until two weeks later, or someone else does first.
 
 `agentic-security` runs inside Claude Code. It watches every file edit, surfaces new vulnerabilities the moment they're written, and hands them to a remediation agent that fixes them in the same session. No context switch. No separate tool. No backlog of security debt piling up.
 
@@ -24,15 +24,15 @@ AI writes code faster than any security review can keep up with. It glues user i
 ```
 You:              Add a /search endpoint that queries products by name.
 
-Claude:           [writes code — one query glues user input straight into SQL]
+Claude:           [writes code, gluing user input straight into SQL]
 
 agentic-security: ⚠  1 new HIGH finding from this edit
-                  [HIGH] CWE-89 SQL Injection — routes/products.js:42
+                  [HIGH] CWE-89 SQL Injection in routes/products.js:42
                   → exec: db.query("SELECT * FROM products WHERE name = '" + req.query.name + "'")
 
 You:              /security-fix-all --critical
 
-Claude:           Rewrote to parameterised query. Re-ran scan — finding gone.
+Claude:           Rewrote to parameterised query. Re-ran scan, finding gone.
                   routes/products.js:42  db.query("SELECT … WHERE name = ?", [req.query.name])
 ```
 
@@ -62,7 +62,7 @@ To unlock short-form commands (`/security-scan-all`, `/security-fix-all`) in a p
 
 | Command | What it does |
 |---|---|
-| `/security-scan-all` | Full sweep — SAST + SCA + secrets + IaC across every file |
+| `/security-scan-all` | Full sweep: SAST + SCA + secrets + IaC across every file |
 | `/security-fix` | Patch a single finding, adapted to your actual code |
 | `/security-fix-all` | Batch-fix every finding at or above a severity threshold |
 | `/security-report` | Self-contained HTML report (also JSON, Markdown, SARIF) |
@@ -100,13 +100,13 @@ Infrastructure    Dockerfile · docker-compose · Kubernetes · Terraform · Hel
 
 ## Why it's different
 
-**Triage is built in.** Every finding gets an exploitability score (0–100) based on whether it's reachable from a route handler, whether the source is HTTP-facing, and how critical the sink class is. Findings are sorted by score, not just severity label. You see the 5 findings that matter most — not 300 that don't.
+**Triage is built in.** Every finding gets an exploitability score (0–100) based on whether it's reachable from a route handler, whether the source is HTTP-facing, and how critical the sink class is. Findings are sorted by score, not just severity label. You see the 5 findings that matter most, not 300 that don't.
 
-**Context-aware false-positive suppression.** Most scanners flag `crypto.createHash('md5')` as a critical issue regardless of context. We classify by surrounding variable names — a cache key or ETag is info-level; a password field is critical. SQL template literals in `codefixes/` or `test/` paths are suppressed. `escapeHtml(input); res.send(input)` (return discarded) is still flagged. For IDOR, we check for post-lookup ownership guards before flagging.
+**Context-aware false-positive suppression.** Most scanners flag `crypto.createHash('md5')` as a critical issue regardless of context. We classify by surrounding variable names: a cache key or ETag is info-level; a password field is critical. SQL template literals in `codefixes/` or `test/` paths are suppressed. `escapeHtml(input); res.send(input)` (return discarded) is still flagged. For IDOR, we check for post-lookup ownership guards before flagging.
 
 **Forward-only taint flow.** A source defined *after* the sink can't create a phantom finding. Cross-file taint follows imports across up to 5 hops and shows the full propagation path.
 
-**CVEs ranked by real exploitation probability.** Every CVE gets an [EPSS](https://www.first.org/epss/) score — the probability it's being actively exploited in the next 30 days. Two CVEs both labeled "high" might show `EPSS:87%` vs `EPSS:2%`. Fix the right one first.
+**CVEs ranked by real exploitation probability.** Every CVE gets an [EPSS](https://www.first.org/epss/) score, the probability it's being actively exploited in the next 30 days. Two CVEs both labeled "high" might show `EPSS:87%` vs `EPSS:2%`. Fix the right one first.
 
 **Your code never leaves your machine.** The only outbound calls are `package@version` strings to OSV.dev and EPSS scores from first.org. No source code. No file paths.
 
@@ -128,28 +128,28 @@ The pre-commit gate means a finding introduced during a session can't be committ
 
 ## Tutorial: Zero to secure in 20 minutes
 
-[**OWASP Juice Shop**](https://github.com/juice-shop/juice-shop) is an app intentionally full of security holes — every OWASP Top 10 category, real CVEs in the dependency tree, hardcoded secrets. We'll scan it, fix the critical findings, and lock in the progress.
+[**OWASP Juice Shop**](https://github.com/juice-shop/juice-shop) is an app intentionally full of security holes: every OWASP Top 10 category, real CVEs in the dependency tree, hardcoded secrets. We'll scan it, fix the critical findings, and lock in the progress.
 
-**Step 1 — get the app**
+**Step 1: get the app**
 
 ```bash
 git clone https://github.com/juice-shop/juice-shop ~/code/juice-shop
 ```
 
-**Step 2 — open Claude Code in it**
+**Step 2: open Claude Code in it**
 
 ```bash
 claude ~/code/juice-shop
 ```
 
-**Step 3 — scan**
+**Step 3: scan**
 
 ```
 /agentic-security:security-scan-all
 ```
 
 ```
-Scan complete — 296 findings across 456 files
+Scan complete: 296 findings across 456 files
 
   Critical  ~35   SQL Injection, XSS (DomSanitizer bypasses), IDOR,
                   RCE (VM sandbox escape), hardcoded RSA key + HMAC secret
@@ -160,16 +160,16 @@ Scan complete — 296 findings across 456 files
   Low/Info  rest  Sync I/O, pagination limits, TODO markers
 ```
 
-**Step 4 — read the report**
+**Step 4: read the report**
 
 ```
 /agentic-security:security-report
 open security-report.html
 ```
 
-Self-contained interactive HTML — severity chart, filterable finding list, fix templates per finding, STRIDE attack coverage. One file you can email or drop in Slack.
+Self-contained interactive HTML with a severity chart, filterable finding list, fix templates per finding, and STRIDE attack coverage. One file you can email or drop in Slack.
 
-**Step 5 — fix the worst**
+**Step 5: fix the worst**
 
 ```
 /agentic-security:security-fix-all --critical
@@ -178,12 +178,12 @@ Self-contained interactive HTML — severity chart, filterable finding list, fix
 Claude will describe what it's about to change before touching anything. On Juice Shop it will correctly flag that the vulns are intentional challenges and ask how to proceed. Tell it:
 
 ```
-remove all critical vulns — yes, I know they're intentional, remove them anyway
+remove all critical vulns, yes I know they're intentional, remove them anyway
 ```
 
 It works through each finding in sequence: parameterised queries, `bcrypt` instead of MD5, `execFile` instead of `exec`. Each fix is a normal diff you can review or revert.
 
-**Step 6 — lock in the progress**
+**Step 6: lock in the progress**
 
 ```
 /agentic-security:security-baseline save
@@ -206,7 +206,7 @@ Building a GenAI product and heading into a customer security review, third-part
 | File | Purpose |
 |---|---|
 | `nist-ai-600-1-attestation.md` | Per-control status + evidence, ready to attach to a vendor questionnaire |
-| `nist-ai-600-1-attestation.csv` | Filterable spreadsheet — one row per control |
+| `nist-ai-600-1-attestation.csv` | Filterable spreadsheet, one row per control |
 | `nist-ai-600-1-attestation.json` | Machine-readable, suitable for CI gating |
 
 **Example output:**
@@ -245,9 +245,9 @@ By family:
 |---|---|---|
 | Code-testable | 55 | Compliant |
 | Code-testable (partial) | 67 | Partial + External Attestation Required |
-| Organizational only | 90 | *Not scanned — policy/contract attestation only* |
+| Organizational only | 90 | *Not scanned; policy/contract attestation only* |
 
-The 90 organizational controls (board oversight, legal alignment, training programs, vendor contracts) can't be evidenced from source code and are explicitly excluded. Marking them "Not Compliant" because no code matched would be misleading — the scanner only opines on what code can show.
+The 90 organizational controls (board oversight, legal alignment, training programs, vendor contracts) can't be evidenced from source code and are explicitly excluded. Marking them "Not Compliant" because no code matched would be misleading; the scanner only opines on what code can show.
 
 Evidence is multi-signal: declared dependencies (`opacus` → differential privacy, `fairlearn` → bias mitigation) carry the highest weight; followed by import statements; then path patterns, code terms, config, and docs. Matches inside negation contexts ("we don't yet implement…", "future work", "planned for") are discarded.
 
@@ -303,7 +303,7 @@ Add a suppression to `.agentic-security/rules.yml`:
 suppressions:
   - rule: "MD5/SHA1 Password Hashing"
     files: ["legacy/auth-v1.js"]
-    reason: "Migrating to bcrypt in Q3 — JIRA-1234"
+    reason: "Migrating to bcrypt in Q3 (JIRA-1234)"
 ```
 
 ---
@@ -324,7 +324,7 @@ sinks:
 ## FAQ
 
 **Will this work on my codebase?**  
-JS, TS, Python, PHP, Ruby, Java, Go, and most web frameworks — yes. Plus Dockerfile, Terraform, Kubernetes, and GitHub Actions.
+Yes. JS, TS, Python, PHP, Ruby, Java, Go, and most web frameworks. Plus Dockerfile, Terraform, Kubernetes, and GitHub Actions.
 
 **Does it send my code anywhere?**  
 No. Only `package@version` strings go to OSV.dev for CVE lookups, and CVE IDs go to first.org for EPSS scores. Zero source code leaves your machine.
@@ -343,18 +343,18 @@ Claude Code can evict plugin commands after long-running tool calls. Run `/reloa
 ## Troubleshooting
 
 **`"requesting 'pull-requests: write' but only allowed 'none'"` in CI**  
-The `permissions:` block in the workflow above is required — add it exactly as shown.
+The `permissions:` block in the workflow above is required; add it exactly as shown.
 
 **Scanner finds nothing on a large monorepo**  
-Run with an explicit path: `/agentic-security:security-scan-all src/` — scanning a 50k-file tree including `node_modules` will time out.
+Run with an explicit path: `/agentic-security:security-scan-all src/`. Scanning a 50k-file tree including `node_modules` will time out.
 
 ---
 
 ## Contributing
 
 1. Fork the repo, branch off `main`
-2. Make your change — new vulnerability rules and FP-suppression cases are most welcome
-3. Run `npm test` in `scanner/` — all 24 tests must pass
+2. Make your change; new vulnerability rules and FP-suppression cases are most welcome
+3. Run `npm test` in `scanner/`; all 24 tests must pass
 4. Open a PR with what you changed and why
 
 New scanner rules should include a fixture that triggers the finding and a suppression case that doesn't.
@@ -370,7 +370,7 @@ New scanner rules should include a fixture that triggers the finding and a suppr
 
 ## License
 
-[Elastic License 2.0](./LICENSE) — free for any use including commercial products and internal tools. The one restriction: you can't offer this software as a hosted service to others.
+[Elastic License 2.0](./LICENSE): free for any use including commercial products and internal tools. The one restriction: you can't offer this software as a hosted service to others.
 
 Built by [Ross Young](https://clearcapabilities.com) at Clear Capabilities Inc.
 
