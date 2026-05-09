@@ -1,5 +1,4 @@
-// Engine ported from attacksurface.html — Node ESM module.
-// Theme + React UI bits stripped; browser-only deps replaced with Node equivalents.
+// SAST/SCA/secrets scan engine — Node ESM module.
 import { transformSync as babelTransformSync } from '@babel/core';
 import presetReact from '@babel/preset-react';
 import presetTypescript from '@babel/preset-typescript';
