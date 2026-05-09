@@ -887,19 +887,63 @@ def write_md(controls, rules, evidence, statuses, out_path, root):
                  "\"future work\", \"missing\", \"planned for\") are filtered out.")
     lines.append("")
 
+    def ascii_table(headers, rows, alignments=None):
+        """Return a box-drawing ASCII table as a list of strings."""
+        # alignments: list of '<' (left) or '>' (right) per column
+        if alignments is None:
+            alignments = ['<'] * len(headers)
+        col_widths = [len(h) for h in headers]
+        for row in rows:
+            for i, cell in enumerate(row):
+                col_widths[i] = max(col_widths[i], len(str(cell)))
+        def fmt_row(cells, left='│', sep='│', right='│'):
+            parts = []
+            for i, cell in enumerate(cells):
+                w = col_widths[i]
+                s = str(cell)
+                padded = (' ' + s.ljust(w) + ' ' if alignments[i] == '<'
+                          else ' ' + s.rjust(w) + ' ')
+                parts.append(padded)
+            return left + sep.join(parts) + right
+        def divider(left, mid, right, fill='─'):
+            parts = [fill * (col_widths[i] + 2) for i in range(len(headers))]
+            return left + mid.join(parts) + right
+        out = []
+        out.append(divider('┌', '┬', '┐'))
+        out.append(fmt_row(headers))
+        out.append(divider('├', '┼', '┤'))
+        for i, row in enumerate(rows):
+            out.append(fmt_row(row))
+            if i < len(rows) - 1:
+                out.append(divider('├', '┼', '┤'))
+        out.append(divider('└', '┴', '┘'))
+        return out
+
     counts = Counter(b for b, _ in statuses.values())
+    total = len(statuses)
+    compliant_total = counts.get("Compliant", 0)
+    partial_all = (counts.get("Partial", 0)
+                   + counts.get("Partial (limited evidence)", 0))
+    coverage_n = compliant_total + partial_all
+    coverage_pct = (100.0 * coverage_n / total) if total else 0
+
     lines.append("## Summary")
     lines.append("")
-    lines.append("| Status | Count | % of 122 |")
-    lines.append("|---|---:|---:|")
-    total = len(statuses)
+    lines.append(f"Coverage: **{coverage_pct:.0f}%** ({coverage_n}/{total} testable controls)")
+    lines.append("")
+    summary_rows = []
     for status in ["Compliant", "Partial",
                    "Partial (limited evidence)", "Not Compliant", "N/A"]:
         n = counts.get(status, 0)
         if n == 0:
             continue
         pct = (100.0 * n / total) if total else 0
-        lines.append(f"| {status} | {n} | {pct:.1f}% |")
+        summary_rows.append([status, str(n), f"{pct:.1f}%"])
+    tbl = ascii_table(["Status", "Count", "%"],
+                      summary_rows, ['<', '>', '>'])
+    lines.append("```")
+    lines.extend(tbl)
+    lines.append("```")
     lines.append("")
 
     lines.append("## By family")
@@ -912,9 +956,8 @@ def write_md(controls, rules, evidence, statuses, out_path, root):
         fam = cid.split("-")[0]
         base, _ = statuses[cid]
         fam_table.setdefault(fam, Counter())[base] += 1
-    lines.append("| Family | Total | Compliant | Partial | Not Compliant |")
-    lines.append("|---|---:|---:|---:|---:|")
     fam_names = {"GV": "Govern", "MP": "Map", "MS": "Measure", "MG": "Manage"}
+    fam_rows = []
     for fam in ["GV", "MP", "MS", "MG"]:
         cc = fam_table.get(fam, Counter())
         compliant = cc.get("Compliant", 0)
@@ -922,8 +965,14 @@ def write_md(controls, rules, evidence, statuses, out_path, root):
                    + cc.get("Partial (limited evidence)", 0))
         not_c = cc.get("Not Compliant", 0)
         total_fam = compliant + partial + not_c
-        lines.append(f"| {fam} ({fam_names[fam]}) | {total_fam} | "
-                     f"{compliant} | {partial} | {not_c} |")
+        fam_rows.append([f"{fam} ({fam_names[fam]})",
+                         str(total_fam), str(compliant),
+                         str(partial), str(not_c)])
+    tbl = ascii_table(["Family", "Total", "Compliant", "Partial", "Not Compliant"],
+                      fam_rows, ['<', '>', '>', '>', '>'])
+    lines.append("```")
+    lines.extend(tbl)
+    lines.append("```")
     lines.append("")
 
     lines.append("## Per-control evidence")
