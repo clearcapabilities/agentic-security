@@ -1,316 +1,261 @@
 # agentic-security
 
-**The security layer for AI-written code.**
+**Ship fast. Stay secure. Automatically.**
 
-You're shipping fast. Your AI writes great code, most of the time. But every so often it glues user input straight into a SQL query, hardcodes an API key, or copies a pattern that was already vulnerable. Two weeks later you get a security report — or a *very* angry email.
-
-`agentic-security` watches every edit, surfaces new vulnerabilities the moment they're introduced, and fixes them — same session, same agent, before you've moved on.
-
-```
-You:              Add a /search endpoint that queries products by name.
-Claude:           (writes code — one query glues user input straight into SQL)
-agentic-security: ⚠ 1 new high-severity finding from this edit
-                  [HIGH] CWE-89 SQL Injection (routes/products.js:42)
-You:              /agentic-security:security-fix-all --severity high
-Claude:           (rewrites to parameterized query, re-runs scan, finding gone)
-```
+The security layer built for AI-written code. Catches vulnerabilities the moment they're introduced — same session, same agent — and fixes them before you move on.
 
 [![License: ELv2](https://img.shields.io/badge/license-Elastic--2.0-blue)](./LICENSE)
-[![Tests](https://img.shields.io/badge/tests-24%2F24%20passing-success)]()
-[![Bundle](https://img.shields.io/badge/bundle-1.9MB%20single%20file-orange)]()
+[![Tests](https://img.shields.io/badge/tests-24%2F24%20passing-brightgreen)]()
+[![Bundle](https://img.shields.io/badge/bundle-1.9MB%20·%20no%20install-orange)]()
+[![Controls](https://img.shields.io/badge/NIST%20AI%20600--1-122%20controls-purple)]()
 
 ---
 
-## Installation
+## The problem
 
-### Claude Code
+AI writes code faster than any security review can keep up with. It glues user input into SQL queries, commits API keys, copies vulnerable patterns from Stack Overflow. You don't find out until two weeks later — or someone else does first.
+
+`agentic-security` runs inside Claude Code. It watches every file edit, surfaces new vulnerabilities the moment they're written, and hands them to a remediation agent that fixes them in the same session. No context switch. No separate tool. No backlog of security debt piling up.
+
+---
+
+## See it in action
+
+```
+You:              Add a /search endpoint that queries products by name.
+
+Claude:           [writes code — one query glues user input straight into SQL]
+
+agentic-security: ⚠  1 new HIGH finding from this edit
+                  [HIGH] CWE-89 SQL Injection — routes/products.js:42
+                  → exec: db.query("SELECT * FROM products WHERE name = '" + req.query.name + "'")
+
+You:              /security-fix-all --critical
+
+Claude:           Rewrote to parameterised query. Re-ran scan — finding gone.
+                  routes/products.js:42  db.query("SELECT … WHERE name = ?", [req.query.name])
+```
+
+Zero friction between "Claude wrote something dangerous" and "it's fixed."
+
+---
+
+## Install
 
 ```
 /plugin marketplace add clearcapabilities/agentic-security
 /plugin install agentic-security@clearcapabilities
-```
-
-When prompted for installation scope, choose **"Install for you (user scope)"** — this makes the plugin available across all your projects without reinstalling.
-
-Then reload the plugin registry:
-
-```
 /reload-plugins
 ```
 
-Then run this once in each project you want to use the shorter command forms:
+That's it. The hooks are live. Every file edit is now scanned automatically.
+
+To unlock short-form commands (`/security-scan-all`, `/security-fix-all`) in a project:
 
 ```
 /agentic-security:security-setup
 ```
 
-That's it. The short forms (`/security-scan-all`, `/security-fix-all`, etc.) will now work in this project alongside the always-available fully-qualified forms.
+---
+
+## Commands
+
+| Command | What it does |
+|---|---|
+| `/security-scan-all` | Full sweep — SAST + SCA + secrets + IaC across every file |
+| `/security-fix` | Patch a single finding, adapted to your actual code |
+| `/security-fix-all` | Batch-fix every finding at or above a severity threshold |
+| `/security-report` | Self-contained HTML report (also JSON, Markdown, SARIF) |
+| `/security-baseline` | Save a snapshot; future scans show only *new* issues |
+| `/security-sca` | Dependency CVE audit only (OSV.dev-backed) |
+| `/security-secrets` | Credential and secret leak scan only |
+| `/nist-ai-600-1` | NIST AI 600-1 compliance attestation for 122 GenAI controls |
+
+All commands are available in the fully-qualified form (`/agentic-security:*`) everywhere, and as short forms in any project where you've run `/security-setup`.
 
 ---
 
-## What's inside
+## What it catches
 
-**Commands**
-- **security-scan-all** — full sweep: SAST + SCA + secrets + IaC
-- **security-fix** — patch one finding, adapted to your code by the fixer subagent
-- **security-fix-all** — batch remediation at a severity threshold
-- **security-baseline** — save/diff a baseline so only new findings surface
-- **security-report** — self-contained interactive HTML report (also: JSON, Markdown, SARIF)
-- **security-sca** — dependency CVE scan only
-- **security-secrets** — credential leak scan only
-- **security-setup** — install project shortcuts (run once per project)
-- **nist-ai-600-1** — audit-ready NIST AI 600-1 compliance attestation (122 testable controls)
+**40+ vulnerability types across every layer of your stack:**
 
-**Subagents**
-- **security-fixer** — reads context, adapts fix templates to your actual code, runs your tests
-- **security-triager** — dedupes, scores exploitability, and ranks a finding list for human review
-- **sca-malware-analyst** — CLEAN / SUSPICIOUS / MALICIOUS verdict on dependencies using strict grounding rules
+```
+Code              SQL injection · XSS · Command injection · Path traversal · SSRF
+                  IDOR · SSTI · Prototype pollution · ReDoS · JWT bypass
+                  Mass assignment · Weak crypto · Race conditions
 
-**Skills** (auto-trigger based on what you're doing)
-- **sast-scan** — activates when you ask "is this safe?" or generate new code
-- **sca-scan** — activates when you add/change a dependency or mention a CVE
-- **secret-scan** — activates before publishing or when you touch a config file
-- **fix-vulnerability** — activates when you ask Claude to fix a security issue
-- **nist-ai-600-1** — activates when you ask about NIST AI 600-1, AI RMF compliance, or GenAI audit readiness
+Dependencies      CVEs from OSV.dev · EPSS exploit-probability scores
+                  200+ manifest formats (npm, pip, poetry, Cargo, go.mod, Gemfile…)
 
-**Hooks** (always on)
-- **PostToolUse** — scans the file after every edit; surfaces new high/critical findings inline
-- **PreToolUse** — blocks `git commit` if new critical findings exist vs. baseline
-- **SessionStart** — reminds you to set a baseline if none exists
+Secrets           API keys · Tokens · Private keys · .env leaks · 60+ provider patterns
+                  Entropy detection for keys that don't match a known pattern
+
+Infrastructure    Dockerfile · docker-compose · Kubernetes · Terraform · Helm
+                  GitHub Actions · misconfigured IAM · publicly exposed storage
+```
+
+**Languages:** JavaScript, TypeScript, Python, PHP, Ruby, Java, Go, Vue, React, Angular, Svelte.
 
 ---
 
-## Tutorial: Fix a deliberately broken app
+## Why it's different
 
-[**OWASP Juice Shop**](https://github.com/juice-shop/juice-shop) is an app *intentionally* full of security holes, used to teach hacking. We'll point the scanner at it, find a few hundred real bugs, fix the worst ones, and watch the score drop.
+**Triage is built in.** Every finding gets an exploitability score (0–100) based on whether it's reachable from a route handler, whether the source is HTTP-facing, and how critical the sink class is. Findings are sorted by score, not just severity label. You see the 5 findings that matter most — not 300 that don't.
 
-**Step 1 — grab the app**
+**Context-aware false-positive suppression.** Most scanners flag `crypto.createHash('md5')` as a critical issue regardless of context. We classify by surrounding variable names — a cache key or ETag is info-level; a password field is critical. SQL template literals in `codefixes/` or `test/` paths are suppressed. `escapeHtml(input); res.send(input)` (return discarded) is still flagged. For IDOR, we check for post-lookup ownership guards before flagging.
+
+**Forward-only taint flow.** A source defined *after* the sink can't create a phantom finding. Cross-file taint follows imports across up to 5 hops and shows the full propagation path.
+
+**CVEs ranked by real exploitation probability.** Every CVE gets an [EPSS](https://www.first.org/epss/) score — the probability it's being actively exploited in the next 30 days. Two CVEs both labeled "high" might show `EPSS:87%` vs `EPSS:2%`. Fix the right one first.
+
+**Your code never leaves your machine.** The only outbound calls are `package@version` strings to OSV.dev and EPSS scores from first.org. No source code. No file paths.
+
+---
+
+## Hooks (always on)
+
+Three hooks run automatically once the plugin is installed:
+
+| Hook | Trigger | What happens |
+|---|---|---|
+| `PostToolUse` | After every file edit | Scans the changed file; surfaces new high/critical findings inline |
+| `PreToolUse` | Before every `git commit` | Blocks the commit if new critical findings exist vs. the saved baseline |
+| `SessionStart` | When a session opens | Reminds you to set a baseline if none exists |
+
+The pre-commit gate means a finding introduced during a session can't be committed until it's fixed or suppressed. The ratchet only tightens.
+
+---
+
+## Tutorial: Zero to secure in 20 minutes
+
+[**OWASP Juice Shop**](https://github.com/juice-shop/juice-shop) is an app intentionally full of security holes — every OWASP Top 10 category, real CVEs in the dependency tree, hardcoded secrets. We'll scan it, fix the critical findings, and lock in the progress.
+
+**Step 1 — get the app**
 
 ```bash
 git clone https://github.com/juice-shop/juice-shop ~/code/juice-shop
-cd ~/code/juice-shop
 ```
 
-**Step 2 — open Claude Code in the cloned repo**
+**Step 2 — open Claude Code in it**
 
 ```bash
 claude ~/code/juice-shop
 ```
 
-**Step 3 — scan it**
+**Step 3 — scan**
 
 ```
 /agentic-security:security-scan-all
 ```
 
 ```
-Scan Complete — 296 Findings Across 456 Files
+Scan complete — 296 findings across 456 files
 
   Critical  ~35   SQL Injection, XSS (DomSanitizer bypasses), IDOR,
-                  RCE (VM sandbox), hardcoded RSA key / HMAC secret
-  High      ~60   SSRF, Path Traversal, NoSQL Injection, SSTI,
-                  JWT bypass, race conditions, SCA CVEs
-                  (jsonwebtoken, express-jwt, multer, sequelize)
-  Medium   ~100   No rate limiting on auth endpoints, permissive CORS (*),
-                  weak randomness, cookie flags, open redirects, timing oracles
+                  RCE (VM sandbox escape), hardcoded RSA key + HMAC secret
+  High      ~60   SSRF, Path Traversal, NoSQL Injection, SSTI, JWT bypass,
+                  race conditions, SCA CVEs (jsonwebtoken, express-jwt, multer)
+  Medium   ~100   No rate limiting, permissive CORS (*), weak randomness,
+                  missing cookie flags, open redirects, timing oracles
   Low/Info  rest  Sync I/O, pagination limits, TODO markers
 ```
 
-296 confirmed findings, pre-triaged. False positives filtered before you see a single result.
-
-**Step 3 — get a report**
+**Step 4 — read the report**
 
 ```
 /agentic-security:security-report
 open security-report.html
 ```
 
-A self-contained interactive page: severity chart, filterable finding list, fix templates per finding, STRIDE attack coverage overview. One file — email it, attach to a Jira ticket, drop in Slack.
+Self-contained interactive HTML — severity chart, filterable finding list, fix templates per finding, STRIDE attack coverage. One file you can email or drop in Slack.
 
-**Step 4 — fix the worst stuff**
+**Step 5 — fix the worst**
 
 ```
 /agentic-security:security-fix-all --critical
 ```
 
-Before touching any code, Claude will read the findings and summarise what it's about to change. On a well-known codebase like Juice Shop it will flag that the vulnerabilities are intentional challenges and ask how to proceed. Tell it:
+Claude will describe what it's about to change before touching anything. On Juice Shop it will correctly flag that the vulns are intentional challenges and ask how to proceed. Tell it:
 
 ```
-please remove all critical vulns. yes i understand juice shop has purposely built vulns but remove all critical vulns anyways
+remove all critical vulns — yes, I know they're intentional, remove them anyway
 ```
 
-Claude then works through each finding in sequence — parameterized queries instead of string concatenation, `bcrypt` instead of MD5, `execFile` instead of `exec`. Each fix is a normal edit you can review or revert. It runs serially because fixing one bug can change another.
+It works through each finding in sequence: parameterised queries, `bcrypt` instead of MD5, `execFile` instead of `exec`. Each fix is a normal diff you can review or revert.
 
-**Step 5 — lock in your progress**
+**Step 6 — lock in the progress**
 
 ```
 /agentic-security:security-baseline save
 ```
 
-From now on, scans only show *new* findings added after this point. The pre-commit hook blocks any commit that introduces new critical bugs.
-
-**Step 6 — generate the after-report, compare**
-
-```
-/agentic-security:security-report --output after.html
-open after.html
-```
-
-Put `before.html` and `after.html` side by side. In less than 20 minutes you went from 35 critical findings to 0.
-
----
-
-## What it catches
-
-| Vulnerability | What goes wrong |
-|---|---|
-| **SQL injection** | `' OR 1=1` reads your entire user table |
-| **Hardcoded secrets** | Stripe key ends up on GitHub; $4,000 fraud bill |
-| **XSS** | A comment runs JS in every visitor's browser, steals sessions |
-| **Path traversal** | User requests `../../../etc/passwd`; server serves it |
-| **Command injection** | A search box runs shell commands on your server |
-| **Weak password storage** | MD5 passwords cracked in minutes after a breach |
-| **Vulnerable dependencies** | An `npm install` from months ago has an RCE CVE |
-| **Misconfigured infra** | Terraform/Dockerfile/K8s accidentally exposes data publicly |
-
-40+ vulnerability types. Code, dependencies, secrets, and infrastructure files.
-
-**Languages:** JS, TypeScript, Python, PHP, Ruby, Java, Go, Vue, React, Angular, Svelte.
-**Dependency manifests:** npm, yarn, pnpm, pip, poetry, Pipfile, composer, Gemfile, go.mod, Cargo, Maven, Gradle, pubspec — 20 formats.
-**Infrastructure:** Dockerfile, docker-compose, Kubernetes, Terraform, Helm, GitHub Actions.
-
----
-
-## What makes it different
-
-**Triage is built in, not bolted on.** Findings are deduplicated, scored, and FP-filtered before you see a single result. Every finding gets an exploitability score (0–100) based on whether it's reachable from a route handler, whether the source is HTTP-facing, and how critical the sink class is. Findings are sorted by score, not just severity label.
-
-**Context-aware false-positive suppression.** Most scanners flag `crypto.createHash('md5')` as a critical password-hashing issue regardless of context. We classify it by surrounding variable names — a cache key or ETag is info-level; a password field is critical. For IDOR, we check whether the lookup uses an auth-derived ownership clause in the WHERE, or whether a post-lookup comparison (`basket.UserId !== customer.id`) with a guard (`throw` / `res.status(403)`) exists nearby — if so, it's not flagged. For XSS, `element.innerHTML === value` (comparison) is distinguished from `element.innerHTML = value` (assignment). For secrets, SQL template literals, OAuth URL fragment keys, and values in `codefixes/`, `test/`, or `fixtures/` paths are suppressed automatically. Sanitizer return values are tracked: `escapeHtml(input); res.send(input)` (return discarded) is still flagged.
-
-**Forward-only taint flow.** The taint engine enforces direction — a source defined *after* the sink cannot create a phantom finding. Cross-file taint tracks up to 5 hops (BFS), following imports and call chains across files and showing the full propagation path.
-
-**CVEs ranked by real-world exploitation.** Every CVE gets an [EPSS](https://www.first.org/epss/) score — the probability it's being actively exploited in the next 30 days. Two CVEs both labeled "high" might show `EPSS:87%` vs `EPSS:2%` in the scan output. Within the same severity tier, the highest-EPSS finding always appears first. Fix the right one first.
-
-**Your code never leaves your machine.** The only network calls are to OSV.dev (dependency CVE lookups) and first.org (EPSS scores). We send only `package@version` strings to OSV — no source code, no file paths.
-
----
-
-## Philosophy
-
-- **Fix, don't just report** — findings come with canonical fix templates and a subagent that applies them
-- **Signal over noise** — false-positive suppression by context, not just by rule
-- **Local-first** — one file, no cloud dependency, no code upload
-- **Ratchet, don't boil the ocean** — baseline + gate means you improve incrementally without getting paralyzed by legacy debt
+From now on scans only show findings introduced *after* this point. The pre-commit hook blocks any commit that adds new critical bugs. 35 criticals → 0, and you can't accidentally reintroduce them.
 
 ---
 
 ## NIST AI 600-1 Compliance
 
-NIST AI 600-1 is the Generative AI Profile of the AI Risk Management Framework — 212 controls across four families (Govern, Map, Measure, Manage). `agentic-security` ships a deterministic scanner for the **122 code-testable controls** in that catalog, producing an audit-ready attestation sheet you can hand directly to a customer, auditor, or board.
+Building a GenAI product and heading into a customer security review, third-party audit, or board-level risk discussion? One command produces an auditor-ready attestation sheet against the 122 code-testable controls of NIST AI 600-1 (the Generative AI Profile of the AI Risk Management Framework).
 
 ```
 /agentic-security:nist-ai-600-1
 ```
 
-Or on any path:
+**Three output files:**
 
-```
-/agentic-security:nist-ai-600-1 ~/code/my-genai-app
-```
-
-**What it produces**
-
-Three files in the current directory:
-
-| File | Use |
+| File | Purpose |
 |---|---|
-| `nist-ai-600-1-attestation.md` | Auditor-ready Markdown — per-control status + evidence |
-| `nist-ai-600-1-attestation.csv` | Spreadsheet — one row per control, filterable |
-| `nist-ai-600-1-attestation.json` | Machine-readable — suitable for CI gating |
+| `nist-ai-600-1-attestation.md` | Per-control status + evidence, ready to attach to a vendor questionnaire |
+| `nist-ai-600-1-attestation.csv` | Filterable spreadsheet — one row per control |
+| `nist-ai-600-1-attestation.json` | Machine-readable, suitable for CI gating |
 
-**How the 212 controls are divided**
+**Example output:**
 
-| Bucket | Controls | Best scanner status |
+```
+Coverage: 71% (87/122 testable controls)
+
+┌────────────────────────────┬───────┬───────┐
+│ Status                     │ Count │     % │
+├────────────────────────────┼───────┼───────┤
+│ Compliant                  │    43 │ 35.2% │
+├────────────────────────────┼───────┼───────┤
+│ Partial                    │    44 │ 36.1% │
+├────────────────────────────┼───────┼───────┤
+│ Not Compliant              │    35 │ 28.7% │
+└────────────────────────────┴───────┴───────┘
+
+By family:
+
+┌──────────────┬───────┬───────────┬─────────┬───────────────┐
+│ Family       │ Total │ Compliant │ Partial │ Not Compliant │
+├──────────────┼───────┼───────────┼─────────┼───────────────┤
+│ GV (Govern)  │    19 │         3 │      11 │             5 │
+├──────────────┼───────┼───────────┼─────────┼───────────────┤
+│ MP (Map)     │    22 │         8 │      10 │             4 │
+├──────────────┼───────┼───────────┼─────────┼───────────────┤
+│ MS (Measure) │    51 │        22 │      14 │            15 │
+├──────────────┼───────┼───────────┼─────────┼───────────────┤
+│ MG (Manage)  │    30 │        10 │       9 │            11 │
+└──────────────┴───────┴───────────┴─────────┴───────────────┘
+```
+
+**How the 212 controls divide:**
+
+| Bucket | Controls | Best scanner verdict |
 |---|---|---|
-| Code-testable (Yes) | 55 | Compliant |
-| Code-testable (Partial) | 67 | Partial + External Attestation Required |
-| Organizational only (No) | 90 | _not scanned — policy/contract attestation only_ |
+| Code-testable | 55 | Compliant |
+| Code-testable (partial) | 67 | Partial + External Attestation Required |
+| Organizational only | 90 | *Not scanned — policy/contract attestation only* |
 
-The 90 organizational controls (board oversight, legal alignment, training programs, vendor contracts) cannot be evidenced from source code and are explicitly excluded from scanning. Marking them "Not Compliant" because no code matched would be misleading.
+The 90 organizational controls (board oversight, legal alignment, training programs, vendor contracts) can't be evidenced from source code and are explicitly excluded. Marking them "Not Compliant" because no code matched would be misleading — the scanner only opines on what code can show.
 
-**Multi-signal evidence scoring**
-
-For each testable control the scanner runs three passes:
-
-1. **Manifest pass** — parses `requirements.txt`, `package.json`, `pyproject.toml`, `go.mod`, `Cargo.toml`, `Gemfile`, `composer.json`. A declared library that maps to a control (`opacus` → differential privacy, `fairlearn` → bias mitigation) is the strongest evidence type (weight 5.0).
-2. **Import pass** — detects language-specific import statements for 200+ compliance-relevant libraries across Python, JS/TS, Go, and Ruby (weight 4.0).
-3. **Keyword + path pass** — matches control-specific terms in code, config, and docs, with weights tiered by file type and a bonus for test coverage.
-
-A **negation filter** discards matches that appear in "we don't yet implement…", "future work", "planned for", "missing", or "lacks" contexts — so a roadmap comment doesn't inflate your score.
-
-**On a well-instrumented GenAI app** (differential privacy, fairness metrics, output watermarking, content filters, red-team CI) the scanner typically surfaces ~70% coverage across the 122 testable controls, with real library declarations and test files as evidence. On a vanilla AppSec codebase it correctly shows ~5% — only the controls that general security tooling addresses.
-
-**Example output row**
-
-```
-| MS-2.6-001 | Watermarking / content provenance | Compliant |
-| Evidence   | manifest: c2pa-python (requirements.txt) |
-|            | import: c2pa (src/output/provenance.py:3) |
-|            | code_term: content_credentials (src/output/provenance.py:14) |
-```
-
----
-
-## FAQ
-
-**Will this work on my codebase?**
-JS, TS, Python, PHP, Ruby, Java, Go, and most web frameworks — yes. Plus infra files.
-
-**Does it run in the cloud?**
-No. Scanner runs on your machine. OSV.dev gets only package names + versions.
-
-**What if I disagree with a finding?**
-Add a suppression to `.agentic-security/rules.yml`:
-```yaml
-suppressions:
-  - rule: "MD5/SHA1 Password Hashing"
-    files: ["legacy/auth-v1.js"]
-    reason: "Migrating to bcrypt in Q3; JIRA-1234"
-```
-
-**Can I add custom rules?**
-Yes — sources, sinks, and sanitizers in the same `rules.yml`:
-```yaml
-sinks:
-  - pattern: 'db\.executeRaw\('
-    vuln: 'SQL Injection (Custom)'
-    severity: high
-```
-
-**My CI says "319 findings."**
-That's a real codebase. Run `/agentic-security:security-baseline save`, commit the baseline file, and from now on you only see *new* problems.
-
-**How is this different from `npm audit`?**
-`npm audit` flags every CVE in your tree, including ones in code paths you never call. We filter by vulnerable-call-depth. Also covers 19 other manifest formats besides npm.
-
----
-
-## Troubleshooting
-
-**Short-form commands disappear mid-session** — Claude Code can evict plugin commands from the active session after long-running tool calls (large scans, multi-file fixes). Two options:
-- Run `/reload-plugins` to restore all short-form commands for the rest of the session.
-- Use the fully-qualified form instead: `/agentic-security:security-fix-all`, `/agentic-security:security-scan-all`, etc. — these resolve through the plugin skill system and are always available.
-
----
-
-## Community
-
-- **Issues / bugs:** [github.com/clearcapabilities/agentic-security/issues](https://github.com/clearcapabilities/agentic-security/issues)
-- **Email:** ross@clearcapabilities.com
+Evidence is multi-signal: declared dependencies (`opacus` → differential privacy, `fairlearn` → bias mitigation) carry the highest weight; followed by import statements; then path patterns, code terms, config, and docs. Matches inside negation contexts ("we don't yet implement…", "future work", "planned for") are discarded.
 
 ---
 
 ## GitHub Actions
+
+Drop this into any repo to gate every PR on critical findings:
 
 ```yaml
 # .github/workflows/security.yml
@@ -333,39 +278,102 @@ jobs:
 
 Every PR gets a comment with severity counts and the top findings. Critical findings block merge.
 
-> If CI fails with `"requesting 'pull-requests: write' but only allowed 'none'"` — the `permissions:` block above is required.
-
 ---
 
-## Terminal / CI
+## Standalone CLI
+
+No Claude Code? Run the scanner directly:
 
 ```bash
 curl -L -o agentic-security.mjs \
   https://raw.githubusercontent.com/clearcapabilities/agentic-security/main/scanner/dist/agentic-security.mjs
+
 node agentic-security.mjs scan .
 ```
 
-One self-contained 1.9 MB file. No `npm install`, no dependencies.
+1.9 MB, no `npm install`, no dependencies, no config required.
+
+---
+
+## Suppressing a finding
+
+Add a suppression to `.agentic-security/rules.yml`:
+
+```yaml
+suppressions:
+  - rule: "MD5/SHA1 Password Hashing"
+    files: ["legacy/auth-v1.js"]
+    reason: "Migrating to bcrypt in Q3 — JIRA-1234"
+```
+
+---
+
+## Adding custom rules
+
+Sources, sinks, and sanitizers live in the same `rules.yml`:
+
+```yaml
+sinks:
+  - pattern: 'db\.executeRaw\('
+    vuln: "SQL Injection (Custom ORM)"
+    severity: high
+```
+
+---
+
+## FAQ
+
+**Will this work on my codebase?**  
+JS, TS, Python, PHP, Ruby, Java, Go, and most web frameworks — yes. Plus Dockerfile, Terraform, Kubernetes, and GitHub Actions.
+
+**Does it send my code anywhere?**  
+No. Only `package@version` strings go to OSV.dev for CVE lookups, and CVE IDs go to first.org for EPSS scores. Zero source code leaves your machine.
+
+**CI says "319 findings" and I can't fix them all.**  
+Run `/agentic-security:security-baseline save`, commit the baseline file, and from now on CI only fails on findings introduced *after* that point. You improve incrementally without being paralyzed by existing debt.
+
+**How is this different from `npm audit`?**  
+`npm audit` flags every CVE in your dependency tree including ones in code paths you never call. We filter by vulnerable-call-depth. Also covers 19 other package manager formats beyond npm.
+
+**Short commands disappeared mid-session.**  
+Claude Code can evict plugin commands after long-running tool calls. Run `/reload-plugins` to restore them, or use the always-available fully-qualified form: `/agentic-security:security-fix-all`.
+
+---
+
+## Troubleshooting
+
+**`"requesting 'pull-requests: write' but only allowed 'none'"` in CI**  
+The `permissions:` block in the workflow above is required — add it exactly as shown.
+
+**Scanner finds nothing on a large monorepo**  
+Run with an explicit path: `/agentic-security:security-scan-all src/` — scanning a 50k-file tree including `node_modules` will time out.
 
 ---
 
 ## Contributing
 
-1. Fork the repo and create a branch off `main`
-2. Make your change — bug fixes and new vulnerability rules are most welcome
-3. Run `npm test` in `scanner/` and make sure all 24 tests pass
-4. Open a PR describing what you changed and why
+1. Fork the repo, branch off `main`
+2. Make your change — new vulnerability rules and FP-suppression cases are most welcome
+3. Run `npm test` in `scanner/` — all 24 tests must pass
+4. Open a PR with what you changed and why
 
-New scanner rules should include a fixture file that triggers the finding and a suppression case that doesn't.
+New scanner rules should include a fixture that triggers the finding and a suppression case that doesn't.
+
+---
+
+## Community
+
+- **Issues / bugs:** [github.com/clearcapabilities/agentic-security/issues](https://github.com/clearcapabilities/agentic-security/issues)
+- **Email:** ross@clearcapabilities.com
 
 ---
 
 ## License
 
-[Elastic License 2.0](./LICENSE) — free for any use, including commercial products and internal tools. The one restriction: you can't offer this software as a hosted service to others. Email ross@clearcapabilities.com if you need a different arrangement.
+[Elastic License 2.0](./LICENSE) — free for any use including commercial products and internal tools. The one restriction: you can't offer this software as a hosted service to others.
 
 Built by [Ross Young](https://clearcapabilities.com) at Clear Capabilities Inc.
 
 ---
 
-<sub>If this saved you from shipping a vulnerability, star the repo and tell another vibe coder.</sub>
+<sub>If this caught a bug before it shipped, star the repo.</sub>
