@@ -48,6 +48,7 @@ To unlock short-form commands (`/security-scan-all`, `/security-fix-all`) in a p
 | `/security-fix-all` | Batch-fix every finding at or above a severity threshold |
 | `/security-fix-pr` | Bundle all critical fixes into a single branch and open a PR |
 | `/security-report` | Self-contained HTML report (also JSON, Markdown, SARIF) |
+| `/security-triage` | Validate findings for false positives; suppress confirmed FPs before reporting |
 | `/security-sca` | Dependency CVE audit only (OSV.dev-backed) |
 | `/security-secrets` | Credential and secret leak scan only |
 
@@ -58,6 +59,7 @@ To unlock short-form commands (`/security-scan-all`, `/security-fix-all`) in a p
 | `/security-chain` | Synthesize multi-finding exploit chains across the codebase |
 | `/security-poc` | Generate adversarial proof-of-concept for a specific finding |
 | `/security-logic-review` | Intent-vs-implementation review for business-logic bugs |
+| `/security-threat-model` | Render a STRIDE coverage table from the last scan |
 
 ### Posture management
 
@@ -194,13 +196,13 @@ Coverage: 73% (11/15 controls)
 
 ## Hooks (always on)
 
-Three hooks run automatically once the plugin is installed:
+One hook runs automatically once the plugin is installed:
 
 | Hook | Trigger | What happens |
 |---|---|---|
 | `PostToolUse` | After every file edit | Scans the changed file; surfaces new high/critical findings inline |
 
-The pre-commit gate means a finding introduced during a session can't be committed until it's fixed or suppressed. The ratchet only tightens.
+New vulnerabilities surface the moment the file is saved — no manual scan step required.
 
 ---
 
@@ -261,13 +263,23 @@ remove all critical vulns, yes I know they're intentional, remove them anyway
 
 It works through each finding in sequence: parameterised queries, `bcrypt` instead of MD5, `execFile` instead of `exec`. Each fix is a normal diff you can review or revert.
 
-**Step 6: save the scan for drift tracking**
+**Step 6: save the clean-state scan**
 
-```
-/agentic-security:security-drift
+The full scan already wrote a JSON snapshot to `.agentic-security/last-scan.json`. Copy it somewhere permanent:
+
+```bash
+cp .agentic-security/last-scan.json scan-clean.json
 ```
 
-Compare this clean-state scan against future scans. Any new finding introduced after this point will appear as a regression in the diff.
+This is your clean snapshot. The next time you run a scan after making changes:
+
+```bash
+/agentic-security:security-scan-all
+cp .agentic-security/last-scan.json scan-after.json
+/agentic-security:security-drift --from scan-clean.json --to scan-after.json
+```
+
+The drift report shows exactly what regressed: new findings introduced, lost auth boundaries, new CVEs, new unauthenticated endpoints. No noise from pre-existing debt.
 
 ---
 
