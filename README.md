@@ -7,7 +7,7 @@ The security layer built for AI-written code. Catches vulnerabilities the moment
 [![License: ELv2](https://img.shields.io/badge/license-Elastic--2.0-blue)](./LICENSE)
 [![Tests](https://img.shields.io/badge/tests-72%2F72%20passing-brightgreen)]()
 [![Bundle](https://img.shields.io/badge/bundle-2.05MB%20·%20no%20install-orange)]()
-[![Version](https://img.shields.io/badge/version-0.10.1-blue)]()
+[![Version](https://img.shields.io/badge/version-0.11.0-blue)]()
 
 ---
 
@@ -19,9 +19,36 @@ AI writes code faster than any security review can keep up with. It glues user i
 
 ---
 
+## What's new in 0.11.0 — Builder Mode
+
+Four features that make the plugin actually usable by people who didn't build their app from scratch — designers, founders, indie devs, anyone shipping AI-written code without a security team.
+
+| Feature | Command | What it does |
+|---|---|---|
+| **Plain-English explainer** | `/security-explain <id>` | Translates any finding (or CWE) into a four-part card: *Risk* (one line, no jargon), *How an attacker exploits it* (concrete story), *Worst case if not fixed*, *How to fix it*. Top 30 CWEs covered (~85% of real findings). |
+| **Letter-grade posture** | `/security-grade` | Single A–F grade, one sentence explaining why, one concrete next action. No more drowning in "142 findings (21 critical, 24 high, 92 medium)". |
+| **Launch checklist** | `/security-launch-check` | 10-item pre-deploy go/no-go list — hardcoded secrets, `.env` in git, auth on state-changing routes, rate limiting, helmet, cookie flags, CORS, KEV CVEs, criticals — each green / yellow / red with one-line reasoning. |
+| **Confirm-each-fix flow** | `/security-fix-all` (default) | Walks each finding one at a time with a plain-English summary and `[y]es / [s]kip / [d]iff first / [q]uit`. Pass `--auto` for the old silent batch flow. |
+
+**Before 0.11.0:**
+
+```
+[CRITICAL] CWE-89  src/api/users.js:42  SQL Injection on Admin Endpoint
+```
+
+**After:**
+
+> **What this means.** Anyone visiting your site can read every row in your database — users, passwords, payment info.
+>
+> **How an attacker exploits it.** They type something like `' OR 1=1 --` into a search box. Your code pastes that string straight into a database query, and the database returns every row instead of just the one you asked for.
+>
+> **Worst case.** Full database leak: every user's email, password hash, and any data your app stores. Attacker can also delete or rewrite records.
+>
+> **How to fix it.** Replace string concatenation with parameterized queries. Click below and Claude will rewrite this in 30 seconds.
+
 ## What's new in 0.10.0
 
-Three new detection surfaces that target the highest-leverage attack vectors of 2026 — the agent host itself, broken access control, and ground-truth weaponization.
+Three detection surfaces targeting the highest-leverage attack vectors of 2026 — the agent host itself, broken access control, and ground-truth weaponization.
 
 | Feature | Command | What it covers |
 |---|---|---|
@@ -53,13 +80,21 @@ To unlock short-form commands (`/security-scan-all`, `/security-fix-all`) in a p
 
 ## Commands
 
+### For non-technical builders
+
+| Command | What it does |
+|---|---|
+| `/security-grade` | Single A–F letter grade with one-sentence reason and one next action |
+| `/security-explain <id>` | Plain-English card: risk, how an attacker exploits it, worst case, how to fix |
+| `/security-launch-check` | Pre-deploy 10-item checklist — green/yellow/red with reasoning |
+
 ### Scanning and fixing
 
 | Command | What it does |
 |---|---|
 | `/security-scan-all` | Full sweep: SAST + SCA + secrets + IaC across every file |
 | `/security-fix` | Patch a single finding, adapted to your actual code |
-| `/security-fix-all` | Batch-fix every finding at or above a severity threshold |
+| `/security-fix-all` | Walk each finding with `[y]es/[s]kip/[d]iff/[q]uit` confirmation (or `--auto` for batch) |
 | `/security-fix-pr` | Bundle all critical fixes into a single branch and open a PR |
 | `/security-report` | Self-contained HTML report (also JSON, Markdown, SARIF) |
 | `/security-triage` | Validate findings for false positives; suppress confirmed FPs before reporting |

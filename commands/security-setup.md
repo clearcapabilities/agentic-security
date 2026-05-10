@@ -133,11 +133,34 @@ description: Print a one-screen project & plugin health snapshot — version, la
 Run \`/agentic-security:security-status\` for the project health snapshot.
 CMDEOF
 
+cat > .claude/commands/security-explain.md << CMDEOF
+---
+description: Explain a finding in plain English — what it means, how an attacker exploits it, the worst case, and how to fix it.
+argument-hint: "<finding-id-or-CWE-or-vuln-name>"
+---
+Run \`/agentic-security:security-explain \${1}\` for a plain-English explanation card.
+CMDEOF
+
+cat > .claude/commands/security-grade.md << CMDEOF
+---
+description: One letter-grade snapshot (A–F) of the project's security posture.
+---
+Run \`/agentic-security:security-grade\` for the project's security letter grade.
+CMDEOF
+
+cat > .claude/commands/security-launch-check.md << CMDEOF
+---
+description: Pre-deploy 10-item checklist — the things beginners typically miss before going live.
+---
+Run \`/agentic-security:security-launch-check\` for the pre-launch checklist.
+CMDEOF
+
 echo "✓ Installed shortcuts in .claude/commands/:"
 echo "  /security-scan-all, /security-fix, /security-fix-all"
 echo "  /security-report, /security-sca, /security-secrets"
 echo "  /security-mcp-audit, /security-authz, /security-kev"
 echo "  /security-help, /security-status"
+echo "  /security-explain, /security-grade, /security-launch-check"
 echo ""
 echo "These work in this project. Re-run /agentic-security:security-setup in other projects."
 ```
