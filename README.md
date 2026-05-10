@@ -39,7 +39,7 @@ To unlock short-form commands (`/security-scan-all`, `/security-fix-all`) in a p
 
 ---
 
-## Quick start (5 commands, no jargon)
+## Quick start (4 commands, no jargon)
 
 If you didn't build your app from scratch and you're not sure what's safe — start here.
 
@@ -70,39 +70,7 @@ Looks at every file, every dependency, every config. Takes 30 seconds.
 
 One letter. One reason. One next action.
 
-**3. Understand a specific finding in plain English.**
-
-```
-/security-explain CWE-89
-```
-
-```
-  ━━━ SQL Injection on Admin Endpoint ━━━
-  File:     src/api/users.js:42
-  Severity: CRITICAL
-
-  What this means
-    Anyone visiting your site can read every row in your database —
-    users, passwords, payment info.
-
-  How an attacker exploits it
-    They type something like ' OR 1=1 -- into a search box. Your code
-    pastes that string straight into a database query, and the database
-    returns every row instead of just the one you asked for.
-
-  Worst case if not fixed
-    Full database leak: every user's email, password hash, and any data
-    your app stores. Attacker can also delete or rewrite records.
-
-  How to fix it
-    Replace string concatenation with parameterized queries. Use ? in
-    place of the variable and pass the value separately. The database
-    treats it as data, not code.
-```
-
-You can also pass a finding id (`/security-explain abc-123-...`) or a vuln name (`/security-explain XSS`).
-
-**4. Fix things one at a time.**
+**3. Fix things one at a time.**
 
 ```
 /security-fix-all
@@ -110,7 +78,7 @@ You can also pass a finding id (`/security-explain abc-123-...`) or a vuln name 
 
 Walks you through each finding with a plain-English summary first, then asks `[y]es / [s]kip / [d]iff first / [q]uit`. You stay in control. Pass `--auto` if you want it to fix everything without asking.
 
-**5. Right before you deploy.**
+**4. Right before you deploy.**
 
 ```
 /security-launch-check
