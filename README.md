@@ -201,27 +201,27 @@ Beyond finding individual vulnerabilities, the posture-management layer covers w
 
 Four frameworks, one command per framework. Each produces a Markdown table, a CSV spreadsheet, and a machine-readable JSON file.
 
-```
-/nist-ai-600-1    122 controls — GenAI risk management (GV/MP/MS/MG families)
-/owasp-asvs       15 controls — ASVS Level 1+2 (auth, session, input, crypto, API)
-/pci-dss           12 controls — PCI-DSS 4.0 code-testable cardholder data requirements
-/soc2              12 controls — SOC 2 Common Criteria (CC6–CC9)
-```
+| Framework | Command | Controls | Scope |
+|---|---|---|---|
+| NIST AI 600-1 | `/nist-ai-600-1` | 122 | GenAI risk management (GV/MP/MS/MG families) |
+| OWASP ASVS | `/owasp-asvs` | 15 | ASVS Level 1+2 (auth, session, input, crypto, API) |
+| PCI-DSS 4.0 | `/pci-dss` | 12 | Code-testable cardholder data requirements |
+| SOC 2 | `/soc2` | 12 | Common Criteria (CC6–CC9) |
 
 Evidence is multi-signal: declared dependencies carry the highest weight, followed by import statements, then path patterns, code terms, config, and documentation. Negation contexts ("we don't yet implement…", "planned for") are discarded.
 
-**Example OWASP ASVS output:**
+**Example OWASP ASVS output**
 
-```
-Coverage: 73% (11/15 controls)
-
-  Compliant      V3.4.1  Cookies set with Secure/HttpOnly/SameSite   code_term+config_term
-  Compliant      V4.1.1  Access control enforced server-side          import+code_term
-  Partial        V2.4.1  Secure password storage (bcrypt/argon2)      import
-  Partial        V6.2.1  Strong cryptographic algorithms in use        code_term
-  Not Compliant  V5.1.1  Input validation library in use
-  Not Compliant  V8.3.1  Sensitive data not logged
-```
+> **Coverage: 73%** (11 / 15 controls)
+>
+> | Status | ID | Control | Evidence |
+> |---|---|---|---|
+> | ✅ Compliant | V3.4.1 | Cookies set with Secure/HttpOnly/SameSite | code_term + config_term |
+> | ✅ Compliant | V4.1.1 | Access control enforced server-side | import + code_term |
+> | 🟡 Partial | V2.4.1 | Secure password storage (bcrypt/argon2) | import |
+> | 🟡 Partial | V6.2.1 | Strong cryptographic algorithms in use | code_term |
+> | ❌ Not Compliant | V5.1.1 | Input validation library in use | — |
+> | ❌ Not Compliant | V8.3.1 | Sensitive data not logged | — |
 
 ---
 
