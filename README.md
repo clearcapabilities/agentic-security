@@ -46,19 +46,6 @@ Four features that make the plugin actually usable by people who didn't build th
 >
 > **How to fix it.** Replace string concatenation with parameterized queries. Click below and Claude will rewrite this in 30 seconds.
 
-## What's new in 0.10.0
-
-Three detection surfaces targeting the highest-leverage attack vectors of 2026 — the agent host itself, broken access control, and ground-truth weaponization.
-
-| Feature | Command | What it covers |
-|---|---|---|
-| **MCP / agent-tool audit** | `/security-mcp-audit` | Untrusted install (`curl\|sh`), hardcoded API keys in env blocks, prompt-injection in server descriptions, dangerous capabilities (`shell`/`exec`/`eval`) exposed to the model, filesystem servers granted root or `$HOME`, floating tag pins. Fires on `.mcp.json`, `claude_desktop_config.json`, `mcp_servers.json`. |
-| **Auth/authZ deep analysis** | `/security-authz` | JWT alg:none, hardcoded JWT secrets, `jwt.verify` without an `algorithms` allow-list, OAuth2 authorization_code without PKCE, `redirect_uri` from request without allow-list, session not regenerated post-auth (session fixation), multi-tenant queries without `tenantId`/`orgId`. Covers OWASP A01 — the #1 source of real breaches. |
-| **CISA KEV enrichment** | `/security-kev` | Cross-references every dependency CVE against the [CISA Known Exploited Vulnerabilities](https://www.cisa.gov/known-exploited-vulnerabilities-catalog) catalog. Findings flagged `kev: true` are weaponized — observed exploited in the wild — and get +20 toxicity, sorting them to the top of the triage list with a red `KEV` badge in the CLI. |
-
-All three score F1 = 1.00 against their labelled fixture sets.
-
----
 
 ## Install
 
