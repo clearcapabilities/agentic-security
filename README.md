@@ -5,9 +5,9 @@
 The security layer built for AI-written code. Catches vulnerabilities the moment they're introduced, in the same session with the same agent, and fixes them before you move on.
 
 [![License: ELv2](https://img.shields.io/badge/license-Elastic--2.0-blue)](./LICENSE)
-[![Tests](https://img.shields.io/badge/tests-72%2F72%20passing-brightgreen)]()
-[![Bundle](https://img.shields.io/badge/bundle-2.05MB%20·%20no%20install-orange)]()
-[![Version](https://img.shields.io/badge/version-0.11.0-blue)]()
+[![Tests](https://img.shields.io/badge/tests-75%2F75%20passing-brightgreen)]()
+[![Bundle](https://img.shields.io/badge/bundle-2.06MB%20·%20no%20install-orange)]()
+[![Version](https://img.shields.io/badge/version-0.12.0-blue)]()
 
 ---
 
@@ -173,6 +173,8 @@ A finite, beginner-friendly list of "10 things you usually miss before going liv
 | `/security-mcp-audit` | Audit MCP server configs for agent-host risks (untrusted install, hardcoded creds, prompt injection in descriptions) |
 | `/security-authz` | Deep auth/authZ audit — JWT alg confusion, OAuth2 PKCE, multi-tenant scope, session fixation |
 | `/security-kev` | List dependency CVEs in the CISA Known Exploited Vulnerabilities catalog (weaponized in the wild) |
+| `/security-aibom` | AI/ML Bill of Materials — every model, prompt template, inference framework, vector store |
+| `/security-llm-threat-model` | OWASP LLM Top 10 (2025) coverage map of your existing findings |
 
 ### Posture management
 
@@ -384,6 +386,9 @@ AI / LLM          Prompt injection (direct, indirect, template) · Insecure tool
                   Unsanitized LLM output · System prompt data exfiltration
                   MCP server audit — untrusted install, hardcoded creds, prompt injection
                   in descriptions, dangerous capabilities, filesystem over-scope
+                  Prompt templates — user input interpolated without isolation markers
+                  Model loading — torch.load without weights_only, trust_remote_code=True,
+                  from_pretrained without revision pin, pickle/yaml.load on model paths
 
 Dependencies      CVEs from OSV.dev · EPSS exploit-probability scores
                   CISA KEV — weaponized-in-the-wild flag for active attacks
@@ -525,7 +530,7 @@ curl -L -o agentic-security.mjs \
 node agentic-security.mjs scan .
 ```
 
-2.05 MB, no `npm install`, no dependencies, no config required.
+2.06 MB, no `npm install`, no dependencies, no config required.
 
 **Output formats:**
 
@@ -537,6 +542,8 @@ node agentic-security.mjs scan . --format sarif     # SARIF 2.1.0
 node agentic-security.mjs scan . --format cyclonedx # CycloneDX 1.6 SBOM
 node agentic-security.mjs scan . --format spdx      # SPDX 2.3 SBOM
 node agentic-security.mjs scan . --format pbom      # Pipeline Bill of Materials
+node agentic-security.mjs scan . --format aibom     # AI-BOM (CycloneDX 1.7 ML-BOM compatible)
+node agentic-security.mjs scan . --format aibom-md  # AI-BOM as Markdown
 ```
 
 **Key flags:**
@@ -654,7 +661,7 @@ Every acronym you'll see in this README and in the tool's output, in plain Engli
 
 1. Fork the repo, branch off `main`
 2. Make your change; new vulnerability rules and FP-suppression cases are most welcome
-3. Run `npm test` in `scanner/`; all 72 tests must pass
+3. Run `npm test` in `scanner/`; all 75 tests must pass
 4. Open a PR with what you changed and why
 
 New scanner rules should include a fixture that triggers the finding and a suppression case that doesn't.

@@ -14,6 +14,8 @@ import { scanBusinessLogic } from './sast/logic.js';
 import { scanPipeline } from './sast/pipeline.js';
 import { scanMCP } from './sast/mcp-audit.js';
 import { scanAuthZ } from './sast/authz.js';
+import { scanModelLoad } from './sast/model-load.js';
+import { scanPromptTemplate } from './sast/prompt-template.js';
 import { scanContainer } from './sca/container.js';
 import { detectDepConfusion } from './sca/dep-confusion.js';
 import { loadLicensePolicy, evaluateLicensePolicy } from './posture/license-policy.js';
@@ -199,6 +201,9 @@ function _isIaCFile(p){
   if (/^\.?mcp\.json$/i.test(base)) return true;
   if (/\.mcp\.json$/i.test(base)) return true;
   if (/^mcp_servers\.json$/i.test(base)) return true;
+  // Prompt template files (used by /security-llm-prompt-audit and AI-BOM)
+  if (/\.(?:prompt|j2|jinja2?|tmpl|mustache|hbs)$/i.test(base)) return true;
+  if (/(?:^|\/)(?:prompts?|templates?\/prompts?)\//i.test(p)) return true;
   return false;
 }
 function getExt(n){const p=n.split(".");return p.length>1?p.pop().toLowerCase():"";}
@@ -3417,7 +3422,9 @@ async function runFullScan({fileContents={}, depFileContents={}, scanRoot=null},
       aF.push(...scanPipeline(p,c));
       aF.push(...scanContainer(p,c));
       aF.push(...scanMCP(p,c));
-      aF.push(...scanAuthZ(p,c));}catch(_){}if(i%5===0)await new Promise(r=>setTimeout(r,0));}
+      aF.push(...scanAuthZ(p,c));
+      aF.push(...scanModelLoad(p,c));
+      aF.push(...scanPromptTemplate(p,c));}catch(_){}if(i%5===0)await new Promise(r=>setTimeout(r,0));}
   setProgress({current:i,total:files.length,file:"Cross-file...",phase:"Linking"});const ii=buildImportGraph(fc);const cf=crossFileTaint(pfr,fc,ii);aF.push(...cf);
   setProgress({current:i,total:files.length,file:"Stored taint...",phase:"Linking"});const storedRegistry=buildStoredTaintRegistry(fc);const stf=crossStoredTaint(fc,storedRegistry);aF.push(...stf);
   setProgress({current:i,total:files.length,file:"Session taint...",phase:"Linking"});const sess=crossSessionTaint(fc);aF.push(...sess);

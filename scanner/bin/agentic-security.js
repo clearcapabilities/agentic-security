@@ -7,6 +7,7 @@ import { runScan } from '../src/runScan.js';
 import { toJSON, toMarkdown, toSARIF, toCLI, toHTML, toSummary, exitCodeFor, normalizeFindings } from '../src/report/index.js';
 import { toCycloneDX, toSPDX } from '../src/posture/sbom.js';
 import { toPBOM } from '../src/sast/pipeline.js';
+import { buildAIBOM, aibomToMarkdown } from '../src/posture/aibom.js';
 import { ingestAndMerge } from '../src/sca/sarif-ingest.js';
 import fg from 'fast-glob';
 
@@ -20,7 +21,7 @@ Commands:
 
 Options:
   --only sast|sca|secrets         Limit scan to one pillar
-  --format <fmt>                  Output format: cli, json, md, sarif, html, cyclonedx, spdx, pbom (default: cli)
+  --format <fmt>                  Output format: cli, json, md, sarif, html, cyclonedx, spdx, pbom, aibom, aibom-md (default: cli)
   --sca-reachable-only            Only surface SCA findings where the vulnerable function is reachable
   --ingest-sarif <path-or-glob>   Merge external SARIF (Semgrep, gitleaks, Trivy, etc.) into this scan
   --scorecard                     Enrich components with OSSF Scorecard scores (makes outbound API calls)
@@ -103,6 +104,8 @@ async function cmdScan(args) {
   else if (format === 'cyclonedx' || format === 'sbom') body = JSON.stringify(toCycloneDX(scan, meta), null, 2);
   else if (format === 'spdx')                            body = JSON.stringify(toSPDX(scan, meta), null, 2);
   else if (format === 'pbom')                            body = JSON.stringify(toPBOM(scan.fc || {}, meta), null, 2);
+  else if (format === 'aibom')                           body = JSON.stringify(buildAIBOM(scan, scan.fc || {}, meta), null, 2);
+  else if (format === 'aibom-md')                        body = aibomToMarkdown(buildAIBOM(scan, scan.fc || {}, meta));
   else if (format === 'cli') body = toCLI(scan, { verbose });
   else body = toSummary(scan);
 

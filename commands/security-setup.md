@@ -155,12 +155,30 @@ description: Pre-deploy 10-item checklist — the things beginners typically mis
 Run \`/agentic-security:security-launch-check\` for the pre-launch checklist.
 CMDEOF
 
+cat > .claude/commands/security-aibom.md << CMDEOF
+---
+description: Generate an AI/ML Bill of Materials — every model, prompt template, framework, and vector store your project uses.
+argument-hint: "[--format aibom|aibom-md]"
+---
+\`\`\`bash
+node $BUNDLE scan . --format \${1:-aibom-md}
+\`\`\`
+CMDEOF
+
+cat > .claude/commands/security-llm-threat-model.md << CMDEOF
+---
+description: Map findings to OWASP LLM Top 10 (2025) — Prompt Injection, Sensitive Disclosure, Supply Chain, Poisoning, Improper Output, Excessive Agency, System Prompt Leakage, Vector Weaknesses, Misinformation, Unbounded Consumption.
+---
+Run \`/agentic-security:security-llm-threat-model\` for the OWASP LLM Top 10 coverage map.
+CMDEOF
+
 echo "✓ Installed shortcuts in .claude/commands/:"
 echo "  /security-scan-all, /security-fix, /security-fix-all"
 echo "  /security-report, /security-sca, /security-secrets"
 echo "  /security-mcp-audit, /security-authz, /security-kev"
 echo "  /security-help, /security-status"
 echo "  /security-explain, /security-grade, /security-launch-check"
+echo "  /security-aibom, /security-llm-threat-model"
 echo ""
 echo "These work in this project. Re-run /agentic-security:security-setup in other projects."
 ```

@@ -5,7 +5,7 @@ description: List every agentic-security command organized by category, with one
 Print the full agentic-security command catalog.
 
 ```
-agentic-security commands — 31 total
+agentic-security commands — 33 total
 
 SCANNING & FIXING
   /security-scan-all         Full SAST + SCA + secrets + IaC sweep
@@ -25,6 +25,8 @@ AI-NATIVE CAPABILITIES
   /security-mcp-audit        Audit MCP server configs (agent-host risks)
   /security-authz            Deep auth/authZ audit (OWASP A01)
   /security-kev              List CVEs in CISA Known Exploited Vulnerabilities
+  /security-aibom            AI/ML Bill of Materials — models, prompts, frameworks, vector stores
+  /security-llm-threat-model OWASP LLM Top 10 (2025) coverage map
 
 POSTURE MANAGEMENT
   /security-material-change  Score a git diff by architectural risk

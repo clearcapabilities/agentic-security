@@ -1,0 +1,10 @@
+{
+  "name": "aibom-fixture",
+  "version": "1.0.0",
+  "dependencies": {
+    "openai": "^4.0.0",
+    "@anthropic-ai/sdk": "^0.30.0",
+    "langchain": "^0.3.0",
+    "@pinecone-database/pinecone": "^4.0.0"
+  }
+}
