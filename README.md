@@ -191,7 +191,7 @@ Beyond the three easy-mode commands, agentic-security ships a full command surfa
 | `/agentic-security:status` | One-screen plugin & project health snapshot — version, last scan time, finding counts, cache size, hook activation. |
 | `/agentic-security:help` | Full command catalog with one-line descriptions. |
 
-For the complete reference — CI integration, SARIF output, audit-grade suppressions, custom rules, org-wide fleet scans, and every flag — read the **[Developer Guide →](https://github.com/clearcapabilities/agentic-security/blob/main/docs/developer-documentation-guide.md)**.
+To learn more read the **[Developer Documentation](https://github.com/clearcapabilities/agentic-security/blob/main/docs/developer-documentation-guide.md)**.
 
 ---
 
