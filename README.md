@@ -57,9 +57,7 @@ Three commands. The whole product. The default for everyone.
 
 ---
 
-#### `/agentic-security:scan --all` — daily, before deploy
-
-**`/agentic-security:scan --all` runs 9 different scans to secure your code:**
+#### `/agentic-security:scan --all` runs 9 different scans to secure your code:
 
 ```
        Pillar         What we scan
