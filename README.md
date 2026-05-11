@@ -11,9 +11,9 @@
 
 ---
 
-## Your AI is fast.
+## Why you need this
 
-It's also writing security bugs.
+Your AI is fast. It's also writing security bugs.
 
 This morning Claude wrote your login route in 9 seconds. Beautiful code. Tests pass.
 
@@ -21,19 +21,45 @@ It also lets anyone in the world log in as admin with a single line of curl.
 
 You don't know this yet. Neither does Claude.
 
-**One command finds it.**
+**One command finds it. One command fixes it.**
+
+That command lives inside Claude Code, runs locally on your laptop, and explains every finding in plain English.
+
+---
+
+## Install
+
+In **Claude Code** (recommended — gets you the slash commands):
+
+```
+/plugin install agentic-security
+```
+
+That's it. Type `/scan-all` to confirm it's working.
+
+For **CI, terminal, or any project anywhere** (no Claude Code required):
+
+```bash
+npx @clearcapabilities/agentic-security-scanner scan .
+```
+
+The scanner runs entirely on your machine. Nothing leaves your laptop. No signups, no API keys, no cloud.
 
 ---
 
 ## Two modes. One tool.
 
-Both modes run the same engine. They differ in how much you see.
+Both modes run the same engine. They differ in how much you see and how much you can configure.
 
 ### 🎨 Easy Mode
 
 Three commands. The whole product. The default for everyone.
 
-**`/scan-all`** — daily, before deploy. One-screen verdict.
+---
+
+#### `/scan-all` — daily, before deploy
+
+A one-screen verdict. Either you're safe to ship, or you have a short list of things to fix.
 
 ```
 ─────────────────────────────────────────
@@ -57,7 +83,11 @@ Three commands. The whole product. The default for everyone.
   Type /show-findings to see the rest, or /fix-all to apply them.
 ```
 
-**`/show-findings`** — print every finding from the last scan, grouped by severity. No re-scan.
+---
+
+#### `/show-findings` — see everything from the last scan
+
+No re-scan. Reads the last scan and prints every finding grouped by severity.
 
 ```
 Findings from last scan
@@ -76,7 +106,11 @@ Total: 3
 Next: /fix-all --severity critical  to remediate.
 ```
 
-**`/fix-all`** — batch-fix every finding at or above a severity. Sequential, test-aware, doesn't auto-revert.
+---
+
+#### `/fix-all` — patch everything at or above a severity
+
+Sequential, test-aware. Does not auto-revert on failure — stops and tells you which fix broke what.
 
 ```
 Fixing 3 findings…
@@ -87,35 +121,27 @@ Fixing 3 findings…
 Applied 3 fixes, 0 skipped, 0 regressions introduced.
 ```
 
-That's the entire product.
+That's the entire product. You don't need anything else to ship safer code.
+
+---
 
 ### ⚙️ Developer Mode
 
-For the senior engineer. The platform team. The person who actually reads SARIF.
+For the senior engineer, the platform team, the person who actually reads SARIF. Switch on with:
 
 ```bash
 agentic-security profile set pro
 ```
 
-Unlocks the full surface — 35+ commands and every output format. What you get on top of Easy Mode:
+Developer Mode unlocks **35+ commands** and adds: the full finding taxonomy (CWE / CVSS / OWASP / MITRE ATT&CK / CAPEC), machine-readable outputs (SARIF, JSON, JUnit, CSV) on every scan, CI gates, curated rule packs, audit-grade suppressions with reviewer + expiry, a triage workflow with MTTR trends, org-wide fleet scans, custom YAML rules, integrations with Slack / Jira / GitHub Security / SIEM, four compliance attestations (NIST AI 600-1, OWASP ASVS, PCI-DSS 4.0, SOC 2), and posture artifacts (SBOM, AI-BOM, PBOM, API inventory, attack-chain synthesis, PoC generation).
 
-- **Full taxonomy in every finding** — CWE, CVSS, OWASP, MITRE ATT&CK, CAPEC.
-- **Machine-readable output** — SARIF 2.1.0, JSON, JUnit, CSV written on every scan.
-- **CI gating** — `agentic-security ci . --fail-on critical` with PR-base detection; pre-commit hook included.
-- **Curated rule packs** — `owasp-top-10`, `cwe-top-25`, `llm-security`, `supply-chain`.
-- **Audit-grade suppressions** — `.agentic-security/suppressions.yml` with signer ≠ reviewer, rule_version pinning, mandatory expiry.
-- **Triage workflow** — per-finding state machine (`open` → `in-progress` → `fixed`/`wont-fix`/`false-positive`) with MTTR trend reports.
-- **Org-wide fleet scans** — parallel worker pool across many repos with rolled-up output.
-- **Custom rules in YAML** — project-local regex/AST rules, severity overrides, version pins.
-- **Integrations** — Slack, Discord, Jira, GitHub Security tab, SIEM (Splunk / Datadog / Elastic).
-- **Compliance attestations** — NIST AI 600-1, OWASP ASVS, PCI-DSS 4.0, SOC 2 — audit-ready CSV + JSON + Markdown.
-- **Posture artifacts** — SBOM (CycloneDX 1.6, SPDX 2.3), PBOM, AI-BOM (CycloneDX 1.7 ML-BOM), API inventory, attack-chain synthesis, PoC generation.
-
-Every command, flag, and output format is documented in the [Developer Guide →](docs/for-appsec-pros.md).
+Every command, flag, and output format is documented in the **[Developer Guide →](docs/for-appsec-pros.md)**.
 
 ---
 
-## What scans does `/scan-all` run?
+## What `/scan-all` scans
+
+Every scan covers all nine pillars below. No configuration required.
 
 ```
        Pillar         What we scan
@@ -136,24 +162,6 @@ Every command, flag, and output format is documented in the [Developer Guide →
        Auth/AuthZ     Broken access control, IDOR, mass assignment,
                       session fixation.
        Container      Base-image EOL, exposed ports, runtime mode.
-```
-
----
-
-## Install
-
-In Claude Code:
-
-```
-/plugin install agentic-security
-```
-
-That's it. Now type `/scan-all`.
-
-For CI, command line, or any project anywhere:
-
-```bash
-npx @clearcapabilities/agentic-security-scanner scan .
 ```
 
 ---
