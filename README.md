@@ -172,7 +172,7 @@ That's the entire product. You don't need anything else to ship safer code.
 
 ### ⚙️ Developer Mode
 
-> **Every flag, every format, every framework. There's a lot more under the hood.**
+> **There's a lot more under the hood.**
 
 Beyond the three easy-mode commands, agentic-security ships a full command surface for platform teams, AppSec engineers, and anyone who wants to go deeper:
 
