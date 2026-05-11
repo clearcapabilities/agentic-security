@@ -35,7 +35,7 @@ In **Claude Code** (recommended — gets you the slash commands):
 /plugin marketplace add https://github.com/clearcapabilities/agentic-security
 ```
 
-That's it. Type `/scan --all` to confirm it's working.
+That's it. Type `/agentic-security:scan --all` to confirm it's working.
 
 For **CI, terminal, or any project anywhere** (no Claude Code required):
 
@@ -57,9 +57,9 @@ Three commands. The whole product. The default for everyone.
 
 ---
 
-#### `/scan --all` — daily, before deploy
+#### `/agentic-security:scan --all` — daily, before deploy
 
-**What `/scan --all` scans every run — nine pillars, no configuration required:**
+**What `/agentic-security:scan --all` scans every run — nine pillars, no configuration required:**
 
 ```
        Pillar         What we scan
@@ -111,15 +111,15 @@ A one-screen verdict. Either you're safe to ship, or you have a short list of th
   Reply with 1, 2, or 3.
 
   Or pick a single one:
-     /show-findings --all  see every finding in HTML
-     /fix --one <id>       fix exactly one
+     /agentic-security:show-findings --all  see every finding in HTML
+     /agentic-security:fix --one <id>       fix exactly one
 ```
 
-The scanner asks which tier you want to fix; reply with the number and `/fix --all` runs the matching `--severity` automatically.
+The scanner asks which tier you want to fix; reply with the number and `/agentic-security:fix --all` runs the matching `--severity` automatically.
 
 ---
 
-#### `/show-findings --all` — interactive HTML report
+#### `/agentic-security:show-findings --all` — interactive HTML report
 
 Writes a self-contained HTML report to `reports/findings-<timestamp>.html` and opens it in your default browser. The report has severity charts, a filterable findings list, per-finding evidence with the offending code snippet, and the proposed fix template. No external assets, no network required — works offline.
 
@@ -138,21 +138,21 @@ start reports/findings-<timestamp>.html
 
 ---
 
-#### `/fix --all` — patch findings in batch
+#### `/agentic-security:fix --all` — patch findings in batch
 
-Pick a severity tier; `/fix --all` dispatches the security-fixer agent on every finding at or above it. Tiers are **cumulative** — `/fix --all --high` patches critical **+** high. Sequential, test-aware, does not auto-revert on failure.
+Pick a severity tier; `/agentic-security:fix --all` dispatches the security-fixer agent on every finding at or above it. Tiers are **cumulative** — `/agentic-security:fix --all --high` patches critical **+** high. Sequential, test-aware, does not auto-revert on failure.
 
 | Flag | Fixes |
 |---|---|
-| `/fix --all --critical` (default) | Critical only |
-| `/fix --all --high` | Critical + High |
-| `/fix --all --medium` | Critical + High + Medium |
-| `/fix --all --low` | Everything |
+| `/agentic-security:fix --all --critical` (default) | Critical only |
+| `/agentic-security:fix --all --high` | Critical + High |
+| `/agentic-security:fix --all --medium` | Critical + High + Medium |
+| `/agentic-security:fix --all --low` | Everything |
 
 Example — fixing all critical and high-severity findings:
 
 ```
-> /fix --all --high
+> /agentic-security:fix --all --high
 
 Checking git state…   clean ✓
 Fixing 104 findings (31 critical + 73 high)…
