@@ -168,15 +168,47 @@ That's the entire product. You don't need anything else to ship safer code.
 
 ### ⚙️ Developer Mode
 
-For the senior engineer, the platform team, the person who actually reads SARIF. Switch on with:
+> **Full taxonomy. SARIF on every scan. CI gates. Audit-grade suppressions. 35+ commands.**
+
+For platform teams, AppSec engineers, and anyone who needs findings outside a chat window. Switch on with:
 
 ```bash
 agentic-security profile set pro
 ```
 
-Developer Mode unlocks **35+ commands** and adds: the full finding taxonomy (CWE / CVSS / OWASP / MITRE ATT&CK / CAPEC), machine-readable outputs (SARIF, JSON, JUnit, CSV) on every scan, CI gates, curated rule packs, audit-grade suppressions with reviewer + expiry, a triage workflow with MTTR trends, org-wide fleet scans, custom YAML rules, integrations with Slack / Jira / GitHub Security / SIEM, four compliance attestations (NIST AI 600-1, OWASP ASVS, PCI-DSS 4.0, SOC 2), and posture artifacts (SBOM, AI-BOM, PBOM, API inventory, attack-chain synthesis, PoC generation).
+Here's what a scan looks like in pro mode:
 
-Every command, flag, and output format is documented in the **[Developer Guide →](docs/for-appsec-pros.md)**.
+```
+agentic-security — pro mode  ·  258 finding(s) across 412 file(s)
+
+Severity    File:Line                CWE      CVSS  OWASP     Vuln                       Conf
+──────────────────────────────────────────────────────────────────────────────────────────────
+🛑 CRITICAL  routes/login.ts:34       CWE-89   9.8   A03:2021  SQL Injection              0.93
+🛑 CRITICAL  lib/insecurity.ts:43     CWE-916  8.1   A02:2021  MD5 Password Hashing       0.95
+🛑 CRITICAL  routes/b2bOrder.ts:17    CWE-94   9.8   A03:2021  RCE (VM Sandbox Escape)    0.91
+⚠️  HIGH     api/files.ts:67          CWE-22   7.5   A01:2021  Path Traversal             0.88
+…  +254 more
+
+Critical: 31  High: 73  Medium: 149  Low: 5  Info: 0
+
+Machine-readable output written to .agentic-security/findings.{sarif,json,csv}
+```
+
+Every finding carries CWE, CVSS, OWASP, MITRE ATT&CK technique, CAPEC pattern, exploitability score, source/sink reachability, and toxic-combinations scoring. Swap column profiles with `--columns mitre`, `capec`, or `owasp`.
+
+#### What else you unlock
+
+- **Real CI gates** — `agentic-security ci . --fail-on critical`. Auto-detects PR base ref, exits non-zero on policy violations. Pre-commit hook ships in the box.
+- **Curated rule packs** — `--pack owasp-top-10`, `cwe-top-25`, `llm-security`, `supply-chain`. Multiple packs union their CWE sets.
+- **Audit-grade suppressions** — `.agentic-security/suppressions.yml` with signer ≠ reviewer, rule-version pinning, and mandatory expiry. The kind that survives an actual security review.
+- **Triage state machine** — `open → in-progress → fixed | wont-fix | false-positive`, with MTTR trend reports and opened/closed deltas.
+- **Org-wide fleet scans** — parallel workers across many repos with rolled-up output. Workspace-aware (Nx, Turborepo, pnpm).
+- **Custom YAML rules** — project-local regex/AST rules, severity overrides, scanner-version pins.
+- **Integrations** — Slack, Discord, Jira, ServiceNow, GitHub Security tab, GitLab, Splunk, Datadog, Elastic.
+- **Four compliance attestations** — NIST AI 600-1 · OWASP ASVS · PCI-DSS 4.0 · SOC 2. Each ships audit-ready CSV + JSON + Markdown evidence, control by control.
+- **Posture artifacts** — SBOM (CycloneDX 1.6, SPDX 2.3), AI-BOM (CycloneDX 1.7 ML-BOM), PBOM, API inventory, attack-chain synthesis, adversarial PoC generation.
+
+Every command, flag, and output format is in the **[Developer Guide →](docs/for-appsec-pros.md)**.
 
 ---
 
