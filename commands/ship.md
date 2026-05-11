@@ -8,8 +8,7 @@ one-screen verdict. This is the vibecoder default: high-confidence findings only
 no CWE/CVSS jargon, every actionable item gets a copy-paste fix snippet.
 
 ```bash
-node $CLAUDE_PLUGIN_ROOT/scanner/dist/agentic-security.mjs ship ${1:-.}
-ec=$?; [ $ec -le 3 ] && exit 0 || exit $ec
+node ${CLAUDE_PLUGIN_ROOT}/scanner/dist/agentic-security.mjs ship ${1:-.}; ec=$?; [ $ec -le 3 ] && exit 0 || exit $ec
 ```
 
 If the output says ❌, run `/fix <n>` to apply the patch for finding number n.
