@@ -117,7 +117,7 @@ The scanner asks which tier you want to fix; reply with the number and `/agentic
 
 ---
 
-#### `/agentic-security:show-findings --all` — interactive HTML report
+#### `/agentic-security:show-findings --all`
 
 Writes a self-contained HTML report to `reports/findings-<timestamp>.html` and opens it in your default browser. The report has severity charts, a filterable findings list, per-finding evidence with the offending code snippet, and the proposed fix template. No external assets, no network required — works offline.
 
