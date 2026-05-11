@@ -66,7 +66,7 @@ if (c > 10 || (c > 5 && kevCount > 0)) {
 } else if (h > 10) {
   grade = 'B-';
   reason = '0 critical, but ' + h + ' high-severity findings — the volume itself is a risk.';
-  action = 'Run /security-triage to walk through the high-severity findings and validate them.';
+  action = 'Run /show-findings — triage runs automatically before the report.';
 } else if (h >= 3) {
   grade = 'B';
   reason = '0 critical and only ' + h + ' high-severity findings. You are in OK shape.';

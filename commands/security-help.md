@@ -9,7 +9,7 @@ agentic-security commands
 
 EASY MODE — three commands. The whole product.
   /scan --all                One-screen "safe to deploy?" verdict
-  /show-findings             Interactive HTML report of findings
+  /show-findings             Triage FPs then open interactive HTML report
   /fix --all                 Batch-fix every finding at or above --severity
 
 DEVELOPER MODE — full catalog below.
@@ -21,7 +21,6 @@ SCANNING & FIXING
   /fix --one <id>            Patch a single finding via the fixer subagent
   /fix --all [--critical|--high|--medium|--low]  Batch-fix by severity tier
   /fix --pr [--apply]        Bundle fixes into a feature branch + PR
-  /security-triage           Validate findings; suppress confirmed false positives
 
 AI-NATIVE CAPABILITIES
   /security-chain            Synthesize multi-finding exploit chains
