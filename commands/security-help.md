@@ -9,7 +9,7 @@ agentic-security commands
 
 EASY MODE — three commands. The whole product.
   /scan --all                One-screen "safe to deploy?" verdict
-  /show-findings             Triage FPs then open interactive HTML report
+  /show-findings --all       Triage FPs then open interactive HTML report
   /fix --all                 Batch-fix every finding at or above --severity
 
 DEVELOPER MODE — full catalog below.
@@ -25,7 +25,7 @@ SCANNING
   /scan --diff               Score git diff by architectural risk (--since <ref>)
 
 VIEWING & ANALYSIS
-  /show-findings             Triage FPs then open interactive HTML report
+  /show-findings --all       Triage FPs then open interactive HTML report (default)
   /show-findings --kev       Show only CISA KEV (actively weaponized) findings
   /show-findings --chains    Synthesize multi-finding exploit chains
   /show-findings --threat-model  STRIDE table (add --llm for OWASP LLM Top 10)

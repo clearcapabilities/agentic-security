@@ -1,6 +1,6 @@
 ---
-description: Triage findings for false positives then view results. Default opens an interactive HTML report. Use --kev for weaponized CVEs, --chains for exploit chains, or --threat-model [--stride|--llm] for a threat model table.
-argument-hint: "[path] [--kev] [--chains [--severity critical|high|all]] [--threat-model [--stride|--llm]]"
+description: Triage findings for false positives then view results. Default (--all) opens an interactive HTML report. Use --kev for weaponized CVEs, --chains for exploit chains, or --threat-model [--stride|--llm] for a threat model table.
+argument-hint: "[path] [--all] [--kev] [--chains [--severity critical|high|all]] [--threat-model [--stride|--llm]]"
 ---
 
 Triage findings from `.agentic-security/last-scan.json` for false positives, suppress confirmed FPs, then render the requested view.
@@ -30,12 +30,13 @@ Print a brief summary: `Triage: N reviewed — X true positives, Y suppressed as
 Parse flags and dispatch:
 
 ```bash
-MODE="--report"
+MODE="--all"
 SEVERITY="high"
 THREAT_MODE="--stride"
 PATH_ARG="."
 for arg in "$@"; do
   case "$arg" in
+    --all) MODE="--all" ;;
     --kev) MODE="--kev" ;;
     --chains) MODE="--chains" ;;
     --threat-model) MODE="--threat-model" ;;
@@ -46,7 +47,21 @@ for arg in "$@"; do
   esac
 done
 
-if [ "$MODE" = "--kev" ]; then
+if [ "$MODE" = "--all" ]; then
+
+mkdir -p reports
+REPORT="reports/findings-$(date +%Y%m%d-%H%M%S).html"
+node ${CLAUDE_PLUGIN_ROOT}/scanner/dist/agentic-security.mjs scan "$PATH_ARG" --format html --output "$REPORT"
+ec=$?
+if [ $ec -le 3 ]; then
+  open "$REPORT" 2>/dev/null \
+    || xdg-open "$REPORT" 2>/dev/null \
+    || echo "Open $REPORT in your browser to view the report."
+  exit 0
+fi
+exit $ec
+
+elif [ "$MODE" = "--kev" ]; then
 
 node -e "
 const fs = require('fs');
@@ -156,26 +171,12 @@ if (top2.length) { console.log(W('Highest-exploitability per category:', BOLD));
 "
 fi
 
-else
-
-mkdir -p reports
-REPORT="reports/findings-$(date +%Y%m%d-%H%M%S).html"
-node ${CLAUDE_PLUGIN_ROOT}/scanner/dist/agentic-security.mjs scan "$PATH_ARG" --format html --output "$REPORT"
-ec=$?
-if [ $ec -le 3 ]; then
-  open "$REPORT" 2>/dev/null \
-    || xdg-open "$REPORT" 2>/dev/null \
-    || echo "Open $REPORT in your browser to view the report."
-  exit 0
-fi
-exit $ec
-
 fi
 ```
 
 ## Views
 
-**`/show-findings`** _(default)_ — Triage FPs then write a self-contained HTML report to `reports/findings-<timestamp>.html` and open it. Includes severity charts, filterable findings list, per-finding code evidence, and fix templates.
+**`/show-findings` or `/show-findings --all`** — Triage FPs then write a self-contained HTML report to `reports/findings-<timestamp>.html` and open it. Includes severity charts, filterable findings list, per-finding code evidence, and fix templates.
 
 **`/show-findings --kev`** — Triage then list only CVEs on the CISA Known Exploited Vulnerabilities catalog. These are actively weaponized in the wild — treat as P0. `kevRansomware: true` means CISA has linked the CVE to ransomware campaigns.
 
