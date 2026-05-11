@@ -1,6 +1,6 @@
 ---
-description: Run the agentic-security scanner. Default (--all) gives a one-screen "safe to deploy?" verdict. Use --sca-only for dependency CVEs only, or --secrets-only for credential sweep only.
-argument-hint: "[path] [--all|--sca-only|--secrets-only]"
+description: Run the agentic-security scanner. Default (--all) gives a one-screen "safe to deploy?" verdict. Focused modes: --sca-only, --secrets-only, --authz, --mcp, --pipeline, --logic, --diff.
+argument-hint: "[path] [--all|--sca-only|--secrets-only|--authz|--mcp|--pipeline [--format pbom|cli|json]|--logic [--max <N>]|--diff [--since <git-ref>]]"
 ---
 
 Run the scanner against the target path.
@@ -8,35 +8,52 @@ Run the scanner against the target path.
 ```bash
 FLAG="--all"
 PATH_ARG="."
+EXTRA=""
+i=1
 for arg in "$@"; do
   case "$arg" in
-    --all|--sca-only|--secrets-only) FLAG="$arg" ;;
-    *) PATH_ARG="$arg" ;;
+    --all|--sca-only|--secrets-only|--authz|--mcp|--pipeline|--logic|--diff) FLAG="$arg" ;;
+    *) [ "$FLAG" = "--all" ] && PATH_ARG="$arg" || EXTRA="$EXTRA $arg" ;;
   esac
 done
 
 case "$FLAG" in
   --sca-only)
     node ${CLAUDE_PLUGIN_ROOT}/scanner/dist/agentic-security.mjs scan "$PATH_ARG" --only sca --format cli
-    ec=$?
-    [ $ec -le 3 ] && exit 0 || exit $ec
-    ;;
+    ec=$?; [ $ec -le 3 ] && exit 0 || exit $ec ;;
   --secrets-only)
     node ${CLAUDE_PLUGIN_ROOT}/scanner/dist/agentic-security.mjs scan "$PATH_ARG" --only secrets --format cli
-    ec=$?
-    [ $ec -le 3 ] && exit 0 || exit $ec
+    ec=$?; [ $ec -le 3 ] && exit 0 || exit $ec ;;
+  --authz)
+    node ${CLAUDE_PLUGIN_ROOT}/scanner/dist/agentic-security.mjs scan "$PATH_ARG" --format cli
+    ec=$?; [ $ec -le 3 ] && exit 0 || exit $ec ;;
+  --mcp)
+    node ${CLAUDE_PLUGIN_ROOT}/scanner/dist/agentic-security.mjs scan "$PATH_ARG" --format cli
+    ec=$?; [ $ec -le 3 ] && exit 0 || exit $ec ;;
+  --pipeline)
+    FORMAT=$(echo "$EXTRA" | grep -o -- '--format [a-z]*' | awk '{print $2}')
+    node ${CLAUDE_PLUGIN_ROOT}/scanner/dist/agentic-security.mjs scan . --format ${FORMAT:-cli}
+    ec=$?; [ $ec -le 3 ] && exit 0 || exit $ec ;;
+  --diff)
+    SINCE=$(echo "$EXTRA" | grep -o -- '--since [^ ]*' | awk '{print $2}')
+    node -e "
+import('${CLAUDE_PLUGIN_ROOT}/scanner/src/posture/material-change.js').then(m => {
+  const r = m.classifyGitDiff(process.cwd(), '${SINCE:-HEAD~1}');
+  process.stdout.write(JSON.stringify(r, null, 2));
+});
+" ;;
+  --logic)
+    echo "Invoking logic reviewer — reading last-scan route inventory..."
     ;;
   *)
     node ${CLAUDE_PLUGIN_ROOT}/scanner/dist/agentic-security.mjs ship "$PATH_ARG"
-    ec=$?
-    [ $ec -le 3 ] && exit 0 || exit $ec
-    ;;
+    ec=$?; [ $ec -le 3 ] && exit 0 || exit $ec ;;
 esac
 ```
 
 ## Modes
 
-**`/scan` or `/scan --all`** — Full SAST + SCA + secrets sweep. Renders a one-screen "safe to deploy?" verdict. If the verdict is ❌, ask which severity tier the user wants to fix:
+**`/scan` or `/scan --all`** — Full SAST + SCA + secrets sweep. One-screen "safe to deploy?" verdict. If ❌, ask which tier to fix:
 
 | Answer | Command |
 |--------|---------|
@@ -45,13 +62,18 @@ esac
 | Critical + High + Medium | `/fix --all --medium` |
 | All | `/fix --all --low` |
 
-If they ask to see specifics first, run `/scan --firehose` for the full per-finding list. Don't volunteer that list unprompted — the whole point of `/scan --all` is the one-screen summary.
+**`/scan --sca-only`** — Dependency CVE audit only (OSV.dev-backed). If suspicious packages appear, invoke the `sca-malware-analyst` subagent for a CLEAN/SUSPICIOUS/MALICIOUS verdict.
 
-**`/scan --sca-only`** — Dependency CVE audit only (OSV.dev-backed). Faster than a full scan when you've just updated a lockfile or added a package. If suspicious packages appear, invoke the `sca-malware-analyst` subagent for a CLEAN/SUSPICIOUS/MALICIOUS verdict per component.
+**`/scan --secrets-only`** — Secret sweep (60+ provider patterns + entropy detection). For any hit: rotate the credential immediately, move to a secrets manager, audit git history.
 
-**`/scan --secrets-only`** — Secret sweep (60+ provider patterns + entropy detection). Values are masked in output by default. For any genuine hit:
-1. Treat the credential as compromised — rotate it immediately at the provider.
-2. Move the value into a secrets manager or environment variable.
-3. Audit git history (`git log -p -S "<masked-value>"`) for prior exposure.
+**`/scan --authz`** — Deep auth/authZ audit (OWASP A01). Covers: JWT algorithm confusion, hardcoded JWT secrets, missing `algorithms:[]` constraint, OAuth2 PKCE absent on public clients, `redirect_uri` from request without allowlist, session fixation, multi-tenant queries missing `tenantId`/`orgId` filter.
+
+**`/scan --mcp`** — Audit MCP server configs (`claude_desktop_config.json`, `.mcp.json`, `mcp_servers.json`). Covers: untrusted install vectors (`curl | sh`), hardcoded API keys in `env:` blocks, prompt-injection in server descriptions, filesystem servers granted `/`/`~`/`$HOME`, dangerous capability names (`shell`, `exec`, `eval`), floating tags (`@latest`, `@main`).
+
+**`/scan --pipeline`** — Audit GitHub Actions workflows for supply-chain risk: floating tags, secret echoes, `write-all` permissions, OIDC misconfigurations, `github.event.*` script injection. Add `--format pbom` to emit a Pipeline Bill of Materials.
+
+**`/scan --logic [--max <N>]`** — Semantic business-logic review using the `security-logic-reviewer` subagent. Reads route handlers from the last scan's route inventory (run `/scan --all` first). Finds: broken authorization tier checks, race conditions, state-machine bypasses, intent vs. implementation gaps. Reads up to `--max` (default 8) handler files. For each finding, quotes the offending code, states the inferred intent, explains why it fails, describes the attacker move, and proposes a fix. Cross-references with engine pattern findings to avoid double-listing.
+
+**`/scan --diff [--since <git-ref>]`** — Score the git diff between `--since` (default `HEAD~1`) and `HEAD` by architectural risk. Passes the diff to the `security-material-change` subagent which emits a per-file findings report and a "what to verify before merging" checklist. Risk levels: `critical` (auth removed, new shell call) → recommend `/fix --one` + `/security-poc`; `high` → recommend `/security-poc`; `medium`/`low`/`none` → safe to merge.
 
 🛡  agentic-security · created by ClearCapabilities.Com

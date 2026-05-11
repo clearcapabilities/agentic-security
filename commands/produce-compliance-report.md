@@ -50,7 +50,7 @@ esac
 
 **`soc2`** — SOC 2 Common Criteria: logical access, MFA, encryption, monitoring, change management, vendor risk via SBOM, incident-response runbooks. For a full vendor questionnaire, also run:
 - `/security-sbom --format cyclonedx` (CC9.2 evidence)
-- `/security-pipeline --format pbom` (CC8.1 evidence)
+- `/scan --pipeline --format pbom` (CC8.1 evidence)
 - `/security-mttr` (CC7.x — proves SLA tracking)
 - `/security-api-inventory --format openapi` (CC6.x — proves access surface documented)
 - `/produce-compliance-report nist` (if the product uses GenAI)

@@ -14,30 +14,37 @@ EASY MODE — three commands. The whole product.
 
 DEVELOPER MODE — full catalog below.
 
-SCANNING & FIXING
+SCANNING
   /scan --all                Full SAST + SCA + secrets sweep (one-screen verdict)
   /scan --sca-only           Dependency CVE audit only (OSV.dev-backed)
   /scan --secrets-only       Hardcoded credential / API key scan only
+  /scan --authz              Deep auth/authZ audit — JWT, OAuth2, IDOR, session fixation
+  /scan --mcp                Audit MCP server configs for agent-host risks
+  /scan --pipeline           Audit GitHub Actions; --format pbom for Pipeline BOM
+  /scan --logic              Semantic business-logic review (intent vs. implementation)
+  /scan --diff               Score git diff by architectural risk (--since <ref>)
+
+VIEWING & ANALYSIS
+  /show-findings             Triage FPs then open interactive HTML report
+  /show-findings --kev       Show only CISA KEV (actively weaponized) findings
+  /show-findings --chains    Synthesize multi-finding exploit chains
+  /show-findings --threat-model  STRIDE table (add --llm for OWASP LLM Top 10)
+
+FIXING
   /fix --one <id>            Patch a single finding via the fixer subagent
   /fix --all [--critical|--high|--medium|--low]  Batch-fix by severity tier
   /fix --pr [--apply]        Bundle fixes into a feature branch + PR
 
-AI-NATIVE CAPABILITIES
-  /security-chain            Synthesize multi-finding exploit chains
+DEEP ANALYSIS
   /security-poc              Generate adversarial PoC for a specific finding
-  /security-logic-review     Intent-vs-implementation business logic review
-  /security-threat-model     Threat model from last scan (--stride or --llm for OWASP LLM Top 10)
-  /security-mcp-audit        Audit MCP server configs (agent-host risks)
-  /security-authz            Deep auth/authZ audit (OWASP A01)
-  /security-kev              List CVEs in CISA Known Exploited Vulnerabilities
-  /security-aibom            AI/ML Bill of Materials — models, prompts, frameworks, vector stores
+  /security-explain          Plain-English explanation of any finding
+  /security-launch-check     Pre-deploy 10-item checklist
 
 POSTURE MANAGEMENT
-  /security-material-change  Score a git diff by architectural risk
   /security-drift            Compare two scans (--from a.json --to b.json)
   /security-sbom             CycloneDX 1.6 or SPDX 2.3 software bill of materials
+  /security-aibom            AI/ML Bill of Materials — models, prompts, frameworks
   /security-api-inventory    Export full API surface map (md/json/openapi)
-  /security-pipeline         Audit GitHub Actions; emit a PBOM
   /security-license          Enforce license allow/deny policy on deps
   /security-mttr             Show findings older than per-severity SLA
 
