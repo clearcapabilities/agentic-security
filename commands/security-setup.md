@@ -26,7 +26,7 @@ argument-hint: "[path]"
 node $BUNDLE scan \${1:-.} --format cli --verbose
 \`\`\`
 After the scan, the JSON report is written to \`.agentic-security/last-scan.json\`.
-If you see critical findings, run \`/security-fix-all --severity critical\` to remediate.
+If you see critical findings, run \`/fix-all --severity critical\` to remediate.
 CMDEOF
 
 cat > .claude/commands/security-fix.md << CMDEOF
@@ -40,7 +40,7 @@ node $BUNDLE fix --finding \${1}
 Hand the finding off to the security-fixer subagent: read the affected file, apply the fix template adapted to the surrounding code, and run the project's test command if one is configured. Do not declare the fix complete until the finding no longer reproduces on re-scan.
 CMDEOF
 
-cat > .claude/commands/security-fix-all.md << CMDEOF
+cat > .claude/commands/fix-all.md << CMDEOF
 ---
 description: Remediate every finding at or above a severity threshold (default critical).
 argument-hint: "[--severity critical|high|medium]"
@@ -195,7 +195,7 @@ Run \`/agentic-security:security-recap\` for the recap card.
 CMDEOF
 
 echo "✓ Installed shortcuts in .claude/commands/:"
-echo "  /security-scan-all, /security-fix, /security-fix-all"
+echo "  /security-scan-all, /security-fix, /fix-all"
 echo "  /security-report, /security-sca, /security-secrets"
 echo "  /security-mcp-audit, /security-authz, /security-kev"
 echo "  /security-help, /security-status"

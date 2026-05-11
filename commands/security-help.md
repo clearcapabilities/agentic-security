@@ -5,12 +5,19 @@ description: List every agentic-security command organized by category, with one
 Print the full agentic-security command catalog.
 
 ```
-agentic-security commands — 35 total
+agentic-security commands
+
+EASY MODE — three commands. The whole product.
+  /scan-all                  One-screen "safe to deploy?" verdict
+  /show-findings             Print findings from the last scan
+  /fix-all                   Batch-fix every finding at or above --severity
+
+DEVELOPER MODE — full catalog below.
 
 SCANNING & FIXING
   /security-scan-all         Full SAST + SCA + secrets + IaC sweep
   /security-fix              Patch a single finding (by id) via the fixer subagent
-  /security-fix-all          Batch-fix every finding at or above --severity
+  /fix-all                   Batch-fix every finding at or above --severity
   /security-fix-pr           Bundle critical fixes into a feature branch + PR
   /security-report           Self-contained HTML report (also json/md/sarif/sbom)
   /security-triage           Validate findings; suppress confirmed false positives

@@ -63,7 +63,7 @@ except ImportError:
 
 
 REPO_ROOT = Path(__file__).resolve().parent.parent.parent
-DEFAULT_XLSX = REPO_ROOT / "NIST AI 600-1.xlsx"
+DEFAULT_XLSX = REPO_ROOT / "docs" / "NIST AI 600-1.xlsx"
 DEFAULT_RULES = Path(__file__).resolve().parent / "evidence-rules.json"
 
 SKIP_DIRS = {

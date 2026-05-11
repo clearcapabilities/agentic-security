@@ -13,5 +13,5 @@ After the scan, the JSON report is persisted to `.agentic-security/last-scan.jso
 
 If you see critical findings, you can:
 - Run `/agentic-security:security-fix <finding-id>` to apply a remediation patch via the `security-fixer` subagent
-- Run `/agentic-security:security-fix-all --severity critical` to remediate every critical finding
+- Run `/agentic-security:fix-all --severity critical` to remediate every critical finding
 - Run `/agentic-security:security-drift` to compare this scan against a prior scan JSON

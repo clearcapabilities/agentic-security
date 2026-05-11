@@ -50,10 +50,10 @@ But if you're not safe?
 
      Why: An attacker can dump your entire users table.
 
-  Type /fix 1 to apply.
+  Type /fix-all to apply.
 ```
 
-You type `/fix 1`. Code is patched. Run `/scan-all` again. Green.
+You type `/fix-all`. Code is patched. Run `/scan-all` again. Green.
 
 That's the entire product.
 
@@ -66,9 +66,9 @@ That's the entire product.
 For the vibecoder. The solo founder. The Cursor warrior. The "I just want to ship" generation.
 
 ```
-/security-onboard      # 30 seconds, once
-/scan-all              # daily, before deploy
-/fix 1                 # when /scan-all has notes
+/scan-all              # daily, before deploy — one-screen verdict
+/show-findings         # print the findings from the last scan
+/fix-all               # batch-fix everything at/above a severity
 ```
 
 Three commands. We thought about adding more.

@@ -26,14 +26,14 @@ runs, **do not list individual findings.** Instead:
 
   Wait for their answer before doing anything else.
 
-Map the answer to `/security-fix-all` and run it:
+Map the answer to `/fix-all` and run it:
 
 | Answer | Command |
 |---|---|
-| 1 (Critical only)              | `/security-fix-all --severity critical` |
-| 2 (Critical + High)            | `/security-fix-all --severity high`     |
-| 3 (Critical + High + Medium)   | `/security-fix-all --severity medium`   |
-| 4 (All)                        | `/security-fix-all --severity low`      |
+| 1 (Critical only)              | `/fix-all --severity critical` |
+| 2 (Critical + High)            | `/fix-all --severity high`     |
+| 3 (Critical + High + Medium)   | `/fix-all --severity medium`   |
+| 4 (All)                        | `/fix-all --severity low`      |
 
 If they ask to see specifics first, run `/security-scan-all --firehose` for
 the full per-finding list. Don't volunteer that list unprompted — the whole

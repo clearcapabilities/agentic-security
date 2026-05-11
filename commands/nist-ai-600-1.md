@@ -15,7 +15,7 @@ Three files are written to the current directory:
 - `nist-ai-600-1-attestation.csv` — one row per control for spreadsheet review
 - `nist-ai-600-1-attestation.json` — machine-readable for CI gating
 
-The scanner only opines on the **122 code-testable controls** (55 "Yes" + 67 "Partial" in column F of `NIST AI 600-1.xlsx`). The remaining 90 controls are inherently organizational and need external attestation (signed policies, training records, vendor agreements). Those are listed in the source xlsx as `Code Testable = No` and are not part of this scan.
+The scanner only opines on the **122 code-testable controls** (55 "Yes" + 67 "Partial" in column F of `docs/NIST AI 600-1.xlsx`). The remaining 90 controls are inherently organizational and need external attestation (signed policies, training records, vendor agreements). Those are listed in the source xlsx as `Code Testable = No` and are not part of this scan.
 
 After the scan you can:
 

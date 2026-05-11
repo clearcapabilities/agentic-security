@@ -577,7 +577,7 @@ node ${bundle} scan \${1:-.}; ec=$?; [ $ec -le 3 ] && exit 0 || exit $ec
 \`\`\`
 Output is a grouped summary: severity counts, finding types by frequency, top affected files.
 Use \`--format cli\` for the full per-finding list. Findings are always saved to \`.agentic-security/last-scan.json\`.
-If you see critical findings, run \`/security-fix-all --severity critical\` to remediate.
+If you see critical findings, run \`/fix-all --severity critical\` to remediate.
 `,
     'security-fix.md': `---
 description: Apply a remediation patch for a single finding from the last scan.
@@ -588,7 +588,7 @@ node ${bundle} fix --finding \${1}
 \`\`\`
 Hand the finding to the security-fixer subagent: read the file, apply the fix template adapted to the surrounding code, and run the project's test command. Do not declare done until the finding no longer reproduces on re-scan.
 `,
-    'security-fix-all.md': `---
+    'fix-all.md': `---
 description: Remediate every finding at or above a severity threshold (default: critical).
 argument-hint: "[--severity critical|high|medium]"
 ---

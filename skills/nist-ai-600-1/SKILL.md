@@ -78,4 +78,4 @@ Evidence rules live in `scripts/nist-compliance/evidence-rules.json` — one ent
 
 ## Source data
 
-The 212-control catalog is in `NIST AI 600-1.xlsx` at the repo root, with column F (`Code Testable`) added by this plugin. Re-running with `--xlsx <path>` lets you point at an updated catalog.
+The 212-control catalog is in `docs/NIST AI 600-1.xlsx`, with column F (`Code Testable`) added by this plugin. Re-running with `--xlsx <path>` lets you point at an updated catalog.

@@ -157,9 +157,9 @@ if (streak && streak.totalScans) {
   }
 }
 if (counts.critical > 0) {
-  console.log('Action: ' + counts.critical + ' critical finding(s). Run /security-fix-all --severity critical');
+  console.log('Action: ' + counts.critical + ' critical finding(s). Run /fix-all --severity critical');
 } else if (counts.high > 0) {
-  console.log('Action: ' + counts.high + ' high finding(s). Run /security-fix-all --severity high');
+  console.log('Action: ' + counts.high + ' high finding(s). Run /fix-all --severity high');
 } else if (!startedAt) {
   console.log('Action: run /security-scan-all to take a first inventory');
 } else {
