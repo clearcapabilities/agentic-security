@@ -2,7 +2,7 @@
 
 ### The Claude Code Plugin that Catches what your AI Assistant Misses.
 
-> Built by **[ClearCapabilities.Com](https://clearcapabilities.com)** · Runs inside Claude Code · Free for solo devs
+> Built by **[ClearCapabilities.Com](https://clearcapabilities.com)** · Runs inside Claude Code
 
 [![License](https://img.shields.io/badge/license-PolyForm--Internal--Use-blue)](./LICENSE)
 [![Tests](https://img.shields.io/badge/tests-75%2F75-brightgreen)]()
@@ -106,7 +106,7 @@ It's **fast.** First scan in under five seconds on most projects. Every save aft
 
 ## What it catches
 
-The five things your AI assistant writes wrong, every single time:
+There's a lot that an AI assistant can code incorrectly. For example:
 
 1. **SQL injection.** User input glued into queries.
 2. **Hardcoded secrets.** API keys in source — caught the moment you save.
