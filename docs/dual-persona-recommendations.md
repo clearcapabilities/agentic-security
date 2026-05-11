@@ -29,7 +29,7 @@ The existing vibecoder PRD makes the tool more approachable but also more *opini
 | Trust signal | "It just works" | Reproducible F1, signed evidence |
 | Vocabulary | Plain English | CWE / CVSS / STRIDE / MITRE ATT&CK |
 | Default verbosity | One line | Full taxonomy |
-| Workflow | Interactive `/ship` | CI/CD batch, scheduled scans |
+| Workflow | Interactive `/scan` | CI/CD batch, scheduled scans |
 | Suppression model | Soft 30-day | Justified, reviewed, audit-trail |
 | Integrations | Slack digest, GitHub PR comment | Jira, ServiceNow, GitHub Security tab, SARIF, SIEM |
 | Scope | Single repo | Org-wide, monorepo, fleet |
@@ -417,7 +417,7 @@ Each path leads to a tailored quick-start, value prop, and pricing.
 
 **Vibecoder path:**
 - "Ship safely without learning what XSS means"
-- `/ship` quick-start
+- `/scan` quick-start
 - Free forever for solo / teams ≤ 10
 - Sample badges, share buttons
 
@@ -474,7 +474,7 @@ A change qualifies as PRD-complete when ALL of:
 2. Vibecoder profile renders zero CWE / CVSS / STRIDE / SARIF references in default output.
 3. Pro profile shows full taxonomy + machine output by default + Jira/SARIF integration paths are documented.
 4. Pro-only commands (`/security-triage`, `/security-org-scan`, `/security-jira`, etc.) are hidden from vibecoder `/help`.
-5. Vibecoder-only UX (`/ship`, `/accept`, `--for cofounder`) is hidden from pro `/help` *unless* explicitly requested.
+5. Vibecoder-only UX (`/scan`, `/accept`, `--for cofounder`) is hidden from pro `/help` *unless* explicitly requested.
 6. All 6 benchmark F1 floors hold (Synthetic 100%, OWASP/SARD 95%, JS/TS apps 100%, new vibecoder-nextjs 100%).
 7. Pro suppressions require justification + reviewer + expiry; missing fields rejected at validate time.
 8. `/security-onboard --pro` and `/security-onboard --vibecoder` set the profile correctly and don't bleed defaults.
@@ -501,7 +501,7 @@ A change qualifies as PRD-complete when ALL of:
 
 | Capability | Vibecoder default | Pro default | Source of truth |
 |-----------|-------------------|-------------|-----------------|
-| Output rendering | `/ship` verdict | SARIF + JSON + terminal table | R2 |
+| Output rendering | `/scan` verdict | SARIF + JSON + terminal table | R2 |
 | Confidence threshold | ≥ 0.9 | ≥ 0.3 | R3 |
 | Taxonomy columns | hidden | CWE+CVSS+OWASP+MITRE+CAPEC | R5 |
 | Suppression schema | soft 30-day | audit-grade, reviewed | R4 |

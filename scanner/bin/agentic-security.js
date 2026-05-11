@@ -24,7 +24,7 @@ const USAGE = `agentic-security <command> [options]
 
 Commands:
   scan [path]                  Full SAST + SCA + Secrets sweep (default: cwd)
-  ship                         Vibecoder verdict — "safe to deploy?" yes/no
+  ship                         (internal) Vibecoder verdict — invoked by /scan
   fix --finding <id> [--apply] Apply fix for a single finding
   accept --finding <id>        Soft-suppress a finding for 30 days (vibecoder)
   setup [project-dir]          Install /security-* shortcut commands into a project
@@ -213,7 +213,7 @@ async function cmdScan(args) {
   return exitCodeFor(scan);
 }
 
-// /ship — vibecoder one-screen verdict.
+// /scan — vibecoder one-screen verdict (internal CLI subcommand: `ship`).
 async function cmdShip(args) {
   const target = args._[1] || '.';
   args.flags.format = 'ship';
@@ -587,7 +587,7 @@ async function main() {
       case 'rules':    process.exit(await cmdRules(args));
       case 'digest':   process.exit(await cmdDigest(args));
       case 'setup':    process.exit(await cmdSetup(args));
-      case 'version':  console.log('agentic-security 0.16.2  ·  created by ClearCapabilities.Com'); process.exit(0);
+      case 'version':  console.log('agentic-security 0.16.3  ·  created by ClearCapabilities.Com'); process.exit(0);
       case 'help': case '--help': case '-h': case undefined:
         console.log(USAGE); process.exit(cmd ? 0 : 1);
       default:

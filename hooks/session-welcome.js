@@ -38,7 +38,7 @@ if (isFirstTime) {
     '🛡  agentic-security is active in this project.',
     '   Created by ClearCapabilities.Com — https://clearcapabilities.com',
     '',
-    '   Building an app?            → /ship',
+    '   Building an app?            → /scan',
     '   AppSec / security work?     → /security-scan-all',
     '   Not sure which you are?     → /security-onboard',
     '',

@@ -77,12 +77,12 @@ We also explicitly preserve everything the vibecoder loves:
 
 Ten workstreams, sequenced by ROI. Each names the hate/wish it addresses and the F1 guard.
 
-### WS1 — Ship-Ready verdict (`/ship`) [addresses H9, H10, wish "ship-ready button"]
+### WS1 — Ship-Ready verdict (`/scan`) [addresses H9, H10, wish "ship-ready button"]
 
 **Goal:** A single command, single screen, single answer.
 
 ```
-$ /ship
+$ /scan
 ─────────────────────────────────────────
   ✅  Safe to deploy
 ─────────────────────────────────────────
@@ -111,18 +111,18 @@ Or, if not safe:
 ```
 
 **Implementation:**
-- New `/ship` skill that wraps `security-scan-all` + filter to actionable + render verdict.
+- New `/scan` skill that wraps `security-scan-all` + filter to actionable + render verdict.
 - Demotes anything without a copy-paste fix to advisory.
 - Hides per-file lists, hides taxonomy, hides severity inflation.
 - All 37 existing commands stay — they're now power-user commands.
 
-**F1 guard:** `/ship` calls the same engine. Nothing changes about detection — only rendering. CI bench unchanged.
+**F1 guard:** `/scan` calls the same engine. Nothing changes about detection — only rendering. CI bench unchanged.
 
 ### WS2 — Tiered output (`--for me / --for cofounder / --for investor`) [wish "tiered output", "investor-mode"]
 
 **Goal:** Same scan results, three audiences.
 
-- `--for me` (default): the `/ship` style verdict above.
+- `--for me` (default): the `/scan` style verdict above.
 - `--for cofounder`: one paragraph, plain English, no jargon. "Your auth is mostly fine. Two issues — both 1-line fixes. Estimated 10 minutes."
 - `--for investor`: rendered PDF, includes "compared to peers" framing, compliance attestations, no CWE numbers visible.
 
@@ -296,7 +296,7 @@ wrangler.toml:
 fly deploy --build-arg AGENTIC_SECURITY_GATE=1
 ```
 
-`ship --hard` exits non-zero on any critical, blocking the deploy at the platform level. The error message is one line: `Refusing to deploy — 1 critical finding. Run /ship to see it.`
+`ship --hard` exits non-zero on any critical, blocking the deploy at the platform level. The error message is one line: `Refusing to deploy — 1 critical finding. Run /scan to see it.`
 
 **Implementation:**
 - New `--hard` mode for `ship` that pipes findings → exit code.
@@ -341,7 +341,7 @@ fly deploy --build-arg AGENTIC_SECURITY_GATE=1
 **Honest mode (high-precision-only):**
 - New `--honest` flag (or `/security-scan-all --honest`).
 - Shows only findings where (a) we have a concrete exploit *or* (b) a copy-paste fix exists *and* (c) confidence ≥ 0.9.
-- Default in `/ship`.
+- Default in `/scan`.
 - Power-user mode (`--firehose`) shows everything including advisory.
 
 **F1 guard:** Honest mode is an output filter, not a detection filter. CI bench runs in full-firehose mode. Per-app bench floors unchanged.
@@ -377,11 +377,11 @@ $ /security-onboard
   
   Saved config to .agentic-security/profile.yml
   Recommended commands:
-    /ship          — daily check
+    /scan          — daily check
     /prereview     — after every AI-written diff
     /fix-all       — when you have time to batch-fix
   
-  Run /ship now? [Y/n]
+  Run /scan now? [Y/n]
 ```
 
 **Implementation:**
@@ -397,7 +397,7 @@ $ /security-onboard
 **Goal:** Make abstract findings hit emotionally with a dollar figure.
 
 ```
-$ /ship
+$ /scan
   ❌  Not safe to deploy
   
   💰 Estimated downside if exploited: $50k – $300k
@@ -409,7 +409,7 @@ $ /ship
 
 **Implementation:**
 - New data file `data/breach-cost-table.json` mapping (family, business-size) → range.
-- Render under the verdict in `/ship` when applicable.
+- Render under the verdict in `/scan` when applicable.
 - Source: IBM Cost of a Data Breach annual report (publicly cited, frequently updated).
 - Disclaimer "estimate" link to methodology page.
 
@@ -430,10 +430,10 @@ New README opens:
 
 The boring copilot for shipping safely.
 
-  $ /ship
+  $ /scan
   ✅ Safe to deploy
   
-  $ /ship  (after Claude wrote a SQL bug)
+  $ /scan  (after Claude wrote a SQL bug)
   ❌ 1 fix: routes/login.ts:34 → /fix 1
   
   $ /fix 1
@@ -465,7 +465,7 @@ Strategy: **don't delete, demote.** Group commands into three visibility tiers.
 
 | Tier | Examples | Where visible |
 |------|----------|---------------|
-| Primary (5) | `/ship`, `/fix`, `/prereview`, `/explain`, `/accept` | README, onboarding, help, autocomplete top |
+| Primary (5) | `/scan`, `/fix`, `/prereview`, `/explain`, `/accept` | README, onboarding, help, autocomplete top |
 | Workflow (~10) | `/security-scan-all`, `/security-fix-all`, `/security-recap`, `/exploit`, `/share`, `/security-digest`, `/security-onboard`, `/security-baseline`, `/security-report`, `/details` | README "more commands" section, /help second screen |
 | Power user (~22+) | The rest: `/security-sbom`, `/security-aibom`, `/security-llm-threat-model`, `/security-pipeline`, `/security-drift`, `/security-mttr`, `/owasp-asvs`, `/pci-dss`, `/soc2`, `/nist-ai-600-1`, etc. | `/help all`, plugin docs page only |
 
@@ -531,7 +531,7 @@ This PRD adds a LOT. The single non-negotiable: **no change merges if any of the
 
 | Wk | Workstream | Headline deliverable |
 |----|------------|----------------------|
-| 1 | WS1 + WS3 | `/ship` and inline-fix output. Single visible PR with full new UX |
+| 1 | WS1 + WS3 | `/scan` and inline-fix output. Single visible PR with full new UX |
 | 1 | WS8 | README/landing rewrite + tier-3 command reorganization |
 | 2 | WS4 | Stack-preset infrastructure + Next.js/Supabase/Clerk preset |
 | 2 | WS9 | Perf optimizations: stricter excludes, AST cache, sub-5s gate |
@@ -553,13 +553,13 @@ This PRD adds a LOT. The single non-negotiable: **no change merges if any of the
 
 A change qualifies as PRD-complete when ALL of:
 
-1. A vibecoder running `/ship` on a fresh Next.js + Supabase app sees either ✅ or ≤ 3 specific actionable items.
+1. A vibecoder running `/scan` on a fresh Next.js + Supabase app sees either ✅ or ≤ 3 specific actionable items.
 2. Sub-5-second wall-clock on the `vibecoder-nextjs` perf bench.
 3. README quick-start uses zero of: CWE, STRIDE, CVSS, SAST, SCA, SARIF.
 4. All 6 benchmark floors hold (Synthetic 100%, OWASP/SARD 95%, JS/TS apps 100%, new vibecoder-nextjs 100%).
 5. `/help` default screen lists ≤ 5 commands.
 6. Every finding shown in default output has either a `code:` fix snippet or a `pocBuildable: true` marker.
-7. `--honest` mode is a strict subset of `--firehose` and is the default for `/ship`.
+7. `--honest` mode is a strict subset of `--firehose` and is the default for `/scan`.
 8. License is restated in one sentence at the top of the README.
 9. The phrase "OWASP" appears at most twice in the README first-screen.
 10. Every primary-tier command has been tested by at least one self-identifying vibecoder.
@@ -570,7 +570,7 @@ A change qualifies as PRD-complete when ALL of:
 
 | Risk | Mitigation |
 |------|------------|
-| Defaulting to `--honest` hides real findings → users miss real bugs | The `/ship` output makes clear there's a `--firehose` for the full list. Auto-prompts after the third "❌ not safe" to suggest reviewing advisory items |
+| Defaulting to `--honest` hides real findings → users miss real bugs | The `/scan` output makes clear there's a `--firehose` for the full list. Auto-prompts after the third "❌ not safe" to suggest reviewing advisory items |
 | Stack-preset detection picks the wrong stack | First-run prompt confirms detected stack. `/security-onboard` lets user correct it. Default-fall-back is "generic" which loads all rules |
 | Sub-5s gate trades correctness for speed | F1 gate runs first. If a perf optimization drops F1, it doesn't merge |
 | Cofounder/investor renders feel patronizing to technical buyers | Tier is opt-in via flag or `/security-onboard` profile. Default is `--for me` (technical) |
@@ -585,11 +585,11 @@ A change qualifies as PRD-complete when ALL of:
 
 How we know it worked, six months after shipping:
 
-- **Activation:** 80% of users run `/ship` in their first session (currently most run `/security-scan-all`).
-- **Retention:** 60% of users who run `/ship` once run it again within 7 days.
-- **Fix rate:** 50%+ of findings shown in `/ship` get `/fix`'d within the same session.
+- **Activation:** 80% of users run `/scan` in their first session (currently most run `/security-scan-all`).
+- **Retention:** 60% of users who run `/scan` once run it again within 7 days.
+- **Fix rate:** 50%+ of findings shown in `/scan` get `/fix`'d within the same session.
 - **Time-to-action:** Median time from first finding to first `/fix` < 2 minutes (currently unknown; likely 5+ min).
-- **Trust:** When `/ship` says ✅, the next deploy succeeds without a security issue 99% of the time.
+- **Trust:** When `/scan` says ✅, the next deploy succeeds without a security issue 99% of the time.
 - **Headline F1s unchanged:** Synthetic 100%, OWASP/SARD 95+%, JS/TS apps 100%.
 - **Bundle size:** ≤ 3.5MB (currently 2.1MB; we add some helpers, lazy-load others).
 - **NPS-ish:** Twitter/X mentions trend from "what does CWE-79 mean" to "agentic-security caught my dumb auth bug, nice."
@@ -600,7 +600,7 @@ How we know it worked, six months after shipping:
 
 | Pain (from session) | Workstream |
 |---------------------|------------|
-| H1 Alphabet soup | WS3 (inline-fix format), WS1 (`/ship` verdict), README rewrite |
+| H1 Alphabet soup | WS3 (inline-fix format), WS1 (`/scan` verdict), README rewrite |
 | H2 37+ commands | §8 Command surface reduction |
 | H3 Findings without fix | WS3 |
 | H4 Critical inflation | WS3 + WS10 honest mode |
@@ -608,7 +608,7 @@ How we know it worked, six months after shipping:
 | H6 F1 scores in README | README rewrite |
 | H7 License confusion | README rewrite (one-sentence restatement) |
 | H8 Unrequested compliance | Compliance moves to power-tier commands |
-| H9 Dense terminal output | WS1 `/ship` + WS3 inline-fix |
+| H9 Dense terminal output | WS1 `/scan` + WS3 inline-fix |
 | H10 node_modules scanning | §9 stricter default excludes |
 | Wish: ship-ready button | WS1 |
 | Wish: stack presets | WS4 |
@@ -635,7 +635,7 @@ Explicitly out-of-scope-for-removal:
 
 - `/security-fix-all` — keep, promote.
 - Local-first, no signup — keep.
-- Streaks + tiers + badges — keep, surface in `/ship` ✅ output.
+- Streaks + tiers + badges — keep, surface in `/scan` ✅ output.
 - Plain-English `/security-explain` — keep, promote to primary tier.
 - PR comment status check — keep, slim down to one line + "see details" link.
 - Compliance attestation outputs — keep, demote to power tier.

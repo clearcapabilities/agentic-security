@@ -3,9 +3,9 @@ description: One-screen verdict — "safe to deploy?" — and if not, asks which
 argument-hint: "[path]"
 ---
 
-Run the agentic-security scanner in `ship` mode against `${1:-.}` and render the
-one-screen verdict. This is the vibecoder default: high-confidence findings only,
-no CWE/CVSS jargon.
+Run the agentic-security scanner against `${1:-.}` and render the one-screen
+verdict. This is the vibecoder default: high-confidence findings only, no
+CWE/CVSS jargon.
 
 ```bash
 node ${CLAUDE_PLUGIN_ROOT}/scanner/dist/agentic-security.mjs ship ${1:-.}; ec=$?; [ $ec -le 3 ] && exit 0 || exit $ec
@@ -25,6 +25,6 @@ Once the user picks a severity, run `/security-fix-all --severity <their choice>
 
 If they ask to see specifics first, run `/security-scan-all --firehose` for
 the full per-finding list. Don't volunteer that list unprompted — the whole
-point of `/ship` is the one-screen summary.
+point of `/scan` is the one-screen summary.
 
 🛡  agentic-security · created by ClearCapabilities.Com

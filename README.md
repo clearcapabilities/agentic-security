@@ -7,7 +7,7 @@
 [![License](https://img.shields.io/badge/license-PolyForm--Internal--Use-blue)](./LICENSE)
 [![Tests](https://img.shields.io/badge/tests-75%2F75-brightgreen)]()
 [![Bundle](https://img.shields.io/badge/bundle-2.16MB-orange)]()
-[![Version](https://img.shields.io/badge/version-0.16.0-blue)]()
+[![Version](https://img.shields.io/badge/version-0.16.3-blue)]()
 
 ---
 
@@ -25,7 +25,7 @@ You don't know this yet. Neither does Claude.
 
 ---
 
-## This is `/ship`.
+## This is `/scan`.
 
 Type it. Get one answer.
 
@@ -53,7 +53,7 @@ But if you're not safe?
   Type /fix 1 to apply.
 ```
 
-You type `/fix 1`. Code is patched. Run `/ship` again. Green.
+You type `/fix 1`. Code is patched. Run `/scan` again. Green.
 
 That's the entire product.
 
@@ -67,8 +67,8 @@ For the vibecoder. The solo founder. The Cursor warrior. The "I just want to shi
 
 ```
 /security-onboard      # 30 seconds, once
-/ship                  # daily, before deploy
-/fix 1                 # when /ship has notes
+/scan                  # daily, before deploy
+/fix 1                 # when /scan has notes
 ```
 
 Three commands. We thought about adding more.
@@ -126,7 +126,7 @@ In Claude Code:
 /plugin install agentic-security
 ```
 
-That's it. Now type `/ship`.
+That's it. Now type `/scan`.
 
 For CI, command line, or any project anywhere:
 
