@@ -69,14 +69,12 @@ description: Pre-deploy 10-item checklist — the things beginners typically mis
 Run \`/agentic-security:security-launch-check\` for the pre-launch checklist.
 CMDEOF
 
-cat > .claude/commands/security-aibom.md << CMDEOF
+cat > .claude/commands/security-posture.md << CMDEOF
 ---
-description: Generate an AI/ML Bill of Materials — every model, prompt template, framework, and vector store your project uses.
-argument-hint: "[--format aibom|aibom-md]"
+description: Posture management — SBOM, AI-BOM, API inventory, license policy, drift analysis, SLA tracking.
+argument-hint: "[--sbom|--aibom|--api|--license|--drift|--mttr] [options]"
 ---
-\`\`\`bash
-node $BUNDLE scan . --format \${1:-aibom-md}
-\`\`\`
+Run \`/agentic-security:security-posture \$@\` for posture management.
 CMDEOF
 
 cat > .claude/commands/show-findings.md << CMDEOF
@@ -108,7 +106,7 @@ echo "  /scan, /show-findings, /fix"
 echo "  /scan --authz, /scan --mcp, /scan --pipeline, /scan --diff, /scan --logic"
 echo "  /security-help, /security-status"
 echo "  /security-explain, /security-grade, /security-launch-check"
-echo "  /security-aibom, /show-findings --threat-model [--stride|--llm]"
+echo "  /security-posture --sbom/--aibom/--api/--license/--drift/--mttr"
 echo "  /security-share [twitter|linkedin|discord|recap|all]"
 echo "  /produce-compliance-report [nist|asvs|pci|soc2]"
 echo ""

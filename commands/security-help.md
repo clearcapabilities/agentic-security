@@ -41,12 +41,12 @@ DEEP ANALYSIS
   /security-launch-check     Pre-deploy 10-item checklist
 
 POSTURE MANAGEMENT
-  /security-drift            Compare two scans (--from a.json --to b.json)
-  /security-sbom             CycloneDX 1.6 or SPDX 2.3 software bill of materials
-  /security-aibom            AI/ML Bill of Materials — models, prompts, frameworks
-  /security-api-inventory    Export full API surface map (md/json/openapi)
-  /security-license          Enforce license allow/deny policy on deps
-  /security-mttr             Show findings older than per-severity SLA
+  /security-posture --sbom   CycloneDX 1.6 or SPDX 2.3 software bill of materials
+  /security-posture --aibom  AI/ML Bill of Materials — models, prompts, frameworks
+  /security-posture --api    Full API surface map annotated with auth status + data classes
+  /security-posture --license  Enforce license allow/deny policy on deps (--init to create)
+  /security-posture --drift  Compare two scans — lost auth, new findings, new deps
+  /security-posture --mttr   Show findings exceeding per-severity SLA thresholds
 
 COMPLIANCE ATTESTATION
   /produce-compliance-report [nist|asvs|pci|soc2]  Auditor-ready attestation for any framework
