@@ -415,7 +415,7 @@ function _isIaCFile(p){
   return false;
 }
 function getExt(n){const p=n.split(".");return p.length>1?p.pop().toLowerCase():"";}
-function shouldScan(p){if(/\.(test|spec|mock)\./i.test(p))return false;if(/\.min\.[mc]?js$/i.test(p))return false;for(const x of p.split("/"))if(IGNORE_DIRS.has(x))return false;return CODE_EXTS.has(getExt(p)) || _isIaCFile(p);}
+function shouldScan(p){if(/\.(test|spec|mock)\./i.test(p))return false;if(/_test\.go$/i.test(p))return false;if(/_spec\.rb$/i.test(p))return false;if(/Test\.(?:java|cs|kt|scala)$/i.test(p))return false;if(/\.min\.[mc]?js$/i.test(p))return false;for(const x of p.split("/"))if(IGNORE_DIRS.has(x))return false;return CODE_EXTS.has(getExt(p)) || _isIaCFile(p);}
 function lineAt(c,i){return c.substring(0,i).split("\n").length;}
 
 
@@ -1267,7 +1267,7 @@ const LOGIC_PATTERNS=[
   {regex:/\.(?:isAdmin|isRole|role)\s*(?:===?\s*(?:true|['"]admin['"])|\)\s*\{)/g,vuln:"Inline Privilege Check",severity:"medium",cwe:"CWE-863",stride:"Elevation of Privilege",fix:"Use middleware-based RBAC instead of inline role checks.",code:"// BEFORE\nif (user.isAdmin) deleteAll();\n\n// AFTER\nrouter.delete('/all', requireRole('admin'), handler);"},
   {regex:/(?:privateKey|secretKey|signingKey|jwtSecret)\s*[=:]\s*['"`][-]{5}BEGIN/gi,vuln:"Exposed Private Key",severity:"critical",cwe:"CWE-321",stride:"Information Disclosure",kind:"secret",fix:"Never hardcode private keys. Load from environment variables or a secrets manager.",code:"// BEFORE\nconst privateKey = '-----BEGIN RSA PRIVATE KEY-----...';"+"\n\n// AFTER\nconst privateKey = process.env.RSA_PRIVATE_KEY;"},
   {regex:/createHmac\s*\(\s*['"][^'"]+['"]\s*,\s*['"][^'"]{8,}['"]/g,vuln:"Hardcoded HMAC Secret",severity:"critical",cwe:"CWE-321",stride:"Information Disclosure",kind:"secret",fix:"Use environment variables for HMAC signing secrets.",code:"// BEFORE\ncrypto.createHmac('sha256', 'hardcoded_secret');"+"\n\n// AFTER\ncrypto.createHmac('sha256', process.env.HMAC_SECRET);"},
-  {regex:/(?:quantity|amount|price|total)\s*(?:<|>|<=|>=|!==?|===?)\s*0/g,vuln:"Missing Unsigned Numeric Validation",severity:"medium",cwe:"CWE-20",stride:"Tampering",fix:"Validate that numeric inputs are positive integers server-side before processing.",code:"// BEFORE\nawait BasketItem.update({ quantity: req.body.quantity });"+"\n\n// AFTER\nif (!Number.isInteger(req.body.quantity) || req.body.quantity < 1)\n  return res.status(400).json({ error: 'Invalid quantity' });"},
+  {regex:/(?:quantity|amount|price|total)\s*(?:<|>|<=|>=|!==?|===?)\s*0/g,vuln:"Missing Unsigned Numeric Validation",severity:"medium",cwe:"CWE-20",stride:"Tampering",langScope:/\.(?:js|jsx|ts|tsx|mjs|cjs|py|rb|php)$/i,fix:"Validate that numeric inputs are positive integers server-side before processing.",code:"// BEFORE\nawait BasketItem.update({ quantity: req.body.quantity });"+"\n\n// AFTER\nif (!Number.isInteger(req.body.quantity) || req.body.quantity < 1)\n  return res.status(400).json({ error: 'Invalid quantity' });"},
   // Juice Shop: feedback/review without purchase check
   {regex:/(?:Feedback|Review|Comment)\.create\s*\(/g,vuln:"Feedback Without Purchase Verification",severity:"medium",cwe:"CWE-840",stride:"Tampering",fix:"Verify user has purchased the product before allowing reviews.",code:"const order = await Order.findOne({ userId: req.user.id, ProductId: req.body.ProductId });\nif (!order) return res.status(403).json({ error: 'Not purchased' });"},
   // Juice Shop: zero-star / forced rating
@@ -1765,6 +1765,7 @@ function scanStructuralVulns(fp, raw) {
   const ctx = inferFileContext(fp, raw);
   for (const pat of STRUCTURAL_VULN_PATTERNS) {
     if (!_ruleAppliesIn(pat, ctx)) { _suppressionLog.push({vuln:pat.vuln,file:fp,line:0,snippet:'',reason:'context-mismatch:'+ctx.kind}); continue; }
+    if (pat.langScope && !pat.langScope.test(fp)) { continue; }
     const re = new RegExp(pat.regex.source, pat.regex.flags);
     // Default: match against the string-stripped view so rule-library shapes
     // ('exec(' inside a fix-message) don't self-detect. Patterns that need to
@@ -2283,6 +2284,7 @@ function scanLogicVulns(fp,raw){
   const ctx = inferFileContext(fp, raw);
   for(const pat of LOGIC_PATTERNS){
     if (!_ruleAppliesIn(pat, ctx)) { _suppressionLog.push({vuln:pat.vuln,file:fp,line:0,snippet:'',reason:'context-mismatch:'+ctx.kind}); continue; }
+    if (pat.langScope && !pat.langScope.test(fp)) { continue; }
     const re=new RegExp(pat.regex.source,pat.regex.flags);
     const predicate = _logicPredicateFor(pat.vuln);
     const haystack = pat.stripsStrings ? cleanedFull : cleaned;
@@ -3928,6 +3930,11 @@ function _inClass(ch, cls){
   return cls.negate ? !cls.members.has(ch) : cls.members.has(ch);
 }
 function scanReDoS(fp,raw){
+  // ReDoS only applies to languages with regex-literal or RegExp() syntax.
+  // Solidity, Java, Go, C/C++, Rust use `/` as the division operator —
+  // they have no regex-literal form and the scanner mis-parses divisions
+  // as regex bodies. Scope to languages that actually have regex literals.
+  if (!/\.(?:js|jsx|ts|tsx|mjs|cjs|py|rb|php)$/i.test(fp)) return [];
   const out=[];
   const lines=raw.split("\n");
   // Strip comments + string-literal contents BEFORE matching regex-literal
@@ -4068,6 +4075,7 @@ function scanExtraStructural(fp,raw){
   const ctx = inferFileContext(fp, raw);
   for(const pat of EXTRA_STRUCTURAL_PATTERNS){
     if (!_ruleAppliesIn(pat, ctx)) { _suppressionLog.push({vuln:pat.vuln,file:fp,line:0,snippet:'',reason:'context-mismatch:'+ctx.kind}); continue; }
+    if (pat.langScope && !pat.langScope.test(fp)) { continue; }
     const re=new RegExp(pat.regex.source,pat.regex.flags);
     const haystack = pat.readsStringContent ? cleanedNoise : cleaned;
     let m;
@@ -4148,6 +4156,11 @@ function scanEntropySecrets(fp,raw){
     if(e<4.5)continue;
     const line=raw.substring(0,m.index).split("\n").length;
     const ctx=lines[line-1]||"";
+    // FP-fix: skip import/require/using/from/include directives. These often
+    // contain words like "token" or "cert" inside package paths, but the
+    // string is a module identifier, not a credential.
+    if(/^\s*(?:import|require\s*\(|use\s+|using\s+|from\s+\S+\s+import|#\s*include)\b/.test(ctx))continue;
+    if(/\bimport\b[\s\S]{0,80}\bfrom\b/.test(ctx))continue;
     if(!/(?:key|secret|token|password|pwd|api|auth|cred|private|bearer|salt|signature|cert)/i.test(ctx))continue;
     // FP-5: structural / doc-context suppression
     const surrounding=lines.slice(Math.max(0,line-3),Math.min(lines.length,line+1)).join("\n");

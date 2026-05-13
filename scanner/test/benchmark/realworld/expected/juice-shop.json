@@ -6,6 +6,7 @@
     "dos-sync-io",
     "exposed-private-key",
     "file-upload-handler-verify-mime-extensio",
+    "zip-slip",
     "hardcoded-secret",
     "header-hardening",
     "jws-token-operation-verify-signature-che",

@@ -59,6 +59,11 @@ const FINDINGS = [
     re: /\b\w+\s*\.\s*delegatecall\s*\(/g,
     vuln: 'delegatecall — verify the target address is fixed and trusted',
     remediation: 'delegatecall executes the target contract\'s code in YOUR contract\'s storage. If the target is user-controlled, an attacker can write arbitrary slots — including the owner field. Restrict delegatecall to a hardcoded, audited implementation address.',
+    // OpenZeppelin Address.sol and Proxy.sol implement audited library
+    // delegatecall helpers (functionDelegateCall, _delegate). They're the
+    // canonical "trusted" wrappers — firing on them is noise. Skip files
+    // whose basename is a known OZ utility.
+    skipBasename: /^(?:Address|Proxy|TransparentUpgradeableProxy|ERC1967Proxy|UpgradeableProxy|BeaconProxy|StorageSlot|Multicall)\.sol$/i,
   },
   {
     id: 'sol-call-unchecked', severity: 'medium', cwe: 'CWE-252', family: 'unchecked-low-level-call',
@@ -116,6 +121,10 @@ export function scanSolidity(fp, raw) {
   const seen = new Set();
   for (const rule of FINDINGS) {
     if (rule.fileSafe && rule.fileSafe.test(code)) continue;
+    if (rule.skipBasename) {
+      const base = fp.replace(/\\/g, '/').split('/').pop() || '';
+      if (rule.skipBasename.test(base)) continue;
+    }
     const re = new RegExp(rule.re.source, rule.re.flags);
     let m;
     while ((m = re.exec(code))) {

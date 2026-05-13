@@ -1,8 +1,10 @@
 {
-  "_doc": "gin-gonic/gin v1.10 — CLEAN-CODE benchmark for the Go rule set including go-extended.js. A web framework with extensive test coverage; the scanner should fire ~zero on the framework's own implementation files.",
+  "_doc": "gin-gonic/gin master — CLEAN-CODE benchmark. Wildcards cover CI/CD signals (pipeline pinning) and SCA (vulnerable-dep from go.mod) which are expected for any real-world repo regardless of code quality.",
   "wildcardFamilies": [
     "dos-no-timeout",
-    "header-hardening"
+    "header-hardening",
+    "pipeline-third-party-action-pinned-to-ma",
+    "vulnerable-dep"
   ],
   "expected": []
 }

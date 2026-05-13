@@ -1,5 +1,5 @@
 {
-  "_doc": "OpenZeppelin Ethernaut levels — each level contract demonstrates a known vuln class. Credit family-level findings across the corpus.",
+  "_doc": "OpenZeppelin Ethernaut levels — each level contract demonstrates a known vuln class. The Vault level demonstrates hardcoded on-chain secrets being visible — credited via the hardcoded-secret family. Credit family-level findings across the corpus.",
   "wildcardFamilies": [
     "reentrancy",
     "tx-origin-auth",
@@ -7,7 +7,8 @@
     "delegatecall-untrusted",
     "weak-rng",
     "integer-overflow",
-    "unchecked-low-level-call"
+    "unchecked-low-level-call",
+    "hardcoded-secret"
   ],
   "expected": []
 }
