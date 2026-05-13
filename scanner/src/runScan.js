@@ -5,6 +5,7 @@ import * as path from 'node:path';
 import * as cp from 'node:child_process';
 import fg from 'fast-glob';
 import { runFullScan, shouldScan } from './engine.js';
+import { appendScanSnapshot } from './posture/security-trend.js';
 
 const DEP_FILE_NAMES = new Set([
   'package.json','package-lock.json','yarn.lock','pnpm-lock.yaml',
@@ -95,6 +96,8 @@ export async function runScan(rootDir, opts = {}) {
   }
 
   const scan = await runFullScan({ fileContents, depFileContents, scanRoot: root }, opts.onProgress || (()=>{}));
+  // Append snapshot to history for /security-trend (non-blocking, never throws)
+  try { appendScanSnapshot(scan, root); } catch {}
   return {
     scan,
     meta: { scanId: cryptoUUID(), startedAt, durationMs: Date.now() - t0, root, mode: opts.changedSince ? 'incremental' : 'full' },

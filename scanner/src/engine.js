@@ -28,9 +28,18 @@ import { scanCpp } from './sast/cpp.js';
 import { scanSolidity } from './sast/solidity.js';
 import { scanRust } from './sast/rust.js';
 import { scanGoExtended } from './sast/go-extended.js';
+import { scanDatabaseRLS } from './sast/db-rls.js';
+import { scanRateLimit } from './sast/rate-limit.js';
+import { scanAuthProvider } from './sast/auth-provider.js';
+import { scanEnvHygiene } from './sast/env-hygiene.js';
+import { scanWebhook } from './sast/webhook.js';
+import { scanClientSide } from './sast/client-side.js';
+import { scanPromptFirewall } from './sast/prompt-firewall.js';
 import { scanContainer } from './sca/container.js';
 import { detectDepConfusion } from './sca/dep-confusion.js';
 import { loadLicensePolicy, evaluateLicensePolicy } from './posture/license-policy.js';
+import { scanDeployPlatform } from './posture/deploy-platform.js';
+import { runStackPlaybook } from './posture/stack-playbook.js';
 
 // Disk-backed cache replacing browser sessionStorage. One JSON blob per key under ~/.claude/agentic-security/osv-cache/.
 const _CACHE_DIR = path.join(os.homedir(), '.claude', 'agentic-security', 'osv-cache');
@@ -5848,7 +5857,14 @@ async function runFullScan({fileContents={}, depFileContents={}, scanRoot=null},
       aF.push(...scanCpp(p,c));
       aF.push(...scanSolidity(p,c));
       aF.push(...scanRust(p,c));
-      aF.push(...scanGoExtended(p,c));}catch(_){}if(i%5===0)await new Promise(r=>setTimeout(r,0));}
+      aF.push(...scanGoExtended(p,c));
+      aF.push(...scanDatabaseRLS(p,c));
+      aF.push(...scanRateLimit(p,c));
+      aF.push(...scanAuthProvider(p,c));
+      aF.push(...scanEnvHygiene(p,c));
+      aF.push(...scanWebhook(p,c));
+      aF.push(...scanClientSide(p,c));
+      aF.push(...scanPromptFirewall(p,c));}catch(_){}if(i%5===0)await new Promise(r=>setTimeout(r,0));}
   // Phase 4 post-process: for Java files with an OWASP-Benchmark-style
   // @WebServlet category route prefix, drop findings whose family doesn't
   // match the canonical category. The benchmark's CSV expects exactly one
@@ -5995,6 +6011,10 @@ async function runFullScan({fileContents={}, depFileContents={}, scanRoot=null},
   try{const lp=loadLicensePolicy(scanRoot);if(lp){const lv=evaluateLicensePolicy(annotatedComponents,lp);aLogic.push(...lv);}}catch(_){}
   // 0.9.0 Feat-15: dep confusion
   try{const dc=detectDepConfusion(annotatedComponents,scanRoot);aF.push(...dc);}catch(_){}
+  // Deployment-platform security checklist
+  try{const dpf=scanDeployPlatform(scanRoot);aLogic.push(...dpf);}catch(_){}
+  // Stack-specific security playbook
+  try{const sp=runStackPlaybook(scanRoot);if(sp&&sp.findings)aLogic.push(...sp.findings);}catch(_){}
   finalFindings.sort((a,b)=>(b.toxicityScore||0)-(a.toxicityScore||0)||(b.triageScore||0)-(a.triageScore||0)||({critical:0,high:1,medium:2,low:3}[a.severity]??4)-({critical:0,high:1,medium:2,low:3}[b.severity]??4));
   // Auto-PoC filter: tag whether a concrete payload+test can be derived. When
   // AGENTIC_SECURITY_POC=1, demote ≥medium findings that fail this check.

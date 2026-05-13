@@ -15,11 +15,18 @@ Patch a single finding.
 node ${CLAUDE_PLUGIN_ROOT}/scanner/dist/agentic-security.mjs fix --finding ${2}
 ```
 
-The CLI prints the canonical fix template. Hand the finding off to the `security-fixer` subagent: read the affected file, apply the template adapted to the surrounding code, and run the project's test command (`npm test` / `pytest` / etc.) if one is configured.
+The CLI prints the canonical fix template. Hand the finding off to the `security-fixer` subagent with **full codebase context**: read the affected file AND its imports, the auth middleware, any ORM/DB helpers it calls, and the route registration. Apply the fix adapted to how this specific project is structured — not the generic template.
+
+**Contextual fix rules:**
+- Detect the auth library in use (Clerk, NextAuth, Lucia, etc.) and write the fix using that library's idioms, not a generic pattern.
+- Detect the ORM/DB (Prisma, Drizzle, raw pg, Supabase) and scope data queries to `session.userId` using that library's syntax.
+- Detect the framework (Next.js App Router, Pages Router, Express, Fastify) and place the fix in the correct layer (middleware.ts, API route, server action).
+- If rate limiting is the fix, detect which platform is deployed (Vercel → @upstash/ratelimit, Node → express-rate-limit) and generate the correct integration.
 
 Do not declare the fix complete until:
 1. The finding no longer reproduces (re-scan the file)
 2. Existing tests still pass
+3. The fix matches the idioms of the rest of the codebase (no mismatched patterns)
 
 ---
 
