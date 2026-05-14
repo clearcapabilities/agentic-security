@@ -7,7 +7,7 @@ NAME
        integrations for the security stack you already run.
 
 VERSION
-       0.34.2
+       0.34.3
 
 SYNOPSIS
        agentic-security [--profile pro] COMMAND [ARGS] [OPTIONS]
@@ -24,11 +24,11 @@ SYNOPSIS
        Auto-update behavior (0.34.2+):
               Every /scan invocation first runs an auto-update check via
               scripts/auto-update-check.js. If the throttle window
-              (default: 4h) has elapsed, /scan instructs Claude Code to
+              (default: 24h) has elapsed, /scan instructs Claude Code to
               run `/plugin marketplace update agentic-security` to refresh
               the plugin to the latest version. Throttle and on/off switch
               live in .agentic-security/auto-update.json:
-                {"enabled": true, "throttleHours": 4, "lastCheck": <epoch>}
+                {"enabled": true, "throttleHours": 24, "lastCheck": <epoch>}
               To disable entirely: {"enabled": false}.
 
        Vibe-coder essentials (0.32.0):

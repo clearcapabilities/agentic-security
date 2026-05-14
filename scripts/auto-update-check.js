@@ -25,7 +25,7 @@ const cwd = process.env.CLAUDE_PROJECT_DIR || process.cwd();
 const stateDir = path.join(cwd, '.agentic-security');
 const cfgPath = path.join(stateDir, 'auto-update.json');
 
-const DEFAULT_CFG = { enabled: true, throttleHours: 4, lastCheck: 0 };
+const DEFAULT_CFG = { enabled: true, throttleHours: 24, lastCheck: 0 };
 
 function readCfg() {
   if (!fs.existsSync(cfgPath)) return { ...DEFAULT_CFG };

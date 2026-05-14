@@ -16,7 +16,7 @@ node ${CLAUDE_PLUGIN_ROOT}/scripts/auto-update-check.js
 The helper script exits with one of three codes:
 - `0` — update check is due. Proceed to the next paragraph.
 - `1` — auto-update is disabled (user set `{"enabled": false}`). Skip Step 0 entirely; go to Step 1.
-- `2` — within throttle window (default: 4 hours since last check). Skip Step 0; go to Step 1.
+- `2` — within throttle window (default: 24 hours since last check). Skip Step 0; go to Step 1.
 
 **When exit code is 0**, invoke the Claude Code slash command:
 
@@ -40,7 +40,7 @@ This ensures subsequent `/scan` calls within the throttle window skip the update
 { "enabled": false }
 ```
 
-**To change the throttle:** set `"throttleHours": <N>` in the same file (default: 4).
+**To change the throttle:** set `"throttleHours": <N>` in the same file (default: 24).
 
 ## Step 1 — Run the scanner
 
