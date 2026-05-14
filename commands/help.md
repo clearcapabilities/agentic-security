@@ -59,7 +59,7 @@ POSTURE MANAGEMENT
   /posture-management --mttr   Show findings exceeding per-severity SLA thresholds
 
 COMPLIANCE ATTESTATION
-  /compliance-report [nist|asvs|pci|soc2|llm]  Auditor-ready attestation for any framework
+  /compliance-report [nist|asvs|llm]  Auditor-ready attestation for any framework
 
 PROJECT META
   

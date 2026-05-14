@@ -4,7 +4,7 @@ description: Generate a security grade badge for your README and an investor-rea
 
 Generate two artifacts from your last scan:
 1. A Shields.io badge URL for your README showing your current security grade.
-2. An investor/client-ready security summary paragraph you can paste into a pitch deck or SOC 2 prep doc.
+2. An investor/client-ready security summary paragraph you can paste into a pitch deck or due-diligence questionnaire.
 
 ```bash
 node -e "
@@ -89,10 +89,6 @@ console.log('');
 "
 ```
 
-Using the JSON above, write two things:
+Using the JSON above, write an investor / due-diligence security paragraph (3–4 sentences): a professional security posture statement suitable for a due-diligence questionnaire or pitch deck security section. Mention the grade, what was checked, what was found (or "no critical findings"), and that automated scanning is integrated into the development workflow. Tone: factual, confident, not marketing-speak.
 
-**1. Investor paragraph** (3–4 sentences): A professional security posture statement suitable for a due-diligence questionnaire or pitch deck security section. Mention the grade, what was checked, what was found (or "no critical findings"), and that automated scanning is integrated into the development workflow. Tone: factual, confident, not marketing-speak.
-
-**2. SOC 2 prep note** (2 sentences): State which controls this scan addresses (CC6.1, CC6.6, CC7.1, CC7.2) and what evidence it provides for auditors.
-
-Format the output as plain text the user can copy-paste. Include the badge Markdown above each section header.
+Format the output as plain text the user can copy-paste. Include the badge Markdown above the paragraph.

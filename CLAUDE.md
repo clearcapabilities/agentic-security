@@ -1,6 +1,6 @@
 # agentic-security
 
-Full ASPM + LLMSecOps Claude Code plugin. Delivers SAST, SCA (OSV + CISA KEV + function-level reachability), secrets, IaC, prompt-injection, MCP/agent-tool audit, auth/authZ deep analysis, attack chains, PoC generation, SBOM/PBOM/AI-BOM, SARIF ingest, compliance attestation (NIST AI 600-1, OWASP ASVS, PCI-DSS 4.0, SOC 2, OWASP LLM Top 10), and more — local-first, no cloud lock-in.
+Full ASPM + LLMSecOps Claude Code plugin. Delivers SAST, SCA (OSV + CISA KEV + function-level reachability), secrets, IaC, prompt-injection, MCP/agent-tool audit, auth/authZ deep analysis, attack chains, PoC generation, SBOM/PBOM/AI-BOM, SARIF ingest, compliance attestation (NIST AI 600-1, OWASP ASVS, OWASP LLM Top 10), and more — local-first, no cloud lock-in.
 
 **Version:** 0.34.8  
 **License:** PolyForm Internal Use 1.0.0  
@@ -28,7 +28,7 @@ Full ASPM + LLMSecOps Claude Code plugin. Delivers SAST, SCA (OSV + CISA KEV + f
 | `commands/` | Slash-command markdown files exposed to Claude Code |
 | `agents/` | Sub-agent system-prompt definitions |
 | `hooks/` | Claude Code hook scripts (`post-edit-scan.js`, `session-welcome.js`, `hooks.json`) |
-| `scripts/` | Compliance helper scripts (NIST, SOC 2, PCI-DSS, OWASP ASVS, OWASP LLM Top 10) and PR comment helper |
+| `scripts/` | Compliance helper scripts (NIST, OWASP ASVS, OWASP LLM Top 10) and PR comment helper |
 | `vscode/` | VS Code extension source (`vscode/src/extension.ts`) |
 | `docs/` | Developer documentation and compliance reference materials |
 | `.claude-plugin/` | Plugin manifest (`plugin.json`, `marketplace.json`) |

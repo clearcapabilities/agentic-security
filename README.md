@@ -213,7 +213,7 @@ Active protection at the moment code is written or commands are run. Designed fo
 
 | Command | Description |
 |---|---|
-| `/agentic-security:risk-in-dollars` | Translates each finding's CWE into best/likely/worst-case $ exposure sourced from public incident settlements. Cites the specific regulatory framework whose fines apply (GDPR Art. 33, CCPA, PCI-DSS, HIPAA, NIST AI 600-1). Sort by worst-case to prioritize what to fix first. |
+| `/agentic-security:risk-in-dollars` | Translates each finding's CWE into best/likely/worst-case $ exposure sourced from public incident settlements. Cites the specific regulatory framework whose fines apply (GDPR Art. 33, CCPA, HIPAA, NIST AI 600-1). Sort by worst-case to prioritize what to fix first. |
 | `/agentic-security:story-explain` | Narrative-form explanation: "Meet Mallory. She visits your `/api/users` page, changes `?id=1` to `?id=2`, and now she's reading your other users' data." 4-act story with named attacker, minute-by-minute timeline, concrete payloads, and the literal fix line. |
 | `/agentic-security:daily-checkin` | Daily security digest posted to Slack / Discord / a generic webhook. Shows what changed since yesterday — new findings, resolved findings, KEV alerts — not just totals. Async security awareness without opening a dashboard. |
 
@@ -223,7 +223,7 @@ When an enterprise prospect asks "are you secure?", these are what you hand them
 
 | Command | Description |
 |---|---|
-| `/agentic-security:security-onepager` | Generates a customer-facing "How we keep your data safe" markdown from your REAL scan posture and detected stack. Live traffic-light state, clean-scan streak, alignment with OWASP ASVS / LLM Top 10 / NIST AI 600-1 / PCI-DSS / SOC 2. PDF-ready via `pandoc`. |
+| `/agentic-security:security-onepager` | Generates a customer-facing "How we keep your data safe" markdown from your REAL scan posture and detected stack. Live traffic-light state, clean-scan streak, alignment with OWASP ASVS / LLM Top 10 / NIST AI 600-1. PDF-ready via `pandoc`. |
 | `/agentic-security:privacy-docs` | Detects every third-party data processor (Stripe, Supabase, Clerk, Sentry, PostHog, GA4, OpenAI, Anthropic, Resend, ...) and generates a tailored `PRIVACY.md` naming each with the exact data they receive + their DPA + sub-processor URLs. Plus optional React cookie-consent component matched to detected analytics providers. Jurisdiction-aware (EU / US-CA / UK / OTHER). |
 | `/agentic-security:trust-page` | Writes `/.well-known/security.txt` (RFC 9116, 1-year expiry) and a `/security` page that displays your live posture. Framework-aware: Next.js App Router, Pages Router, or vanilla HTML. Buyers and infosec teams look for both — most vibe-coded apps have neither. |
 
@@ -250,7 +250,7 @@ When an enterprise prospect asks "are you secure?", these are what you hand them
 | Command | Description |
 |---|---|
 | `/agentic-security:posture-management` | SBOM, AI-BOM, API inventory, license policy, drift analysis, and SLA tracking. |
-| `/agentic-security:compliance-report` | Auditor-ready attestation for NIST AI 600-1, OWASP ASVS, PCI-DSS 4.0, SOC 2, or OWASP LLM Top 10 (2025). |
+| `/agentic-security:compliance-report` | Auditor-ready attestation for NIST AI 600-1, OWASP ASVS, or OWASP LLM Top 10 (2025). |
 | `/agentic-security:launch-check` | Pre-deploy checklist of the 10 things beginners typically miss before going live. |
 | `/agentic-security:report-card` | Single letter-grade (A–F) snapshot with one concrete next action. |
 | `/agentic-security:status` | One-screen plugin & project health snapshot — version, last scan time, finding counts, cache size, hook activation. |

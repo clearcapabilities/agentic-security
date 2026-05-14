@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Shared compliance-scanner library used by owasp-asvs/, pci-dss/, soc2/.
+"""Shared compliance-scanner library used by owasp-asvs/.
 
 Mirrors the multi-signal evidence model from scripts/nist-compliance/ but pared
 down for the smaller compliance overlays. Each overlay ships its own

@@ -134,7 +134,7 @@ esac
 
 ## Modes
 
-**`/posture-management --sbom`** — Emit a CycloneDX 1.6 or SPDX 2.3 SBOM. Every component includes `purl`, license, scope, CVE IDs, CVSS vectors, EPSS scores, and `agentic-security:functionReachable` annotations. Required for FedRAMP, EU CRA, NIST SSDF, EO 14028, and most SOC 2 audits.
+**`/posture-management --sbom`** — Emit a CycloneDX 1.6 or SPDX 2.3 SBOM. Every component includes `purl`, license, scope, CVE IDs, CVSS vectors, EPSS scores, and `agentic-security:functionReachable` annotations. Required for FedRAMP, EU CRA, NIST SSDF, and EO 14028.
 
 **`/posture-management --aibom`** — AI/ML Bill of Materials (CycloneDX 1.7 ML-BOM compatible). Captures every model, prompt template, inference framework, and vector store. Required by EU AI Act and enterprise security questionnaires.
 

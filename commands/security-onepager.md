@@ -23,7 +23,7 @@ A markdown document with:
    - Hardened HTTP headers (if `/harden` has been applied)
 4. **Data handling** — TLS, encryption-at-rest, least-access, retention boilerplate
 5. **Incident response** — your contact, 24h ack / 72h initial assessment / GDPR Art. 33 commitment
-6. **Frameworks** — OWASP ASVS, LLM Top 10, NIST AI 600-1, PCI-DSS, SOC 2 alignment statement
+6. **Frameworks** — OWASP ASVS, LLM Top 10, NIST AI 600-1 alignment statement
 7. **Footer** — links back to your live security.txt and re-generation invitation
 
 Output is plain markdown — paste into Notion, convert to PDF with `pandoc`, or serve as a `/security` page.

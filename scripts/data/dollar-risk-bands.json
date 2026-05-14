@@ -71,7 +71,7 @@
     "likely_case_usd": 50000,
     "worst_case_usd": 1000000,
     "scenario": "Self-promotion to admin in one POST. Payment bypass via `{total: 0, status: 'paid'}`. Internal-flag injection (kyc_passed, email_verified).",
-    "regulatory": "PCI-DSS violation ($5k-$100k/month) if payment flow affected"
+    "regulatory": "Payment-card-network fines and chargebacks if payment flow affected"
   },
   "CWE-287": {
     "name": "Authentication Bypass",
@@ -79,7 +79,7 @@
     "likely_case_usd": 200000,
     "worst_case_usd": 10000000,
     "scenario": "Forge JWT alg:none = impersonate any user including admin. Full account-takeover surface. Most enterprise contracts auto-cancel on this class of breach.",
-    "regulatory": "GDPR Art. 32, contract termination clauses, SOC 2 incident"
+    "regulatory": "GDPR Art. 32, contract termination clauses"
   },
   "CWE-345": {
     "name": "Missing signature verification (webhooks, JWTs, redirects)",
@@ -87,7 +87,7 @@
     "likely_case_usd": 30000,
     "worst_case_usd": 2000000,
     "scenario": "Unsigned webhooks = attackers fake Stripe / GitHub / Clerk events to your endpoint = upgrade plans, mint tokens, trigger refunds.",
-    "regulatory": "PCI-DSS for Stripe webhooks, SOC 2 CC6.1"
+    "regulatory": "Payment-card-network fines for Stripe webhooks"
   },
   "CWE-502": {
     "name": "Insecure Deserialization",
@@ -135,7 +135,7 @@
     "likely_case_usd": 100000,
     "worst_case_usd": 5000000,
     "scenario": "Endpoint accepts any caller — typical chain with IDOR for pre-auth account takeover. Optus (2022) class action settlement: $140M for missing-authz API.",
-    "regulatory": "GDPR (max 4% revenue), CCPA, SOC 2 critical finding"
+    "regulatory": "GDPR (max 4% revenue), CCPA"
   },
   "LLM01": {
     "name": "Prompt Injection",

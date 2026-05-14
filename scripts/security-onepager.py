@@ -94,9 +94,9 @@ def practices_block(scan: dict | None, stack: list[str], cwd: Path) -> str:
     if "Stripe" in stack:
         practices.append(("Webhook integrity", "All Stripe webhooks are verified by signature; no event is processed without cryptographic proof of origin."))
     if "Clerk" in stack or "Auth0" in stack:
-        practices.append(("Managed authentication", f"User identity is handled by {[s for s in stack if s in ('Clerk', 'Auth0')][0]}, an SOC 2-certified provider."))
+        practices.append(("Managed authentication", f"User identity is handled by {[s for s in stack if s in ('Clerk', 'Auth0')][0]}, a managed identity provider."))
     if "Vercel" in stack:
-        practices.append(("Hosting on certified infrastructure", "Application runs on Vercel infrastructure (SOC 2 Type II certified, ISO 27001)."))
+        practices.append(("Hosting on certified infrastructure", "Application runs on Vercel infrastructure (ISO 27001 certified)."))
 
     # CSP / cookie hardening (if hooks/harden was applied — check for marker)
     if (cwd / ".agentic-security" / "harden-applied.json").exists():
@@ -193,8 +193,6 @@ Our internal controls map to:
 - **OWASP LLM Top 10** for our AI features
 - **CWE / CVE / CISA KEV** for vulnerability classification
 - **NIST AI 600-1** for generative AI risk management
-- **PCI-DSS** (if applicable, scoped to payment flows)
-- **SOC 2 Type II** controls (we operate in line with; formal audit timeline available on request)
 
 ## Questions?
 

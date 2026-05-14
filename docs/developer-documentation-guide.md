@@ -85,7 +85,7 @@ SYNOPSIS
 
        Posture & compliance:
        /posture-management [--sbom|--aibom|--api|--license|--drift|--mttr]
-       /compliance-report [nist|asvs|pci|soc2|llm]
+       /compliance-report [nist|asvs|llm]
        /status
        /report-card
        /launch-check
@@ -133,8 +133,7 @@ DESCRIPTION
                      session fixation, JWT confusion, OAuth2 PKCE, Clerk/
                      NextAuth misconfig, dangerous email account linking.
          Container   Base-image EOL, exposed ports, runtime mode.
-         Compliance  NIST AI 600-1, OWASP ASVS, PCI-DSS 4.0, SOC 2,
-                     OWASP LLM Top 10 (2025).
+         Compliance  NIST AI 600-1, OWASP ASVS, OWASP LLM Top 10 (2025).
          Stack       Opinionated security playbook for Next.js, Supabase,
                      Stripe, Clerk, NextAuth, Prisma, Drizzle, OpenAI,
                      Anthropic, LangChain, MongoDB, Firebase, tRPC, FastAPI,
@@ -364,7 +363,6 @@ Confirm with:
                 • Shields.io badge Markdown for README
                 • Professional security posture paragraph for investor
                   due-diligence questionnaires or pitch decks
-                • SOC 2 evidence note mapping to CC6.1, CC6.6, CC7.1, CC7.2
 ```
 
 ### Real-time bodyguards (added in 0.34.0)
@@ -492,7 +490,7 @@ Confirm with:
               (Capital One $190M for SSRF, T-Mobile $350M for IDOR, Equifax
               $1.4B for SQLi, etc.). 19 CWE classes mapped with named
               scenarios + specific regulatory triggers (GDPR Art. 33,
-              CCPA, PCI-DSS 4.0, HIPAA, NIST AI 600-1, EU AI Act).
+              CCPA, HIPAA, NIST AI 600-1, EU AI Act).
               Default sort: worst-case descending.
               Data source: scripts/data/dollar-risk-bands.json (editable).
 
@@ -541,8 +539,8 @@ Confirm with:
                                  only if Stripe detected, etc.)
                 Data handling    TLS, encryption-at-rest, least-access
                 Incident response  24h ack / 72h initial / GDPR Art. 33
-                Frameworks       OWASP ASVS, LLM Top 10, NIST AI 600-1,
-                                 PCI-DSS, SOC 2 alignment statement
+                Frameworks       OWASP ASVS, LLM Top 10, NIST AI 600-1
+                                 alignment statement
               Output is markdown — convert to PDF with `pandoc SECURITY.md
               -o SECURITY.pdf --pdf-engine=xelatex`.
 
@@ -1050,8 +1048,6 @@ Framework attestations (Claude Code slash commands):
 ```
        /compliance-report nist    NIST AI 600-1 (122 GenAI controls)
        /compliance-report asvs    OWASP ASVS Level 1+2
-       /compliance-report pci     PCI-DSS 4.0
-       /compliance-report soc2    SOC 2 Common Criteria CC6–CC9
        /compliance-report llm     OWASP LLM Top 10 (2025)
 ```
 
@@ -1388,11 +1384,12 @@ introduced and posting a review comment with the summary.
 ## Exercise 10 — Generate compliance evidence
 
 ```
-/compliance-report soc2
+/compliance-report nist
 ```
 
-Outputs an auditor-ready mapping of scan findings to SOC 2 Common Criteria
-controls (CC6.1, CC6.6, CC7.1, CC7.2, CC7.3). Use `/security-badge` to
+Outputs an auditor-ready mapping of scan findings to NIST AI 600-1 controls.
+Also available: `/compliance-report asvs` (OWASP ASVS Level 1+2) and
+`/compliance-report llm` (OWASP LLM Top 10). Use `/security-badge` to
 generate the investor-ready paragraph and README badge.
 
 ---
