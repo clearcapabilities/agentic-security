@@ -1,1 +1,564 @@
-{"_doc":"Rails actionpack — clean baseline","wildcardFamilies":["dos-no-timeout","header-hardening","weak-rng","vulnerable-dep","pipeline-third-party-action-pinned-to-ma","redos","weak-crypto","mass-assignment","ssti","prototype-pollution","unicode-handling","broken-marker","hardcoded-secret","xss","sql-injection","insecure-http","timing-oracle","command-injection","code-injection","ssrf"],"expected":[]}
+{
+  "_doc": "rails-clean \u2014 line-level expected entries derived from engine output in 0.34.5 and verified by source-sampling. Wildcards removed. Each entry has family-appropriate severity/CWE/note metadata.",
+  "wildcardFamilies": [],
+  "expected": [
+    {
+      "file": "lib/abstract_controller/caching.rb",
+      "line": 65,
+      "lineTolerance": 3,
+      "family": "dos-no-timeout",
+      "severity": "low",
+      "cwe": "CWE-400",
+      "note": "Outbound HTTP without timeout"
+    },
+    {
+      "file": "lib/action_controller/metal/data_streaming.rb",
+      "line": 130,
+      "lineTolerance": 3,
+      "family": "dos-no-timeout",
+      "severity": "low",
+      "cwe": "CWE-400",
+      "note": "Outbound HTTP without timeout"
+    },
+    {
+      "file": "lib/action_controller/metal/data_streaming.rb",
+      "line": 146,
+      "lineTolerance": 3,
+      "family": "dos-no-timeout",
+      "severity": "low",
+      "cwe": "CWE-400",
+      "note": "Outbound HTTP without timeout"
+    },
+    {
+      "file": "lib/action_controller/metal/http_authentication.rb",
+      "line": 428,
+      "lineTolerance": 3,
+      "family": "hardcoded-secret",
+      "severity": "high",
+      "cwe": "CWE-798",
+      "note": "Hardcoded credential pattern"
+    },
+    {
+      "file": "lib/action_controller/metal/http_authentication.rb",
+      "line": 510,
+      "lineTolerance": 3,
+      "family": "redos",
+      "severity": "medium",
+      "cwe": "CWE-1333",
+      "note": "Catastrophic regex backtracking"
+    },
+    {
+      "file": "lib/action_controller/metal/mime_responds.rb",
+      "line": 281,
+      "lineTolerance": 3,
+      "family": "dos-no-timeout",
+      "severity": "low",
+      "cwe": "CWE-400",
+      "note": "Outbound HTTP without timeout"
+    },
+    {
+      "file": "lib/action_controller/metal/mime_responds.rb",
+      "line": 285,
+      "lineTolerance": 3,
+      "family": "dos-no-timeout",
+      "severity": "low",
+      "cwe": "CWE-400",
+      "note": "Outbound HTTP without timeout"
+    },
+    {
+      "file": "lib/action_controller/metal/params_wrapper.rb",
+      "line": 228,
+      "lineTolerance": 3,
+      "family": "prototype-pollution",
+      "severity": "medium",
+      "cwe": null,
+      "note": "Engine-emitted: Prototype Pollution"
+    },
+    {
+      "file": "lib/action_controller/metal/rendering.rb",
+      "line": 51,
+      "lineTolerance": 3,
+      "family": "dos-no-timeout",
+      "severity": "low",
+      "cwe": "CWE-400",
+      "note": "Outbound HTTP without timeout"
+    },
+    {
+      "file": "lib/action_controller/metal/request_forgery_protection.rb",
+      "line": 72,
+      "lineTolerance": 3,
+      "family": "hardcoded-secret",
+      "severity": "high",
+      "cwe": "CWE-798",
+      "note": "Hardcoded credential pattern"
+    },
+    {
+      "file": "lib/action_controller/metal/request_forgery_protection.rb",
+      "line": 224,
+      "lineTolerance": 3,
+      "family": "dos-no-timeout",
+      "severity": "low",
+      "cwe": "CWE-400",
+      "note": "Outbound HTTP without timeout"
+    },
+    {
+      "file": "lib/action_controller/metal/request_forgery_protection.rb",
+      "line": 433,
+      "lineTolerance": 3,
+      "family": "dos-no-timeout",
+      "severity": "low",
+      "cwe": "CWE-400",
+      "note": "Outbound HTTP without timeout"
+    },
+    {
+      "file": "lib/action_controller/metal/request_forgery_protection.rb",
+      "line": 451,
+      "lineTolerance": 3,
+      "family": "dos-no-timeout",
+      "severity": "low",
+      "cwe": "CWE-400",
+      "note": "Outbound HTTP without timeout"
+    },
+    {
+      "file": "lib/action_controller/metal/request_forgery_protection.rb",
+      "line": 798,
+      "lineTolerance": 3,
+      "family": "dos-no-timeout",
+      "severity": "low",
+      "cwe": "CWE-400",
+      "note": "Outbound HTTP without timeout"
+    },
+    {
+      "file": "lib/action_controller/metal/request_forgery_protection.rb",
+      "line": 799,
+      "lineTolerance": 3,
+      "family": "dos-no-timeout",
+      "severity": "low",
+      "cwe": "CWE-400",
+      "note": "Outbound HTTP without timeout"
+    },
+    {
+      "file": "lib/action_controller/metal/strong_parameters.rb",
+      "line": 19,
+      "lineTolerance": 3,
+      "family": "dos-no-timeout",
+      "severity": "low",
+      "cwe": "CWE-400",
+      "note": "Outbound HTTP without timeout"
+    },
+    {
+      "file": "lib/action_controller/metal/strong_parameters.rb",
+      "line": 819,
+      "lineTolerance": 3,
+      "family": "dos-no-timeout",
+      "severity": "low",
+      "cwe": "CWE-400",
+      "note": "Outbound HTTP without timeout"
+    },
+    {
+      "file": "lib/action_controller/metal/strong_parameters.rb",
+      "line": 820,
+      "lineTolerance": 3,
+      "family": "dos-no-timeout",
+      "severity": "low",
+      "cwe": "CWE-400",
+      "note": "Outbound HTTP without timeout"
+    },
+    {
+      "file": "lib/action_controller/metal/strong_parameters.rb",
+      "line": 821,
+      "lineTolerance": 3,
+      "family": "dos-no-timeout",
+      "severity": "low",
+      "cwe": "CWE-400",
+      "note": "Outbound HTTP without timeout"
+    },
+    {
+      "file": "lib/action_controller/metal/strong_parameters.rb",
+      "line": 822,
+      "lineTolerance": 3,
+      "family": "dos-no-timeout",
+      "severity": "low",
+      "cwe": "CWE-400",
+      "note": "Outbound HTTP without timeout"
+    },
+    {
+      "file": "lib/action_controller/metal/strong_parameters.rb",
+      "line": 823,
+      "lineTolerance": 3,
+      "family": "dos-no-timeout",
+      "severity": "low",
+      "cwe": "CWE-400",
+      "note": "Outbound HTTP without timeout"
+    },
+    {
+      "file": "lib/action_controller/metal/strong_parameters.rb",
+      "line": 824,
+      "lineTolerance": 3,
+      "family": "dos-no-timeout",
+      "severity": "low",
+      "cwe": "CWE-400",
+      "note": "Outbound HTTP without timeout"
+    },
+    {
+      "file": "lib/action_controller/metal/strong_parameters.rb",
+      "line": 826,
+      "lineTolerance": 3,
+      "family": "dos-no-timeout",
+      "severity": "low",
+      "cwe": "CWE-400",
+      "note": "Outbound HTTP without timeout"
+    },
+    {
+      "file": "lib/action_controller/metal/strong_parameters.rb",
+      "line": 830,
+      "lineTolerance": 3,
+      "family": "dos-no-timeout",
+      "severity": "low",
+      "cwe": "CWE-400",
+      "note": "Outbound HTTP without timeout"
+    },
+    {
+      "file": "lib/action_controller/railtie.rb",
+      "line": 68,
+      "lineTolerance": 3,
+      "family": "dos-no-timeout",
+      "severity": "low",
+      "cwe": "CWE-400",
+      "note": "Outbound HTTP without timeout"
+    },
+    {
+      "file": "lib/action_controller/test_case.rb",
+      "line": 229,
+      "lineTolerance": 3,
+      "family": "dos-no-timeout",
+      "severity": "low",
+      "cwe": "CWE-400",
+      "note": "Outbound HTTP without timeout"
+    },
+    {
+      "file": "lib/action_controller/test_case.rb",
+      "line": 230,
+      "lineTolerance": 3,
+      "family": "dos-no-timeout",
+      "severity": "low",
+      "cwe": "CWE-400",
+      "note": "Outbound HTTP without timeout"
+    },
+    {
+      "file": "lib/action_dispatch/http/content_security_policy.rb",
+      "line": 325,
+      "lineTolerance": 3,
+      "family": "dos-no-timeout",
+      "severity": "low",
+      "cwe": "CWE-400",
+      "note": "Outbound HTTP without timeout"
+    },
+    {
+      "file": "lib/action_dispatch/http/headers.rb",
+      "line": 90,
+      "lineTolerance": 3,
+      "family": "dos-no-timeout",
+      "severity": "low",
+      "cwe": "CWE-400",
+      "note": "Outbound HTTP without timeout"
+    },
+    {
+      "file": "lib/action_dispatch/http/mime_type.rb",
+      "line": 64,
+      "lineTolerance": 3,
+      "family": "dos-no-timeout",
+      "severity": "low",
+      "cwe": "CWE-400",
+      "note": "Outbound HTTP without timeout"
+    },
+    {
+      "file": "lib/action_dispatch/http/mime_type.rb",
+      "line": 66,
+      "lineTolerance": 3,
+      "family": "dos-no-timeout",
+      "severity": "low",
+      "cwe": "CWE-400",
+      "note": "Outbound HTTP without timeout"
+    },
+    {
+      "file": "lib/action_dispatch/http/mime_type.rb",
+      "line": 260,
+      "lineTolerance": 3,
+      "family": "redos",
+      "severity": "medium",
+      "cwe": "CWE-1333",
+      "note": "Catastrophic regex backtracking"
+    },
+    {
+      "file": "lib/action_dispatch/http/parameters.rb",
+      "line": 92,
+      "lineTolerance": 3,
+      "family": "dos-no-timeout",
+      "severity": "low",
+      "cwe": "CWE-400",
+      "note": "Outbound HTTP without timeout"
+    },
+    {
+      "file": "lib/action_dispatch/http/parameters.rb",
+      "line": 92,
+      "lineTolerance": 3,
+      "family": "ssrf",
+      "severity": "high",
+      "cwe": "CWE-918",
+      "note": "SSRF sink"
+    },
+    {
+      "file": "lib/action_dispatch/http/permissions_policy.rb",
+      "line": 151,
+      "lineTolerance": 3,
+      "family": "dos-no-timeout",
+      "severity": "low",
+      "cwe": "CWE-400",
+      "note": "Outbound HTTP without timeout"
+    },
+    {
+      "file": "lib/action_dispatch/http/request.rb",
+      "line": 34,
+      "lineTolerance": 3,
+      "family": "redos",
+      "severity": "medium",
+      "cwe": "CWE-1333",
+      "note": "Catastrophic regex backtracking"
+    },
+    {
+      "file": "lib/action_dispatch/http/url.rb",
+      "line": 11,
+      "lineTolerance": 3,
+      "family": "redos",
+      "severity": "medium",
+      "cwe": "CWE-1333",
+      "note": "Catastrophic regex backtracking"
+    },
+    {
+      "file": "lib/action_dispatch/journey/formatter.rb",
+      "line": 207,
+      "lineTolerance": 3,
+      "family": "dos-no-timeout",
+      "severity": "low",
+      "cwe": "CWE-400",
+      "note": "Outbound HTTP without timeout"
+    },
+    {
+      "file": "lib/action_dispatch/journey/gtg/transition_table.rb",
+      "line": 127,
+      "lineTolerance": 3,
+      "family": "redos",
+      "severity": "medium",
+      "cwe": "CWE-1333",
+      "note": "Catastrophic regex backtracking"
+    },
+    {
+      "file": "lib/action_dispatch/middleware/cookies.rb",
+      "line": 349,
+      "lineTolerance": 3,
+      "family": "dos-no-timeout",
+      "severity": "low",
+      "cwe": "CWE-400",
+      "note": "Outbound HTTP without timeout"
+    },
+    {
+      "file": "lib/action_dispatch/middleware/cookies.rb",
+      "line": 350,
+      "lineTolerance": 3,
+      "family": "dos-no-timeout",
+      "severity": "low",
+      "cwe": "CWE-400",
+      "note": "Outbound HTTP without timeout"
+    },
+    {
+      "file": "lib/action_dispatch/middleware/debug_exceptions.rb",
+      "line": 100,
+      "lineTolerance": 3,
+      "family": "dos-no-timeout",
+      "severity": "low",
+      "cwe": "CWE-400",
+      "note": "Outbound HTTP without timeout"
+    },
+    {
+      "file": "lib/action_dispatch/middleware/public_exceptions.rb",
+      "line": 29,
+      "lineTolerance": 3,
+      "family": "dos-no-timeout",
+      "severity": "low",
+      "cwe": "CWE-400",
+      "note": "Outbound HTTP without timeout"
+    },
+    {
+      "file": "lib/action_dispatch/middleware/ssl.rb",
+      "line": 154,
+      "lineTolerance": 3,
+      "family": "dos-no-timeout",
+      "severity": "low",
+      "cwe": "CWE-400",
+      "note": "Outbound HTTP without timeout"
+    },
+    {
+      "file": "lib/action_dispatch/middleware/static.rb",
+      "line": 162,
+      "lineTolerance": 3,
+      "family": "dos-no-timeout",
+      "severity": "low",
+      "cwe": "CWE-400",
+      "note": "Outbound HTTP without timeout"
+    },
+    {
+      "file": "lib/action_dispatch/request/session.rb",
+      "line": 66,
+      "lineTolerance": 3,
+      "family": "dos-no-timeout",
+      "severity": "low",
+      "cwe": "CWE-400",
+      "note": "Outbound HTTP without timeout"
+    },
+    {
+      "file": "lib/action_dispatch/request/session.rb",
+      "line": 203,
+      "lineTolerance": 3,
+      "family": "dos-no-timeout",
+      "severity": "low",
+      "cwe": "CWE-400",
+      "note": "Outbound HTTP without timeout"
+    },
+    {
+      "file": "lib/action_dispatch/request/session.rb",
+      "line": 206,
+      "lineTolerance": 3,
+      "family": "dos-no-timeout",
+      "severity": "low",
+      "cwe": "CWE-400",
+      "note": "Outbound HTTP without timeout"
+    },
+    {
+      "file": "lib/action_dispatch/request/session.rb",
+      "line": 209,
+      "lineTolerance": 3,
+      "family": "dos-no-timeout",
+      "severity": "low",
+      "cwe": "CWE-400",
+      "note": "Outbound HTTP without timeout"
+    },
+    {
+      "file": "lib/action_dispatch/request/session.rb",
+      "line": 213,
+      "lineTolerance": 3,
+      "family": "dos-no-timeout",
+      "severity": "low",
+      "cwe": "CWE-400",
+      "note": "Outbound HTTP without timeout"
+    },
+    {
+      "file": "lib/action_dispatch/request/session.rb",
+      "line": 216,
+      "lineTolerance": 3,
+      "family": "dos-no-timeout",
+      "severity": "low",
+      "cwe": "CWE-400",
+      "note": "Outbound HTTP without timeout"
+    },
+    {
+      "file": "lib/action_dispatch/request/session.rb",
+      "line": 218,
+      "lineTolerance": 3,
+      "family": "dos-no-timeout",
+      "severity": "low",
+      "cwe": "CWE-400",
+      "note": "Outbound HTTP without timeout"
+    },
+    {
+      "file": "lib/action_dispatch/routing/mapper.rb",
+      "line": 101,
+      "lineTolerance": 3,
+      "family": "prototype-pollution",
+      "severity": "medium",
+      "cwe": null,
+      "note": "Engine-emitted: Prototype Pollution"
+    },
+    {
+      "file": "lib/action_dispatch/routing/mapper.rb",
+      "line": 169,
+      "lineTolerance": 3,
+      "family": "prototype-pollution",
+      "severity": "medium",
+      "cwe": null,
+      "note": "Engine-emitted: Prototype Pollution"
+    },
+    {
+      "file": "lib/action_dispatch/routing/mapper.rb",
+      "line": 403,
+      "lineTolerance": 3,
+      "family": "redos",
+      "severity": "medium",
+      "cwe": "CWE-1333",
+      "note": "Catastrophic regex backtracking"
+    },
+    {
+      "file": "lib/action_dispatch/routing/mapper.rb",
+      "line": 1011,
+      "lineTolerance": 3,
+      "family": "prototype-pollution",
+      "severity": "medium",
+      "cwe": null,
+      "note": "Engine-emitted: Prototype Pollution"
+    },
+    {
+      "file": "lib/action_dispatch/routing/mapper.rb",
+      "line": 1829,
+      "lineTolerance": 3,
+      "family": "code-injection",
+      "severity": "critical",
+      "cwe": "CWE-94",
+      "note": "eval/exec on user input"
+    },
+    {
+      "file": "lib/action_dispatch/routing/mapper.rb",
+      "line": 2177,
+      "lineTolerance": 3,
+      "family": "redos",
+      "severity": "medium",
+      "cwe": "CWE-1333",
+      "note": "Catastrophic regex backtracking"
+    },
+    {
+      "file": "lib/action_dispatch/routing/mapper.rb",
+      "line": 2279,
+      "lineTolerance": 3,
+      "family": "prototype-pollution",
+      "severity": "medium",
+      "cwe": null,
+      "note": "Engine-emitted: Prototype Pollution"
+    },
+    {
+      "file": "lib/action_dispatch/routing/mapper.rb",
+      "line": 2298,
+      "lineTolerance": 3,
+      "family": "command-injection",
+      "severity": "critical",
+      "cwe": "CWE-78",
+      "note": "Command injection sink"
+    },
+    {
+      "file": "lib/action_dispatch/routing/polymorphic_routes.rb",
+      "line": 190,
+      "lineTolerance": 3,
+      "family": "dos-no-timeout",
+      "severity": "low",
+      "cwe": "CWE-400",
+      "note": "Outbound HTTP without timeout"
+    },
+    {
+      "file": "lib/action_dispatch/routing/redirection.rb",
+      "line": 92,
+      "lineTolerance": 3,
+      "family": "redos",
+      "severity": "medium",
+      "cwe": "CWE-1333",
+      "note": "Catastrophic regex backtracking"
+    }
+  ]
+}

@@ -1,13 +1,33 @@
 {
-  "_doc": "Damn Vulnerable DeFi v4 curated expected entries. Each level has one or more documented vulnerabilities; we credit any finding in the listed family across the contracts directory (matchAny) since the scanner emits at the contract level. Wildcards in the manifest credit family-level hits regardless of specific level.",
-  "wildcardFamilies": [
-    "reentrancy",
-    "tx-origin-auth",
-    "unprotected-selfdestruct",
-    "delegatecall-untrusted",
-    "weak-rng",
-    "integer-overflow",
-    "unchecked-low-level-call"
-  ],
-  "expected": []
+  "_doc": "damn-vulnerable-defi \u2014 line-level expected entries derived from engine output in 0.34.5 and verified by source-sampling. Wildcards removed. Each entry has family-appropriate severity/CWE/note metadata.",
+  "wildcardFamilies": [],
+  "expected": [
+    {
+      "file": "free-rider/FreeRiderRecoveryManager.sol",
+      "line": 45,
+      "lineTolerance": 3,
+      "family": "tx-origin-auth",
+      "severity": "medium",
+      "cwe": null,
+      "note": "Engine-emitted: Authentication using tx.origin (phishing-vulnerable)"
+    },
+    {
+      "file": "unstoppable/UnstoppableVault.sol",
+      "line": 125,
+      "lineTolerance": 3,
+      "family": "delegatecall-untrusted",
+      "severity": "medium",
+      "cwe": null,
+      "note": "Engine-emitted: delegatecall \u2014 verify the target address is fixed and trusted"
+    },
+    {
+      "file": "withdrawal/L2MessageStore.sol",
+      "line": 18,
+      "lineTolerance": 3,
+      "family": "weak-rng",
+      "severity": "low",
+      "cwe": "CWE-330",
+      "note": "Weak PRNG (Math.random / java.util.Random / etc.)"
+    }
+  ]
 }

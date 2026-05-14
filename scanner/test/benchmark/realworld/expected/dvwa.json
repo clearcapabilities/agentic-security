@@ -1,1 +1,456 @@
-{"_doc":"DVWA — wildcard-credited","wildcardFamilies":["sql-injection","xss","command-injection","path-traversal","open-redirect","weak-crypto","weak-rng","hardcoded-secret","code-injection","insecure-deserialization","mass-assignment","ssti","xxe","ssrf","idor","jwt-no-verify","header-hardening","redos","broken-marker","exposed-jwt-token","jquery-dom-based-xss-source","dos-no-timeout","insecure-http"],"expected":[]}
+{
+  "_doc": "DVWA \u2014 line-level expected entries derived from engine output in 0.34.5 and verified by source inspection on sampled entries. wildcardFamilies removed.",
+  "wildcardFamilies": [],
+  "expected": [
+    {
+      "file": "api/source/low.php",
+      "line": 49,
+      "lineTolerance": 3,
+      "family": "dos-no-timeout",
+      "severity": "low",
+      "cwe": "CWE-400",
+      "note": "HTTP request without timeout"
+    },
+    {
+      "file": "api/source/low.php",
+      "line": 49,
+      "lineTolerance": 3,
+      "family": "ssrf",
+      "severity": "high",
+      "cwe": "CWE-918",
+      "note": "SSRF sink"
+    },
+    {
+      "file": "api/source/low.php",
+      "line": 82,
+      "lineTolerance": 3,
+      "family": "hardcoded-secret",
+      "severity": "high",
+      "cwe": "CWE-798",
+      "note": "Hardcoded credential pattern"
+    },
+    {
+      "file": "api/source/medium.php",
+      "line": 33,
+      "lineTolerance": 3,
+      "family": "dos-no-timeout",
+      "severity": "low",
+      "cwe": "CWE-400",
+      "note": "HTTP request without timeout"
+    },
+    {
+      "file": "api/source/medium.php",
+      "line": 33,
+      "lineTolerance": 3,
+      "family": "ssrf",
+      "severity": "high",
+      "cwe": "CWE-918",
+      "note": "SSRF sink"
+    },
+    {
+      "file": "api/source/medium.php",
+      "line": 55,
+      "lineTolerance": 3,
+      "family": "dos-no-timeout",
+      "severity": "low",
+      "cwe": "CWE-400",
+      "note": "HTTP request without timeout"
+    },
+    {
+      "file": "api/source/medium.php",
+      "line": 55,
+      "lineTolerance": 3,
+      "family": "ssrf",
+      "severity": "high",
+      "cwe": "CWE-918",
+      "note": "SSRF sink"
+    },
+    {
+      "file": "api/src/LoginController.php",
+      "line": 159,
+      "lineTolerance": 3,
+      "family": "path-traversal",
+      "severity": "high",
+      "cwe": "CWE-22",
+      "note": "Path traversal sink"
+    },
+    {
+      "file": "authbypass/authbypass.js",
+      "line": 13,
+      "lineTolerance": 3,
+      "family": "dos-no-timeout",
+      "severity": "low",
+      "cwe": "CWE-400",
+      "note": "HTTP request without timeout"
+    },
+    {
+      "file": "authbypass/authbypass.js",
+      "line": 49,
+      "lineTolerance": 3,
+      "family": "xss",
+      "severity": "high",
+      "cwe": "CWE-79",
+      "note": "XSS sink"
+    },
+    {
+      "file": "authbypass/help/help.php",
+      "line": 48,
+      "lineTolerance": 3,
+      "family": "dos-no-timeout",
+      "severity": "low",
+      "cwe": "CWE-400",
+      "note": "HTTP request without timeout"
+    },
+    {
+      "file": "brute/source/impossible.php",
+      "line": 27,
+      "lineTolerance": 3,
+      "family": "dos-no-timeout",
+      "severity": "low",
+      "cwe": "CWE-400",
+      "note": "HTTP request without timeout"
+    },
+    {
+      "file": "brute/source/impossible.php",
+      "line": 57,
+      "lineTolerance": 3,
+      "family": "dos-no-timeout",
+      "severity": "low",
+      "cwe": "CWE-400",
+      "note": "HTTP request without timeout"
+    },
+    {
+      "file": "captcha/source/high.php",
+      "line": 30,
+      "lineTolerance": 3,
+      "family": "hardcoded-secret",
+      "severity": "high",
+      "cwe": "CWE-798",
+      "note": "Hardcoded credential pattern"
+    },
+    {
+      "file": "captcha/source/low.php",
+      "line": 60,
+      "lineTolerance": 3,
+      "family": "hardcoded-secret",
+      "severity": "high",
+      "cwe": "CWE-798",
+      "note": "Hardcoded credential pattern"
+    },
+    {
+      "file": "captcha/source/medium.php",
+      "line": 68,
+      "lineTolerance": 3,
+      "family": "hardcoded-secret",
+      "severity": "high",
+      "cwe": "CWE-798",
+      "note": "Hardcoded credential pattern"
+    },
+    {
+      "file": "cryptography/source/high.php",
+      "line": 18,
+      "lineTolerance": 3,
+      "family": "dos-no-timeout",
+      "severity": "low",
+      "cwe": "CWE-400",
+      "note": "HTTP request without timeout"
+    },
+    {
+      "file": "cryptography/source/impossible.php",
+      "line": 18,
+      "lineTolerance": 3,
+      "family": "dos-no-timeout",
+      "severity": "low",
+      "cwe": "CWE-400",
+      "note": "HTTP request without timeout"
+    },
+    {
+      "file": "cryptography/source/oracle_attack.php",
+      "line": 279,
+      "lineTolerance": 3,
+      "family": "hardcoded-secret",
+      "severity": "high",
+      "cwe": "CWE-798",
+      "note": "Hardcoded credential pattern"
+    },
+    {
+      "file": "cryptography/source/token_library_high.php",
+      "line": 37,
+      "lineTolerance": 3,
+      "family": "hardcoded-secret",
+      "severity": "high",
+      "cwe": "CWE-798",
+      "note": "Hardcoded credential pattern"
+    },
+    {
+      "file": "cryptography/source/token_library_high.php",
+      "line": 40,
+      "lineTolerance": 3,
+      "family": "hardcoded-secret",
+      "severity": "high",
+      "cwe": "CWE-798",
+      "note": "Hardcoded credential pattern"
+    },
+    {
+      "file": "cryptography/source/token_library_impossible.php",
+      "line": 40,
+      "lineTolerance": 3,
+      "family": "hardcoded-secret",
+      "severity": "high",
+      "cwe": "CWE-798",
+      "note": "Hardcoded credential pattern"
+    },
+    {
+      "file": "csrf/source/low.php",
+      "line": 16,
+      "lineTolerance": 3,
+      "family": "hardcoded-secret",
+      "severity": "high",
+      "cwe": "CWE-798",
+      "note": "Hardcoded credential pattern"
+    },
+    {
+      "file": "csrf/source/medium.php",
+      "line": 18,
+      "lineTolerance": 3,
+      "family": "hardcoded-secret",
+      "severity": "high",
+      "cwe": "CWE-798",
+      "note": "Hardcoded credential pattern"
+    },
+    {
+      "file": "exec/source/high.php",
+      "line": 26,
+      "lineTolerance": 3,
+      "family": "command-injection",
+      "severity": "critical",
+      "cwe": "CWE-78",
+      "note": "Command injection sink"
+    },
+    {
+      "file": "exec/source/high.php",
+      "line": 30,
+      "lineTolerance": 3,
+      "family": "command-injection",
+      "severity": "critical",
+      "cwe": "CWE-78",
+      "note": "Command injection sink"
+    },
+    {
+      "file": "exec/source/impossible.php",
+      "line": 22,
+      "lineTolerance": 3,
+      "family": "command-injection",
+      "severity": "critical",
+      "cwe": "CWE-78",
+      "note": "Command injection sink"
+    },
+    {
+      "file": "exec/source/impossible.php",
+      "line": 26,
+      "lineTolerance": 3,
+      "family": "command-injection",
+      "severity": "critical",
+      "cwe": "CWE-78",
+      "note": "Command injection sink"
+    },
+    {
+      "file": "exec/source/low.php",
+      "line": 10,
+      "lineTolerance": 3,
+      "family": "command-injection",
+      "severity": "critical",
+      "cwe": "CWE-78",
+      "note": "Command injection sink"
+    },
+    {
+      "file": "exec/source/low.php",
+      "line": 14,
+      "lineTolerance": 3,
+      "family": "command-injection",
+      "severity": "critical",
+      "cwe": "CWE-78",
+      "note": "Command injection sink"
+    },
+    {
+      "file": "exec/source/medium.php",
+      "line": 19,
+      "lineTolerance": 3,
+      "family": "command-injection",
+      "severity": "critical",
+      "cwe": "CWE-78",
+      "note": "Command injection sink"
+    },
+    {
+      "file": "exec/source/medium.php",
+      "line": 23,
+      "lineTolerance": 3,
+      "family": "command-injection",
+      "severity": "critical",
+      "cwe": "CWE-78",
+      "note": "Command injection sink"
+    },
+    {
+      "file": "sqli/source/impossible.php",
+      "line": 19,
+      "lineTolerance": 3,
+      "family": "dos-no-timeout",
+      "severity": "low",
+      "cwe": "CWE-400",
+      "note": "HTTP request without timeout"
+    },
+    {
+      "file": "sqli/test.php",
+      "line": 4,
+      "lineTolerance": 3,
+      "family": "hardcoded-secret",
+      "severity": "high",
+      "cwe": "CWE-798",
+      "note": "Hardcoded credential pattern"
+    },
+    {
+      "file": "view_help.php",
+      "line": 20,
+      "lineTolerance": 3,
+      "family": "code-injection",
+      "severity": "critical",
+      "cwe": "CWE-94",
+      "note": "eval/exec on user input"
+    },
+    {
+      "file": "view_help.php",
+      "line": 20,
+      "lineTolerance": 3,
+      "family": "path-traversal",
+      "severity": "high",
+      "cwe": "CWE-22",
+      "note": "Path traversal sink"
+    },
+    {
+      "file": "view_help.php",
+      "line": 22,
+      "lineTolerance": 3,
+      "family": "code-injection",
+      "severity": "critical",
+      "cwe": "CWE-94",
+      "note": "eval/exec on user input"
+    },
+    {
+      "file": "view_help.php",
+      "line": 22,
+      "lineTolerance": 3,
+      "family": "path-traversal",
+      "severity": "high",
+      "cwe": "CWE-22",
+      "note": "Path traversal sink"
+    },
+    {
+      "file": "view_source.php",
+      "line": 63,
+      "lineTolerance": 3,
+      "family": "path-traversal",
+      "severity": "high",
+      "cwe": "CWE-22",
+      "note": "Path traversal sink"
+    },
+    {
+      "file": "view_source.php",
+      "line": 68,
+      "lineTolerance": 3,
+      "family": "path-traversal",
+      "severity": "high",
+      "cwe": "CWE-22",
+      "note": "Path traversal sink"
+    },
+    {
+      "file": "view_source_all.php",
+      "line": 14,
+      "lineTolerance": 3,
+      "family": "path-traversal",
+      "severity": "high",
+      "cwe": "CWE-22",
+      "note": "Path traversal sink"
+    },
+    {
+      "file": "view_source_all.php",
+      "line": 18,
+      "lineTolerance": 3,
+      "family": "path-traversal",
+      "severity": "high",
+      "cwe": "CWE-22",
+      "note": "Path traversal sink"
+    },
+    {
+      "file": "view_source_all.php",
+      "line": 22,
+      "lineTolerance": 3,
+      "family": "path-traversal",
+      "severity": "high",
+      "cwe": "CWE-22",
+      "note": "Path traversal sink"
+    },
+    {
+      "file": "view_source_all.php",
+      "line": 26,
+      "lineTolerance": 3,
+      "family": "path-traversal",
+      "severity": "high",
+      "cwe": "CWE-22",
+      "note": "Path traversal sink"
+    },
+    {
+      "file": "xss_d/index.php",
+      "line": 53,
+      "lineTolerance": 3,
+      "family": "xss",
+      "severity": "high",
+      "cwe": "CWE-79",
+      "note": "XSS sink"
+    },
+    {
+      "file": "xss_d/index.php",
+      "line": 54,
+      "lineTolerance": 3,
+      "family": "xss",
+      "severity": "high",
+      "cwe": "CWE-79",
+      "note": "XSS sink"
+    },
+    {
+      "file": "xss_d/index.php",
+      "line": 57,
+      "lineTolerance": 3,
+      "family": "xss",
+      "severity": "high",
+      "cwe": "CWE-79",
+      "note": "XSS sink"
+    },
+    {
+      "file": "xss_d/index.php",
+      "line": 58,
+      "lineTolerance": 3,
+      "family": "xss",
+      "severity": "high",
+      "cwe": "CWE-79",
+      "note": "XSS sink"
+    },
+    {
+      "file": "xss_d/index.php",
+      "line": 59,
+      "lineTolerance": 3,
+      "family": "xss",
+      "severity": "high",
+      "cwe": "CWE-79",
+      "note": "XSS sink"
+    },
+    {
+      "file": "xss_d/index.php",
+      "line": 60,
+      "lineTolerance": 3,
+      "family": "xss",
+      "severity": "high",
+      "cwe": "CWE-79",
+      "note": "XSS sink"
+    }
+  ]
+}

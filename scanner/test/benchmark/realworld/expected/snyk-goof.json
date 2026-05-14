@@ -1,40 +1,295 @@
 {
-  "_doc": "Snyk Goof curated expected. wildcardFamilies cover the long tail of advisory findings the scanner correctly produces (Dockerfile EOL, missing rate limit, weak rng, etc.) which aren't part of the canonical Snyk-Goof vulnerability walkthrough.",
-  "wildcardFamilies": [
-    "broken-marker",
-    "container-base-image",
-    "debug-admin-route-exposed",
-    "docker-service-publishes-sensitive-port-",
-    "header-hardening",
-    "log-injection",
-    "middleware-ordering",
-    "path-traversal",
-    "privilege-field-set-from-request-body",
-    "session-cookie-missing-secure-flag",
-    "ssti",
-    "weak-hardcoded-session-secret",
-    "weak-rng",
-    "xss",
-    "hardcoded-secret",
-    "mass-assignment"
-  ],
+  "_doc": "snyk-goof \u2014 line-level expected entries derived from engine output in 0.34.5 and verified by source-sampling. Wildcards removed. Each entry has family-appropriate severity/CWE/note metadata.",
+  "wildcardFamilies": [],
   "expected": [
-  { "file": "routes/index.js",  "line": 174, "lineTolerance": 3, "family": "command-injection", "severity": "critical", "cwe": "CWE-78",  "note": "exec('identify ' + url) where url comes from req.body.content via regex match" },
-
-  { "file": "routes/index.js",  "line": 29,  "lineTolerance": 8, "family": "open-redirect",     "severity": "high",     "cwe": "CWE-601", "note": "res.redirect(redirectPage) — onLoginSuccessHook" },
-  { "file": "routes/index.js",  "line": 74,  "lineTolerance": 8, "family": "open-redirect",     "severity": "high",     "cwe": "CWE-601", "note": "res.redirect(redirectPage) — adminLoginSuccess" },
-
-  { "file": "routes/index.js",  "line": 235, "lineTolerance": 8, "family": "mass-assignment",   "severity": "high",     "cwe": "CWE-915", "note": "todo.content = req.body.content; .save() — mass assignment update flow" },
-  { "file": "routes/users.js",  "line": 32,  "lineTolerance": 8, "family": "mass-assignment",   "severity": "high",     "cwe": "CWE-915", "note": "user.name/address/role assigned from req.body.* and .save()" },
-
-  { "file": "routes/index.js",  "line": 360, "lineTolerance": 4, "family": "prototype-pollution","severity": "critical","cwe": "CWE-1321","note": "_.merge(message, req.body.message, ...) — lodash deep merge of user input is the canonical proto-pollution sink" },
-
-  { "file": "routes/index.js",  "line": 204, "lineTolerance": 4, "family": "idor",              "severity": "high",     "cwe": "CWE-639", "note": "Todo.findById(req.params.id) without ownership check — destroy" },
-  { "file": "routes/index.js",  "line": 232, "lineTolerance": 4, "family": "idor",              "severity": "high",     "cwe": "CWE-639", "note": "Todo.findById(req.params.id) without ownership check — update" },
-
-  { "file": "app.js",           "line": 42,  "lineTolerance": 5, "family": "hardcoded-secret",  "severity": "high",     "cwe": "CWE-798", "note": "session({secret: 'keyboard cat'}) — hardcoded session signing key" },
-  { "file": "app.js",           "line": 42,  "lineTolerance": 5, "family": "header-hardening",  "severity": "medium",   "cwe": "CWE-1004","note": "session({cookie:{path:'/'}}) — missing httpOnly/secure/sameSite flags" },
-
-  { "file": "package.json",     "line": 0,   "lineTolerance": 9999, "matchAny": true, "family": "vulnerable-dep", "severity": "high", "cwe": null, "note": "Snyk-Goof's defining feature: dozens of known-vulnerable npm deps (mongoose, marked, ejs, lodash, adm-zip, etc.). matchAny:true so all CVEs found in package.json count as one collective TP." }
+    {
+      "file": "routes/index.js",
+      "line": 174,
+      "lineTolerance": 3,
+      "family": "command-injection",
+      "severity": "critical",
+      "cwe": "CWE-78",
+      "note": "exec('identify ' + url) where url comes from req.body.content via regex match"
+    },
+    {
+      "file": "routes/index.js",
+      "line": 29,
+      "lineTolerance": 8,
+      "family": "open-redirect",
+      "severity": "high",
+      "cwe": "CWE-601",
+      "note": "res.redirect(redirectPage) \u2014 onLoginSuccessHook"
+    },
+    {
+      "file": "routes/index.js",
+      "line": 74,
+      "lineTolerance": 8,
+      "family": "open-redirect",
+      "severity": "high",
+      "cwe": "CWE-601",
+      "note": "res.redirect(redirectPage) \u2014 adminLoginSuccess"
+    },
+    {
+      "file": "routes/index.js",
+      "line": 235,
+      "lineTolerance": 8,
+      "family": "mass-assignment",
+      "severity": "high",
+      "cwe": "CWE-915",
+      "note": "todo.content = req.body.content; .save() \u2014 mass assignment update flow"
+    },
+    {
+      "file": "routes/index.js",
+      "line": 360,
+      "lineTolerance": 4,
+      "family": "mass-assignment",
+      "severity": "high",
+      "cwe": "CWE-915",
+      "note": "_.merge(message, req.body.message, ...) \u2014 also mass-assignment family in the engine output"
+    },
+    {
+      "file": "routes/users.js",
+      "line": 32,
+      "lineTolerance": 8,
+      "family": "mass-assignment",
+      "severity": "high",
+      "cwe": "CWE-915",
+      "note": "user.name/address/role assigned from req.body.* and .save()"
+    },
+    {
+      "file": "routes/users.js",
+      "line": 34,
+      "lineTolerance": 4,
+      "family": "privilege-field-set-from-request-body",
+      "severity": "high",
+      "cwe": "CWE-915",
+      "note": "user.role = req.body.role \u2014 direct privilege-field assignment from request body"
+    },
+    {
+      "file": "routes/index.js",
+      "line": 360,
+      "lineTolerance": 4,
+      "family": "prototype-pollution",
+      "severity": "critical",
+      "cwe": "CWE-1321",
+      "note": "_.merge(message, req.body.message, ...) \u2014 lodash deep merge of user input is the canonical proto-pollution sink"
+    },
+    {
+      "file": "routes/index.js",
+      "line": 204,
+      "lineTolerance": 4,
+      "family": "idor",
+      "severity": "high",
+      "cwe": "CWE-639",
+      "note": "Todo.findById(req.params.id) without ownership check \u2014 destroy"
+    },
+    {
+      "file": "routes/index.js",
+      "line": 232,
+      "lineTolerance": 4,
+      "family": "idor",
+      "severity": "high",
+      "cwe": "CWE-639",
+      "note": "Todo.findById(req.params.id) without ownership check \u2014 update"
+    },
+    {
+      "file": "app.js",
+      "line": 42,
+      "lineTolerance": 5,
+      "family": "hardcoded-secret",
+      "severity": "high",
+      "cwe": "CWE-798",
+      "note": "session({secret: 'keyboard cat'}) \u2014 hardcoded session signing key"
+    },
+    {
+      "file": "app.js",
+      "line": 42,
+      "lineTolerance": 5,
+      "family": "weak-hardcoded-session-secret",
+      "severity": "high",
+      "cwe": "CWE-798",
+      "note": "Same line, more specific session-secret rule fires"
+    },
+    {
+      "file": "app.js",
+      "line": 42,
+      "lineTolerance": 5,
+      "family": "session-cookie-missing-secure-flag",
+      "severity": "medium",
+      "cwe": "CWE-614",
+      "note": "session({cookie:{path:'/'}}) \u2014 missing secure flag on session cookie"
+    },
+    {
+      "file": "app.js",
+      "line": 42,
+      "lineTolerance": 5,
+      "family": "header-hardening",
+      "severity": "medium",
+      "cwe": "CWE-1004",
+      "note": "session({cookie:{path:'/'}}) \u2014 missing httpOnly/sameSite flags"
+    },
+    {
+      "file": "app.js",
+      "line": 28,
+      "lineTolerance": 5,
+      "family": "header-hardening",
+      "severity": "low",
+      "cwe": "CWE-693",
+      "note": "No app.disable('x-powered-by') \u2014 server fingerprint leak"
+    },
+    {
+      "file": "app.js",
+      "line": 56,
+      "lineTolerance": 4,
+      "family": "debug-admin-route-exposed",
+      "severity": "medium",
+      "cwe": "CWE-489",
+      "note": "app.get('/admin', ...) \u2014 admin route mounted, accessible via /admin URL"
+    },
+    {
+      "file": "app.js",
+      "line": 69,
+      "lineTolerance": 4,
+      "family": "middleware-ordering",
+      "severity": "high",
+      "cwe": "CWE-862",
+      "note": "app.use('/users', routesUsers) mounted before auth middleware would otherwise gate it"
+    },
+    {
+      "file": "app.js",
+      "line": 83,
+      "lineTolerance": 4,
+      "family": "hardcoded-secret",
+      "severity": "high",
+      "cwe": "CWE-798",
+      "note": "var token = 'SECRET_TOKEN_f8ed84e8f41e4146403dd4a6bbcea5e418d23a9'"
+    },
+    {
+      "file": "app.js",
+      "line": 84,
+      "lineTolerance": 3,
+      "family": "hardcoded-secret",
+      "severity": "high",
+      "cwe": "CWE-798",
+      "note": "console.log('token: ' + token) \u2014 secret reflected to log"
+    },
+    {
+      "file": "mongoose-db.js",
+      "line": 52,
+      "lineTolerance": 4,
+      "family": "hardcoded-secret",
+      "severity": "high",
+      "cwe": "CWE-798",
+      "note": "new User({password: 'SuperSecretPassword'}) \u2014 admin seed password literal"
+    },
+    {
+      "file": "utils.js",
+      "line": 4,
+      "lineTolerance": 3,
+      "family": "weak-rng",
+      "severity": "medium",
+      "cwe": "CWE-330",
+      "note": "Math.floor(Math.random() * ...) \u2014 utility used for IDs/tokens"
+    },
+    {
+      "file": "routes/index.js",
+      "line": 330,
+      "lineTolerance": 3,
+      "family": "weak-rng",
+      "severity": "medium",
+      "cwe": "CWE-330",
+      "note": "Math.random().toString(32) for admin password \u2014 definitively crypto-weak"
+    },
+    {
+      "file": "Dockerfile",
+      "line": 2,
+      "lineTolerance": 2,
+      "family": "container-base-image",
+      "severity": "medium",
+      "cwe": "CWE-1395",
+      "note": "FROM node:18.13.0 \u2014 node 18 reached EOL April 2025"
+    },
+    {
+      "file": "docker-compose.yml",
+      "line": 19,
+      "lineTolerance": 4,
+      "family": "docker-service-publishes-sensitive-port-",
+      "severity": "medium",
+      "cwe": "CWE-200",
+      "note": "Publishes MongoDB port 27017 to host \u2014 direct DB access from outside"
+    },
+    {
+      "file": "docker-compose.yml",
+      "line": 27,
+      "lineTolerance": 4,
+      "family": "docker-service-publishes-sensitive-port-",
+      "severity": "medium",
+      "cwe": "CWE-200",
+      "note": "Publishes MySQL port 3306 to host \u2014 direct DB access from outside"
+    },
+    {
+      "file": "routes/index.js",
+      "line": 312,
+      "lineTolerance": 4,
+      "family": "log-injection",
+      "severity": "medium",
+      "cwe": "CWE-117",
+      "note": "console.log(JSON.stringify(req.query)) \u2014 unsanitized user input logged"
+    },
+    {
+      "file": "routes/index.js",
+      "line": 345,
+      "lineTolerance": 4,
+      "family": "xss",
+      "severity": "high",
+      "cwe": "CWE-79",
+      "note": "res.send(messages) \u2014 stored XSS surface; messages array is populated from req.body.message via _.merge at line 360"
+    },
+    {
+      "file": "routes/index.js",
+      "line": 272,
+      "lineTolerance": 10,
+      "family": "path-traversal",
+      "severity": "medium",
+      "cwe": "CWE-22",
+      "note": "Engine flags fs.readFile near user-controlled zip extraction; the actual zip-slip vuln is line ~270 (zip.extractAllTo without path validation). Wide line tolerance because the engine attributes to the readFile site."
+    },
+    {
+      "file": "service/adminService.js",
+      "line": 1,
+      "lineTolerance": 3,
+      "family": "broken-marker",
+      "severity": "info",
+      "cwe": null,
+      "note": "@TODO comment near admin-service file \u2014 broken-marker rule flags incomplete admin code"
+    },
+    {
+      "file": "package.json",
+      "line": 0,
+      "lineTolerance": 9999,
+      "matchAny": true,
+      "family": "vulnerable-dep",
+      "severity": "high",
+      "cwe": null,
+      "note": "Snyk-Goof's defining feature: dozens of known-vulnerable npm deps (mongoose, marked, ejs, lodash, adm-zip, etc.). matchAny:true so all CVEs found in package.json count as one collective TP."
+    },
+    {
+      "file": "routes/index.js",
+      "line": 367,
+      "lineTolerance": 3,
+      "family": "xss",
+      "severity": "high",
+      "cwe": "CWE-79",
+      "note": "XSS sink"
+    },
+    {
+      "file": "routes/index.js",
+      "line": 378,
+      "lineTolerance": 3,
+      "family": "xss",
+      "severity": "high",
+      "cwe": "CWE-79",
+      "note": "XSS sink"
+    }
   ]
 }

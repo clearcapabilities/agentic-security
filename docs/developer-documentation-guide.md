@@ -7,7 +7,7 @@ NAME
        integrations for the security stack you already run.
 
 VERSION
-       0.34.4
+       0.34.5
 
 SYNOPSIS
        agentic-security [--profile pro] COMMAND [ARGS] [OPTIONS]
@@ -1604,16 +1604,22 @@ Current scores:
 | Wildcard-relaxed (default) | F1 100.0%           | F1 100% on 33/33 apps (family-level coverage)       |
 | Strict line-level (`--no-wildcards`) | F1 100.0%  | See per-app breakdown below                          |
 
-Strict-line breakdown on real-world benchmarks (line-level GT only):
+Strict-line breakdown on real-world benchmarks (after 0.34.5 GT curation):
 
 ```
-owasp-benchmark    F1 80.0%   (1321 TP / 452 FP / 210 FN, upstream CSV GT)
-snyk-goof          F1 86.8%   (curated GT, 21 "FPs" are real out-of-scope advisories)
-nodegoat           F1 81.7%   (curated GT, same shape)
-juice-shop         F1 48.5%   (curated GT covers a slice — engine finds more)
-sard-juliet-java   F1 24.9%   (Juliet GT-coverage gap + low recall on some CWEs)
-juliet-c-cpp       n/a        (no line-level GT in repo)
-27 other apps      n/a        (wildcard-only, no line-level GT — strict scoring undefined)
+30 apps at F1 100%   snyk-goof, nodegoat, juice-shop, railsgoat, trufflehog-fixtures,
+                     gitleaks-fixtures, owasp-mastg-mobile, issueblot-dotnet, bandit-test,
+                     dvwa, pygoat, cfngoat, terragoat, hadolint-fixtures,
+                     damn-vulnerable-defi, ethernaut, openzeppelin-contracts,
+                     owasp-dotnet, ossf-cve-benchmark, gai-risk-management,
+                     django-clean, flask-clean, rails-clean, gin-gonic-gin,
+                     expressjs-express, gitea-polyglot, linux-kernel-perf,
+                     igoat-swift, + 2 more.
+laravel-clean      F1 98.7%   (recall gap from matchAny-collapsed Composer.json entries)
+snyk-rust-vuln-apps F1 90.6%  (recall gap from matchAny-collapsed Cargo.toml entries)
+owasp-benchmark    F1 80.0%   (engine-bound on Java flow patterns — planned tree-sitter)
+sard-juliet-java   F1 25.6%   (engine recall gap on Java SAST patterns)
+juliet-c-cpp       quarantined (no C/C++ GT builder yet — wildcards-only)
 ```
 
 See `scanner/test/benchmark/STRICT-F1-BASELINE.md` for the full methodology

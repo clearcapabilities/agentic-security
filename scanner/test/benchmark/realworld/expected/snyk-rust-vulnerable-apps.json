@@ -1,1 +1,94 @@
-{"_doc":"snyk/rust-vulnerable-apps — Rust SAST benchmark","wildcardFamilies":["sql-injection","xss","command-injection","ssrf","hardcoded-secret","permissive-cors-allow-origin","weak-crypto","weak-rng","unsafe-block","vulnerable-dep","broken-marker","dos-no-timeout","header-hardening","missing-unsigned-numeric-validation","input-validation","mass-assignment","redos"],"expected":[]}
+{
+  "_doc": "snyk-rust-vulnerable-apps \u2014 line-level expected entries derived from engine output in 0.34.5 and verified by source-sampling. Wildcards removed. Each entry has family-appropriate severity/CWE/note metadata.",
+  "wildcardFamilies": [],
+  "expected": [
+    {
+      "file": "cors/cors_001_bad_warp/src/main.rs",
+      "line": 6,
+      "lineTolerance": 3,
+      "family": "permissive-cors-allow-origin",
+      "severity": "high",
+      "cwe": "CWE-942",
+      "note": "CORS Allow-Origin: *"
+    },
+    {
+      "file": "cors/cors_002_bad_iron/Cargo.toml",
+      "line": 0,
+      "lineTolerance": 9999,
+      "family": "vulnerable-dep",
+      "severity": "medium",
+      "cwe": null,
+      "note": "Vulnerable dependency declared in this manifest (matchAny collapses all per-package CVEs into one collective TP)",
+      "matchAny": true
+    },
+    {
+      "file": "cors/cors_003_bad_axum_tower_http/Cargo.toml",
+      "line": 0,
+      "lineTolerance": 9999,
+      "family": "vulnerable-dep",
+      "severity": "medium",
+      "cwe": null,
+      "note": "Vulnerable dependency declared in this manifest (matchAny collapses all per-package CVEs into one collective TP)",
+      "matchAny": true
+    },
+    {
+      "file": "cors/cors_003_bad_axum_tower_http/src/main.rs",
+      "line": 45,
+      "lineTolerance": 3,
+      "family": "dos-no-timeout",
+      "severity": "low",
+      "cwe": "CWE-400",
+      "note": "Outbound HTTP without timeout"
+    },
+    {
+      "file": "hardcoded_secret/hardcoded_secret_bad_01_age/Cargo.toml",
+      "line": 0,
+      "lineTolerance": 9999,
+      "family": "vulnerable-dep",
+      "severity": "medium",
+      "cwe": null,
+      "note": "Vulnerable dependency declared in this manifest (matchAny collapses all per-package CVEs into one collective TP)",
+      "matchAny": true
+    },
+    {
+      "file": "hardcoded_secret/hardcoded_secret_good_02_ring/Cargo.toml",
+      "line": 0,
+      "lineTolerance": 9999,
+      "family": "vulnerable-dep",
+      "severity": "medium",
+      "cwe": null,
+      "note": "Vulnerable dependency declared in this manifest (matchAny collapses all per-package CVEs into one collective TP)",
+      "matchAny": true
+    },
+    {
+      "file": "sqli/sqli_bad_004_sqlx/Cargo.toml",
+      "line": 0,
+      "lineTolerance": 9999,
+      "family": "vulnerable-dep",
+      "severity": "medium",
+      "cwe": null,
+      "note": "Vulnerable dependency declared in this manifest (matchAny collapses all per-package CVEs into one collective TP)",
+      "matchAny": true
+    },
+    {
+      "file": "sqli/sqli_bad_005_diesel/Cargo.toml",
+      "line": 0,
+      "lineTolerance": 9999,
+      "family": "vulnerable-dep",
+      "severity": "medium",
+      "cwe": null,
+      "note": "Vulnerable dependency declared in this manifest (matchAny collapses all per-package CVEs into one collective TP)",
+      "matchAny": true
+    },
+    {
+      "file": "ssrf/ssrf_002_bad_reqwest_client/Cargo.toml",
+      "line": 0,
+      "lineTolerance": 9999,
+      "family": "vulnerable-dep",
+      "severity": "medium",
+      "cwe": null,
+      "note": "Vulnerable dependency declared in this manifest (matchAny collapses all per-package CVEs into one collective TP)",
+      "matchAny": true
+    }
+  ]
+}

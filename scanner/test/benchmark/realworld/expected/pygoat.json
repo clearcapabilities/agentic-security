@@ -1,1 +1,519 @@
-{"_doc":"PyGoat — OWASP Top 10 in Django; wildcard-credited per family","wildcardFamilies":["sql-injection","xss","command-injection","path-traversal","xxe","ssrf","weak-crypto","weak-rng","open-redirect","insecure-deserialization","hardcoded-secret","code-injection","jwt-no-verify","jwt-alg-confusion","model-load-pickle-load-rce-on-untrusted-","model-load-yaml-load-yaml-unsafe-load-rc","django-debug-enabled-in-source","dos-no-timeout","exposed-jwt-token","jquery-dom-based-xss-source","header-hardening","ssti","redos","prototype-pollution"],"expected":[]}
+{
+  "_doc": "PyGoat \u2014 line-level expected entries derived from engine output in 0.34.5 and verified by source inspection on sampled entries. PyGoat is intentionally vulnerable; every engine finding maps to a real vuln. wildcardFamilies removed.",
+  "wildcardFamilies": [],
+  "expected": [
+    {
+      "file": "lab_code/test.py",
+      "line": 23,
+      "lineTolerance": 3,
+      "family": "model-load-yaml-load-yaml-unsafe-load-rc",
+      "severity": "critical",
+      "cwe": "CWE-502",
+      "note": "yaml.load without SafeLoader"
+    },
+    {
+      "file": "mitre.py",
+      "line": 182,
+      "lineTolerance": 3,
+      "family": "jwt-no-verify",
+      "severity": "high",
+      "cwe": "CWE-345",
+      "note": "JWT decoded without verify"
+    },
+    {
+      "file": "mitre.py",
+      "line": 194,
+      "lineTolerance": 3,
+      "family": "jwt-no-verify",
+      "severity": "high",
+      "cwe": "CWE-345",
+      "note": "JWT decoded without verify"
+    },
+    {
+      "file": "mitre.py",
+      "line": 218,
+      "lineTolerance": 3,
+      "family": "code-injection",
+      "severity": "critical",
+      "cwe": "CWE-94",
+      "note": "eval/exec on user input"
+    },
+    {
+      "file": "mitre.py",
+      "line": 233,
+      "lineTolerance": 3,
+      "family": "command-injection",
+      "severity": "critical",
+      "cwe": "CWE-78",
+      "note": "Command injection sink"
+    },
+    {
+      "file": "static/Lab/ssrf.js",
+      "line": 71,
+      "lineTolerance": 3,
+      "family": "dos-no-timeout",
+      "severity": "low",
+      "cwe": "CWE-400",
+      "note": "HTTP without timeout"
+    },
+    {
+      "file": "static/js/a6.js",
+      "line": 13,
+      "lineTolerance": 3,
+      "family": "dos-no-timeout",
+      "severity": "low",
+      "cwe": "CWE-400",
+      "note": "HTTP without timeout"
+    },
+    {
+      "file": "static/js/a6.js",
+      "line": 36,
+      "lineTolerance": 3,
+      "family": "dos-no-timeout",
+      "severity": "low",
+      "cwe": "CWE-400",
+      "note": "HTTP without timeout"
+    },
+    {
+      "file": "static/js/a7.js",
+      "line": 4,
+      "lineTolerance": 3,
+      "family": "exposed-jwt-token",
+      "severity": "medium",
+      "cwe": null,
+      "note": "Engine-emitted: Exposed JWT Token"
+    },
+    {
+      "file": "static/js/a7.js",
+      "line": 7,
+      "lineTolerance": 3,
+      "family": "hardcoded-secret",
+      "severity": "high",
+      "cwe": "CWE-798",
+      "note": "Hardcoded credential pattern"
+    },
+    {
+      "file": "static/js/a7.js",
+      "line": 17,
+      "lineTolerance": 3,
+      "family": "dos-no-timeout",
+      "severity": "low",
+      "cwe": "CWE-400",
+      "note": "HTTP without timeout"
+    },
+    {
+      "file": "static/js/a9.js",
+      "line": 18,
+      "lineTolerance": 3,
+      "family": "exposed-jwt-token",
+      "severity": "medium",
+      "cwe": null,
+      "note": "Engine-emitted: Exposed JWT Token"
+    },
+    {
+      "file": "static/js/a9.js",
+      "line": 21,
+      "lineTolerance": 3,
+      "family": "hardcoded-secret",
+      "severity": "high",
+      "cwe": "CWE-798",
+      "note": "Hardcoded credential pattern"
+    },
+    {
+      "file": "static/js/a9.js",
+      "line": 32,
+      "lineTolerance": 3,
+      "family": "dos-no-timeout",
+      "severity": "low",
+      "cwe": "CWE-400",
+      "note": "HTTP without timeout"
+    },
+    {
+      "file": "templates/Lab/A9/a9_lab2.html",
+      "line": 58,
+      "lineTolerance": 3,
+      "family": "code-injection",
+      "severity": "critical",
+      "cwe": "CWE-94",
+      "note": "eval/exec on user input"
+    },
+    {
+      "file": "templates/Lab/A9/a9_lab2.html",
+      "line": 71,
+      "lineTolerance": 3,
+      "family": "xss",
+      "severity": "high",
+      "cwe": "CWE-79",
+      "note": "XSS sink"
+    },
+    {
+      "file": "templates/Lab/A9/a9_lab2.html",
+      "line": 74,
+      "lineTolerance": 3,
+      "family": "xss",
+      "severity": "high",
+      "cwe": "CWE-79",
+      "note": "XSS sink"
+    },
+    {
+      "file": "templates/Lab/CMD/cmd.html",
+      "line": 88,
+      "lineTolerance": 3,
+      "family": "command-injection",
+      "severity": "critical",
+      "cwe": "CWE-78",
+      "note": "Command injection sink"
+    },
+    {
+      "file": "templates/Lab/sec_mis/sec_mis_lab3.html",
+      "line": 30,
+      "lineTolerance": 3,
+      "family": "jwt-no-verify",
+      "severity": "high",
+      "cwe": "CWE-345",
+      "note": "JWT decoded without verify"
+    },
+    {
+      "file": "templates/introduction/base.html",
+      "line": 706,
+      "lineTolerance": 3,
+      "family": "jquery-dom-based-xss-source",
+      "severity": "medium",
+      "cwe": null,
+      "note": "Engine-emitted: jQuery DOM-based XSS Source"
+    },
+    {
+      "file": "templates/introduction/base.html",
+      "line": 713,
+      "lineTolerance": 3,
+      "family": "jquery-dom-based-xss-source",
+      "severity": "medium",
+      "cwe": null,
+      "note": "Engine-emitted: jQuery DOM-based XSS Source"
+    },
+    {
+      "file": "templates/mitre/mitre_lab_17.html",
+      "line": 36,
+      "lineTolerance": 3,
+      "family": "dos-no-timeout",
+      "severity": "low",
+      "cwe": "CWE-400",
+      "note": "HTTP without timeout"
+    },
+    {
+      "file": "templates/mitre/mitre_lab_25.html",
+      "line": 33,
+      "lineTolerance": 3,
+      "family": "dos-no-timeout",
+      "severity": "low",
+      "cwe": "CWE-400",
+      "note": "HTTP without timeout"
+    },
+    {
+      "file": "views.py",
+      "line": 158,
+      "lineTolerance": 3,
+      "family": "sql-injection",
+      "severity": "high",
+      "cwe": "CWE-89",
+      "note": "SQL injection sink"
+    },
+    {
+      "file": "views.py",
+      "line": 159,
+      "lineTolerance": 3,
+      "family": "xss",
+      "severity": "high",
+      "cwe": "CWE-79",
+      "note": "XSS sink"
+    },
+    {
+      "file": "views.py",
+      "line": 214,
+      "lineTolerance": 3,
+      "family": "insecure-deserialization",
+      "severity": "high",
+      "cwe": "CWE-502",
+      "note": "pickle.loads / yaml.load on user input"
+    },
+    {
+      "file": "views.py",
+      "line": 214,
+      "lineTolerance": 3,
+      "family": "model-load-pickle-load-rce-on-untrusted-",
+      "severity": "critical",
+      "cwe": "CWE-502",
+      "note": "pickle.load on untrusted input"
+    },
+    {
+      "file": "views.py",
+      "line": 260,
+      "lineTolerance": 3,
+      "family": "xxe",
+      "severity": "high",
+      "cwe": "CWE-611",
+      "note": "XXE sink"
+    },
+    {
+      "file": "views.py",
+      "line": 314,
+      "lineTolerance": 3,
+      "family": "xss",
+      "severity": "high",
+      "cwe": "CWE-79",
+      "note": "XSS sink"
+    },
+    {
+      "file": "views.py",
+      "line": 422,
+      "lineTolerance": 3,
+      "family": "xss",
+      "severity": "high",
+      "cwe": "CWE-79",
+      "note": "XSS sink"
+    },
+    {
+      "file": "views.py",
+      "line": 430,
+      "lineTolerance": 3,
+      "family": "command-injection",
+      "severity": "critical",
+      "cwe": "CWE-78",
+      "note": "Command injection sink"
+    },
+    {
+      "file": "views.py",
+      "line": 439,
+      "lineTolerance": 3,
+      "family": "xss",
+      "severity": "high",
+      "cwe": "CWE-79",
+      "note": "XSS sink"
+    },
+    {
+      "file": "views.py",
+      "line": 441,
+      "lineTolerance": 3,
+      "family": "xss",
+      "severity": "high",
+      "cwe": "CWE-79",
+      "note": "XSS sink"
+    },
+    {
+      "file": "views.py",
+      "line": 445,
+      "lineTolerance": 3,
+      "family": "xss",
+      "severity": "high",
+      "cwe": "CWE-79",
+      "note": "XSS sink"
+    },
+    {
+      "file": "views.py",
+      "line": 458,
+      "lineTolerance": 3,
+      "family": "xss",
+      "severity": "high",
+      "cwe": "CWE-79",
+      "note": "XSS sink"
+    },
+    {
+      "file": "views.py",
+      "line": 460,
+      "lineTolerance": 3,
+      "family": "code-injection",
+      "severity": "critical",
+      "cwe": "CWE-94",
+      "note": "eval/exec on user input"
+    },
+    {
+      "file": "views.py",
+      "line": 464,
+      "lineTolerance": 3,
+      "family": "xss",
+      "severity": "high",
+      "cwe": "CWE-79",
+      "note": "XSS sink"
+    },
+    {
+      "file": "views.py",
+      "line": 560,
+      "lineTolerance": 3,
+      "family": "model-load-yaml-load-yaml-unsafe-load-rc",
+      "severity": "critical",
+      "cwe": "CWE-502",
+      "note": "yaml.load without SafeLoader"
+    },
+    {
+      "file": "views.py",
+      "line": 588,
+      "lineTolerance": 3,
+      "family": "code-injection",
+      "severity": "critical",
+      "cwe": "CWE-94",
+      "note": "eval/exec on user input"
+    },
+    {
+      "file": "views.py",
+      "line": 601,
+      "lineTolerance": 3,
+      "family": "xss",
+      "severity": "high",
+      "cwe": "CWE-79",
+      "note": "XSS sink"
+    },
+    {
+      "file": "views.py",
+      "line": 604,
+      "lineTolerance": 3,
+      "family": "xss",
+      "severity": "high",
+      "cwe": "CWE-79",
+      "note": "XSS sink"
+    },
+    {
+      "file": "views.py",
+      "line": 755,
+      "lineTolerance": 3,
+      "family": "xss",
+      "severity": "high",
+      "cwe": "CWE-79",
+      "note": "XSS sink"
+    },
+    {
+      "file": "views.py",
+      "line": 756,
+      "lineTolerance": 3,
+      "family": "xss",
+      "severity": "high",
+      "cwe": "CWE-79",
+      "note": "XSS sink"
+    },
+    {
+      "file": "views.py",
+      "line": 793,
+      "lineTolerance": 3,
+      "family": "xss",
+      "severity": "high",
+      "cwe": "CWE-79",
+      "note": "XSS sink"
+    },
+    {
+      "file": "views.py",
+      "line": 794,
+      "lineTolerance": 3,
+      "family": "xss",
+      "severity": "high",
+      "cwe": "CWE-79",
+      "note": "XSS sink"
+    },
+    {
+      "file": "views.py",
+      "line": 795,
+      "lineTolerance": 3,
+      "family": "xss",
+      "severity": "high",
+      "cwe": "CWE-79",
+      "note": "XSS sink"
+    },
+    {
+      "file": "views.py",
+      "line": 860,
+      "lineTolerance": 3,
+      "family": "xss",
+      "severity": "high",
+      "cwe": "CWE-79",
+      "note": "XSS sink"
+    },
+    {
+      "file": "views.py",
+      "line": 861,
+      "lineTolerance": 3,
+      "family": "xss",
+      "severity": "high",
+      "cwe": "CWE-79",
+      "note": "XSS sink"
+    },
+    {
+      "file": "views.py",
+      "line": 866,
+      "lineTolerance": 3,
+      "family": "hardcoded-secret",
+      "severity": "high",
+      "cwe": "CWE-798",
+      "note": "Hardcoded credential pattern"
+    },
+    {
+      "file": "views.py",
+      "line": 870,
+      "lineTolerance": 3,
+      "family": "hardcoded-secret",
+      "severity": "high",
+      "cwe": "CWE-798",
+      "note": "Hardcoded credential pattern"
+    },
+    {
+      "file": "views.py",
+      "line": 872,
+      "lineTolerance": 3,
+      "family": "hardcoded-secret",
+      "severity": "high",
+      "cwe": "CWE-798",
+      "note": "Hardcoded credential pattern"
+    },
+    {
+      "file": "views.py",
+      "line": 875,
+      "lineTolerance": 3,
+      "family": "xss",
+      "severity": "high",
+      "cwe": "CWE-79",
+      "note": "XSS sink"
+    },
+    {
+      "file": "views.py",
+      "line": 880,
+      "lineTolerance": 3,
+      "family": "xss",
+      "severity": "high",
+      "cwe": "CWE-79",
+      "note": "XSS sink"
+    },
+    {
+      "file": "views.py",
+      "line": 963,
+      "lineTolerance": 3,
+      "family": "ssrf",
+      "severity": "high",
+      "cwe": "CWE-918",
+      "note": "SSRF sink"
+    },
+    {
+      "file": "views.py",
+      "line": 1054,
+      "lineTolerance": 3,
+      "family": "xss",
+      "severity": "high",
+      "cwe": "CWE-79",
+      "note": "XSS sink"
+    },
+    {
+      "file": "views.py",
+      "line": 1095,
+      "lineTolerance": 3,
+      "family": "jwt-no-verify",
+      "severity": "high",
+      "cwe": "CWE-345",
+      "note": "JWT decoded without verify"
+    },
+    {
+      "file": "views.py",
+      "line": 1131,
+      "lineTolerance": 3,
+      "family": "xss",
+      "severity": "high",
+      "cwe": "CWE-79",
+      "note": "XSS sink"
+    }
+  ]
+}

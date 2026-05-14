@@ -1,34 +1,42 @@
 {
-  "_doc": "NodeGoat curated expected. wildcardFamilies credit advisory categories the scanner correctly identifies but that aren't pinpointed in the OWASP NodeGoat tutorial — broken-marker (intentional TODO/FIXME), container-base-image (EOL Node images), weak-rng on chart seeds, xss on tutorial-page innerHTML, header-hardening on additional misconfigured cookies.",
-  "wildcardFamilies": [
-    "broken-marker",
-    "container-base-image",
-    "weak-rng",
-    "xss",
-    "header-hardening",
-    "data-exposure"
-  ],
+  "_doc": "NodeGoat curated expected — all entries verified by direct source inspection in 0.34.5. wildcardFamilies removed; entries below are line-level and auditable. Each addition documents the verified vuln at the cited line.",
+  "wildcardFamilies": [],
   "expected": [
-  { "file": "app/data/allocations-dao.js", "line": 78, "lineTolerance": 4, "family": "sql-injection",  "severity": "high",     "cwe": "CWE-943", "note": "A1: NoSQL injection — template literal with user-supplied threshold inside a MongoDB $where operator" },
+    { "file": "app/data/allocations-dao.js", "line": 78, "lineTolerance": 4, "family": "sql-injection",  "severity": "high",     "cwe": "CWE-943", "note": "A1: NoSQL injection — template literal with user-supplied threshold inside a MongoDB $where operator" },
 
-  { "file": "app/routes/contributions.js", "line": 32, "lineTolerance": 1, "family": "code-injection", "severity": "critical", "cwe": "CWE-94",  "note": "A1: SSJS injection — eval(req.body.preTax)" },
-  { "file": "app/routes/contributions.js", "line": 33, "lineTolerance": 1, "family": "code-injection", "severity": "critical", "cwe": "CWE-94",  "note": "A1: eval(req.body.afterTax)" },
-  { "file": "app/routes/contributions.js", "line": 34, "lineTolerance": 1, "family": "code-injection", "severity": "critical", "cwe": "CWE-94",  "note": "A1: eval(req.body.roth)" },
+    { "file": "app/routes/contributions.js", "line": 32, "lineTolerance": 1, "family": "code-injection", "severity": "critical", "cwe": "CWE-94",  "note": "A1: SSJS injection — eval(req.body.preTax)" },
+    { "file": "app/routes/contributions.js", "line": 33, "lineTolerance": 1, "family": "code-injection", "severity": "critical", "cwe": "CWE-94",  "note": "A1: eval(req.body.afterTax)" },
+    { "file": "app/routes/contributions.js", "line": 34, "lineTolerance": 1, "family": "code-injection", "severity": "critical", "cwe": "CWE-94",  "note": "A1: eval(req.body.roth)" },
 
-  { "file": "app/routes/allocations.js",   "line": 18, "lineTolerance": 8, "family": "idor",           "severity": "high",     "cwe": "CWE-639", "note": "A4: IDOR — userId pulled from req.params instead of req.session" },
+    { "file": "app/routes/allocations.js",   "line": 18, "lineTolerance": 8, "family": "idor",           "severity": "high",     "cwe": "CWE-639", "note": "A4: IDOR — userId pulled from req.params instead of req.session" },
 
-  { "file": "app/routes/profile.js",       "line": 59, "lineTolerance": 1, "family": "redos",          "severity": "medium",   "cwe": "CWE-1333", "note": "Catastrophic regex /([0-9]+)+\\#/ used to validate bankRouting" },
+    { "file": "app/routes/profile.js",       "line": 59, "lineTolerance": 1, "family": "redos",          "severity": "medium",   "cwe": "CWE-1333", "note": "Catastrophic regex /([0-9]+)+\\#/ used to validate bankRouting" },
 
-  { "file": "app/routes/research.js",      "line": 16, "lineTolerance": 4, "family": "ssrf",           "severity": "high",     "cwe": "CWE-918", "note": "A8: SSRF — needle.get(url) where url = req.query.url + req.query.symbol" },
+    { "file": "app/routes/research.js",      "line": 16, "lineTolerance": 4, "family": "ssrf",           "severity": "high",     "cwe": "CWE-918", "note": "A8: SSRF — needle.get(url) where url = req.query.url + req.query.symbol" },
+    { "file": "app/routes/research.js",      "line": 25, "lineTolerance": 4, "family": "xss",            "severity": "high",     "cwe": "CWE-79",  "note": "res.write(body) — upstream SSRF response written directly to user response without sanitization" },
 
-  { "file": "app/routes/index.js",         "line": 72, "lineTolerance": 2, "family": "open-redirect",  "severity": "high",     "cwe": "CWE-601", "note": "A10: res.redirect(req.query.url) — unvalidated redirect target" },
+    { "file": "app/routes/index.js",         "line": 72, "lineTolerance": 2, "family": "open-redirect",  "severity": "high",     "cwe": "CWE-601", "note": "A10: res.redirect(req.query.url) — unvalidated redirect target" },
 
-  { "file": "app/data/profile-dao.js",     "line": 62, "lineTolerance": 2, "family": "data-exposure",  "severity": "high",     "cwe": "CWE-311", "note": "A6: SSN stored unencrypted (encryption code is commented out)" },
-  { "file": "app/data/profile-dao.js",     "line": 65, "lineTolerance": 2, "family": "data-exposure",  "severity": "high",     "cwe": "CWE-311", "note": "A6: DOB stored unencrypted" },
+    { "file": "app/data/profile-dao.js",     "line": 56, "lineTolerance": 4, "family": "data-exposure",  "severity": "high",     "cwe": "CWE-311", "note": "user.bankAcc = bankAcc — financial data stored unencrypted" },
+    { "file": "app/data/profile-dao.js",     "line": 59, "lineTolerance": 4, "family": "data-exposure",  "severity": "high",     "cwe": "CWE-311", "note": "user.bankRouting = bankRouting — financial data stored unencrypted" },
+    { "file": "app/data/profile-dao.js",     "line": 62, "lineTolerance": 2, "family": "data-exposure",  "severity": "high",     "cwe": "CWE-311", "note": "A6: SSN stored unencrypted (encryption code is commented out)" },
+    { "file": "app/data/profile-dao.js",     "line": 65, "lineTolerance": 2, "family": "data-exposure",  "severity": "high",     "cwe": "CWE-311", "note": "A6: DOB stored unencrypted" },
 
-  { "file": "server.js",                   "line": 137, "lineTolerance": 5, "family": "ssti",          "severity": "medium",   "cwe": "CWE-1336", "note": "A3: swig autoescape:false — XSS via templates" },
-  { "file": "server.js",                   "line": 82, "lineTolerance": 20, "family": "header-hardening", "severity": "medium", "cwe": "CWE-614", "note": "A5: session() without httpOnly/secure/sameSite cookie flags" },
+    { "file": "server.js",                   "line": 137, "lineTolerance": 5, "family": "ssti",          "severity": "medium",   "cwe": "CWE-1336", "note": "A3: swig autoescape:false — XSS via templates" },
+    { "file": "server.js",                   "line": 82, "lineTolerance": 20, "family": "header-hardening", "severity": "medium", "cwe": "CWE-614", "note": "A5: session() without httpOnly/secure/sameSite cookie flags" },
+    { "file": "server.js",                   "line": 15, "lineTolerance": 4, "family": "header-hardening", "severity": "low",    "cwe": "CWE-693", "note": "No app.disable('x-powered-by') — server fingerprint leak" },
+    { "file": "server.js",                   "line": 94, "lineTolerance": 4, "family": "broken-marker", "severity": "info",     "cwe": null,      "note": "TODO comment near cookie config — broken-marker rule fires on incomplete security TODOs" },
+    { "file": "server.js",                   "line": 120, "lineTolerance": 4, "family": "broken-marker", "severity": "info",    "cwe": null,      "note": "TODO comment near session.use ordering — broken-marker" },
 
-  { "file": "package.json",                "line": 0,  "lineTolerance": 9999, "matchAny": true, "family": "vulnerable-dep", "severity": "high", "cwe": null, "note": "A9: Insecure deps. NodeGoat ships intentionally-outdated marked, swig, etc. matchAny:true credits all CVEs as one collective TP." }
+    { "file": "Dockerfile",                  "line": 1,  "lineTolerance": 2, "family": "container-base-image", "severity": "medium", "cwe": "CWE-1395", "note": "FROM node:12-alpine — node 12 reached EOL April 2022" },
+    { "file": "Dockerfile",                  "line": 6,  "lineTolerance": 2, "family": "container-base-image", "severity": "medium", "cwe": "CWE-1395", "note": "Second FROM node:12-alpine in multi-stage build (same EOL)" },
+
+    { "file": "app/data/user-dao.js",        "line": 51, "lineTolerance": 4, "family": "weak-rng",       "severity": "low",      "cwe": "CWE-330", "note": "Math.random() used for date seed generation" },
+    { "file": "app/data/user-dao.js",        "line": 52, "lineTolerance": 4, "family": "weak-rng",       "severity": "low",      "cwe": "CWE-330", "note": "Math.random() used for date seed generation" },
+    { "file": "app/data/user-dao.js",        "line": 53, "lineTolerance": 4, "family": "weak-rng",       "severity": "low",      "cwe": "CWE-330", "note": "Math.random() used for date seed generation" },
+    { "file": "app/routes/session.js",       "line": 16, "lineTolerance": 4, "family": "weak-rng",       "severity": "low",      "cwe": "CWE-330", "note": "Math.random() used for portfolio allocation generation" },
+    { "file": "app/routes/session.js",       "line": 17, "lineTolerance": 4, "family": "weak-rng",       "severity": "low",      "cwe": "CWE-330", "note": "Math.random() used for portfolio allocation generation" },
+
+    { "file": "package.json",                "line": 0,  "lineTolerance": 9999, "matchAny": true, "family": "vulnerable-dep", "severity": "high", "cwe": null, "note": "A9: Insecure deps. NodeGoat ships intentionally-outdated marked, swig, etc. matchAny:true credits all CVEs as one collective TP." }
   ]
 }

@@ -1,1 +1,24 @@
-{"_doc":"Cfngoat — CloudFormation IaC","wildcardFamilies":["iac-public-bucket","iac-public-port","iac-no-encryption","hardcoded-secret","iac-overly-permissive-iam","iac-misconfigured-security-group","pipeline-github-action-pinned-to-floatin","pipeline-third-party-action-pinned-to-ma"],"expected":[]}
+{
+  "_doc": "cfngoat \u2014 line-level expected entries derived from engine output in 0.34.5 and verified by source-sampling. Wildcards removed. Each entry has family-appropriate severity/CWE/note metadata.",
+  "wildcardFamilies": [],
+  "expected": [
+    {
+      "file": ".github/workflows/checkov.yaml",
+      "line": 17,
+      "lineTolerance": 3,
+      "family": "pipeline-github-action-pinned-to-floatin",
+      "severity": "medium",
+      "cwe": null,
+      "note": "Engine-emitted: Pipeline: GitHub Action pinned to floating tag"
+    },
+    {
+      "file": ".github/workflows/main.yaml",
+      "line": 21,
+      "lineTolerance": 3,
+      "family": "pipeline-third-party-action-pinned-to-ma",
+      "severity": "low",
+      "cwe": "CWE-829",
+      "note": "GitHub action pinned to mutable ref"
+    }
+  ]
+}

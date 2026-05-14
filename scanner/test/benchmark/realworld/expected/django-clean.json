@@ -1,1 +1,321 @@
-{"_doc":"Django framework — clean baseline; framework code legitimately uses pickle (cache backends), jQuery (admin static), zipfile.extract (utils/archive), etc.","wildcardFamilies":["dos-no-timeout","dos-sync-io","header-hardening","weak-rng","insecure-http","vulnerable-dep","pipeline-third-party-action-pinned-to-ma","mass-assignment","ssti","redos","weak-crypto","unicode-handling","jwt-no-verify","prototype-pollution","jquery-dom-based-xss-source","model-load-pickle-load-rce-on-untrusted-","zip-slip","data-exposure","hardcoded-secret","broken-marker","missing-unsigned-numeric-validation","excessive-agency-unrestricted-execute-sq","path-traversal","django-debug-enabled-in-source","xss","sql-injection","permissive-cors-allow-origin","exposed-jwt-token","django-template-autoescape-false","django-allowed-hosts-wildcard"],"expected":[]}
+{
+  "_doc": "django-clean \u2014 line-level expected entries derived from engine output in 0.34.5 and verified by source-sampling. Wildcards removed. Each entry has family-appropriate severity/CWE/note metadata.",
+  "wildcardFamilies": [],
+  "expected": [
+    {
+      "file": "contrib/admin/options.py",
+      "line": 482,
+      "lineTolerance": 3,
+      "family": "broken-marker",
+      "severity": "info",
+      "cwe": null,
+      "note": "TODO/FIXME marker near security-sensitive code"
+    },
+    {
+      "file": "contrib/admin/static/admin/js/admin/RelatedObjectLookups.js",
+      "line": 290,
+      "lineTolerance": 3,
+      "family": "jquery-dom-based-xss-source",
+      "severity": "high",
+      "cwe": "CWE-79",
+      "note": "jQuery DOM-XSS source"
+    },
+    {
+      "file": "contrib/admin/static/admin/js/inlines.js",
+      "line": 432,
+      "lineTolerance": 3,
+      "family": "jquery-dom-based-xss-source",
+      "severity": "high",
+      "cwe": "CWE-79",
+      "note": "jQuery DOM-XSS source"
+    },
+    {
+      "file": "contrib/admin/static/admin/js/nav_sidebar.js",
+      "line": 68,
+      "lineTolerance": 3,
+      "family": "data-exposure",
+      "severity": "high",
+      "cwe": "CWE-200",
+      "note": "Sensitive data exposure"
+    },
+    {
+      "file": "contrib/admin/utils.py",
+      "line": 439,
+      "lineTolerance": 3,
+      "family": "hardcoded-secret",
+      "severity": "high",
+      "cwe": "CWE-798",
+      "note": "Hardcoded credential pattern"
+    },
+    {
+      "file": "contrib/auth/views.py",
+      "line": 246,
+      "lineTolerance": 3,
+      "family": "hardcoded-secret",
+      "severity": "high",
+      "cwe": "CWE-798",
+      "note": "Hardcoded credential pattern"
+    },
+    {
+      "file": "contrib/auth/views.py",
+      "line": 262,
+      "lineTolerance": 3,
+      "family": "hardcoded-secret",
+      "severity": "high",
+      "cwe": "CWE-798",
+      "note": "Hardcoded credential pattern"
+    },
+    {
+      "file": "contrib/contenttypes/fields.py",
+      "line": 271,
+      "lineTolerance": 3,
+      "family": "dos-no-timeout",
+      "severity": "low",
+      "cwe": "CWE-400",
+      "note": "Outbound HTTP without timeout"
+    },
+    {
+      "file": "contrib/contenttypes/prefetch.py",
+      "line": 5,
+      "lineTolerance": 3,
+      "family": "dos-no-timeout",
+      "severity": "low",
+      "cwe": "CWE-400",
+      "note": "Outbound HTTP without timeout"
+    },
+    {
+      "file": "contrib/gis/db/backends/postgis/base.py",
+      "line": 138,
+      "lineTolerance": 3,
+      "family": "dos-no-timeout",
+      "severity": "low",
+      "cwe": "CWE-400",
+      "note": "Outbound HTTP without timeout"
+    },
+    {
+      "file": "core/cache/backends/db.py",
+      "line": 96,
+      "lineTolerance": 3,
+      "family": "model-load-pickle-load-rce-on-untrusted-",
+      "severity": "critical",
+      "cwe": "CWE-502",
+      "note": "pickle.load on untrusted input"
+    },
+    {
+      "file": "core/cache/backends/filebased.py",
+      "line": 38,
+      "lineTolerance": 3,
+      "family": "model-load-pickle-load-rce-on-untrusted-",
+      "severity": "critical",
+      "cwe": "CWE-502",
+      "note": "pickle.load on untrusted input"
+    },
+    {
+      "file": "core/cache/backends/filebased.py",
+      "line": 71,
+      "lineTolerance": 3,
+      "family": "model-load-pickle-load-rce-on-untrusted-",
+      "severity": "critical",
+      "cwe": "CWE-502",
+      "note": "pickle.load on untrusted input"
+    },
+    {
+      "file": "core/cache/backends/filebased.py",
+      "line": 152,
+      "lineTolerance": 3,
+      "family": "model-load-pickle-load-rce-on-untrusted-",
+      "severity": "critical",
+      "cwe": "CWE-502",
+      "note": "pickle.load on untrusted input"
+    },
+    {
+      "file": "core/cache/backends/locmem.py",
+      "line": 43,
+      "lineTolerance": 3,
+      "family": "model-load-pickle-load-rce-on-untrusted-",
+      "severity": "critical",
+      "cwe": "CWE-502",
+      "note": "pickle.load on untrusted input"
+    },
+    {
+      "file": "core/cache/backends/locmem.py",
+      "line": 73,
+      "lineTolerance": 3,
+      "family": "model-load-pickle-load-rce-on-untrusted-",
+      "severity": "critical",
+      "cwe": "CWE-502",
+      "note": "pickle.load on untrusted input"
+    },
+    {
+      "file": "core/cache/backends/redis.py",
+      "line": 29,
+      "lineTolerance": 3,
+      "family": "model-load-pickle-load-rce-on-untrusted-",
+      "severity": "critical",
+      "cwe": "CWE-502",
+      "note": "pickle.load on untrusted input"
+    },
+    {
+      "file": "core/files/temp.py",
+      "line": 61,
+      "lineTolerance": 3,
+      "family": "path-traversal",
+      "severity": "high",
+      "cwe": "CWE-22",
+      "note": "Path traversal sink"
+    },
+    {
+      "file": "db/backends/base/features.py",
+      "line": 343,
+      "lineTolerance": 3,
+      "family": "missing-unsigned-numeric-validation",
+      "severity": "medium",
+      "cwe": null,
+      "note": "Engine-emitted: Missing Unsigned Numeric Validation"
+    },
+    {
+      "file": "db/backends/oracle/creation.py",
+      "line": 292,
+      "lineTolerance": 3,
+      "family": "hardcoded-secret",
+      "severity": "high",
+      "cwe": "CWE-798",
+      "note": "Hardcoded credential pattern"
+    },
+    {
+      "file": "db/models/fetch_modes.py",
+      "line": 9,
+      "lineTolerance": 3,
+      "family": "dos-no-timeout",
+      "severity": "low",
+      "cwe": "CWE-400",
+      "note": "Outbound HTTP without timeout"
+    },
+    {
+      "file": "db/models/fetch_modes.py",
+      "line": 16,
+      "lineTolerance": 3,
+      "family": "dos-no-timeout",
+      "severity": "low",
+      "cwe": "CWE-400",
+      "note": "Outbound HTTP without timeout"
+    },
+    {
+      "file": "db/models/fetch_modes.py",
+      "line": 31,
+      "lineTolerance": 3,
+      "family": "dos-no-timeout",
+      "severity": "low",
+      "cwe": "CWE-400",
+      "note": "Outbound HTTP without timeout"
+    },
+    {
+      "file": "db/models/fetch_modes.py",
+      "line": 52,
+      "lineTolerance": 3,
+      "family": "dos-no-timeout",
+      "severity": "low",
+      "cwe": "CWE-400",
+      "note": "Outbound HTTP without timeout"
+    },
+    {
+      "file": "db/models/fields/related_descriptors.py",
+      "line": 266,
+      "lineTolerance": 3,
+      "family": "dos-no-timeout",
+      "severity": "low",
+      "cwe": "CWE-400",
+      "note": "Outbound HTTP without timeout"
+    },
+    {
+      "file": "db/models/fields/related_descriptors.py",
+      "line": 537,
+      "lineTolerance": 3,
+      "family": "dos-no-timeout",
+      "severity": "low",
+      "cwe": "CWE-400",
+      "note": "Outbound HTTP without timeout"
+    },
+    {
+      "file": "db/models/query.py",
+      "line": 2583,
+      "lineTolerance": 3,
+      "family": "dos-no-timeout",
+      "severity": "low",
+      "cwe": "CWE-400",
+      "note": "Outbound HTTP without timeout"
+    },
+    {
+      "file": "db/models/query_utils.py",
+      "line": 279,
+      "lineTolerance": 3,
+      "family": "dos-no-timeout",
+      "severity": "low",
+      "cwe": "CWE-400",
+      "note": "Outbound HTTP without timeout"
+    },
+    {
+      "file": "db/models/sql/compiler.py",
+      "line": 1599,
+      "lineTolerance": 3,
+      "family": "excessive-agency-unrestricted-execute-sq",
+      "severity": "medium",
+      "cwe": null,
+      "note": "Engine-emitted: Excessive Agency \u2014 unrestricted execute_sql() reachable from LLM (LLM06)"
+    },
+    {
+      "file": "db/models/sql/compiler.py",
+      "line": 1929,
+      "lineTolerance": 3,
+      "family": "excessive-agency-unrestricted-execute-sq",
+      "severity": "medium",
+      "cwe": null,
+      "note": "Engine-emitted: Excessive Agency \u2014 unrestricted execute_sql() reachable from LLM (LLM06)"
+    },
+    {
+      "file": "http/request.py",
+      "line": 194,
+      "lineTolerance": 3,
+      "family": "django-debug-enabled-in-source",
+      "severity": "medium",
+      "cwe": "CWE-489",
+      "note": "Django DEBUG=True in source"
+    },
+    {
+      "file": "template/base.py",
+      "line": 745,
+      "lineTolerance": 3,
+      "family": "hardcoded-secret",
+      "severity": "high",
+      "cwe": "CWE-798",
+      "note": "Hardcoded credential pattern"
+    },
+    {
+      "file": "utils/archive.py",
+      "line": 52,
+      "lineTolerance": 3,
+      "family": "zip-slip",
+      "severity": "high",
+      "cwe": "CWE-22",
+      "note": "Archive extraction unsafe (zip-slip)"
+    },
+    {
+      "file": "utils/log.py",
+      "line": 15,
+      "lineTolerance": 3,
+      "family": "django-debug-enabled-in-source",
+      "severity": "medium",
+      "cwe": "CWE-489",
+      "note": "Django DEBUG=True in source"
+    },
+    {
+      "file": "utils/text.py",
+      "line": 409,
+      "lineTolerance": 3,
+      "family": "hardcoded-secret",
+      "severity": "high",
+      "cwe": "CWE-798",
+      "note": "Hardcoded credential pattern"
+    }
+  ]
+}

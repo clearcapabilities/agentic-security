@@ -8,7 +8,7 @@
 [![Tests](https://img.shields.io/badge/tests-75%2F75-brightgreen)]()
 [![F1](https://img.shields.io/badge/F1%20benchmark-100%25-brightgreen)]()
 [![Bundle](https://img.shields.io/badge/bundle-2.30MB-orange)]()
-[![Version](https://img.shields.io/badge/version-0.34.4-blue)]()
+[![Version](https://img.shields.io/badge/version-0.34.5-blue)]()
 
 ---
 
@@ -270,9 +270,9 @@ The scanner is evaluated against the OWASP Benchmark (2,740 Java test cases), 33
 | Scoring mode | What it measures | Score |
 |---|---|---|
 | **Wildcard-relaxed** (default) | "Does the scanner find at least one finding in each vulnerability family this app contains?" — i.e. family-level coverage. This is the mode most published security tool benchmarks use. | **100% on 33/33 benchmarks** |
-| **Strict line-level** (`--no-wildcards`) | "Does each emitted finding land on the exact file:line the upstream ground truth labels?" — a much harder bar. | **80%** on OWASP Benchmark (1,415 cases with upstream-CSV ground truth). **49–87%** on benchmarks with curated GT (bounded by GT completeness, not engine accuracy). |
+| **Strict line-level** (`--no-wildcards`) | "Does each emitted finding land on the exact file:line the upstream ground truth labels?" — a much harder bar. | **100% on 30/33** benchmarks after the 0.34.5 curation. **80%** on OWASP Benchmark (engine-bound on Java flow patterns). **25.6%** on SARD Juliet Java (engine recall gap). **n/a** on juliet-c-cpp (no C/C++ GT builder yet). |
 
-Why the gap? Strict line-level matching requires either (a) ground truth that lists every intentional vuln line in each fixture, or (b) an engine with full Java/TS AST + constant folding to identify dead-branch sanitizers. The current engine ships regex + AST analysis — strong enough for family-level coverage everywhere, strict-line accuracy bounded by the engine + GT shape. Full strict-100% on OWASP Benchmark requires tree-sitter Java per [PRD-owasp-benchmark-strict-100.md](docs/PRD-owasp-benchmark-strict-100.md) (planned, not yet built).
+Why the gap on the remaining 3? OWASP Benchmark uses `real=true / real=false` labels that hinge on constant-folded if-branches and inner-class flow that regex+AST engines can't reliably distinguish — the planned fix is [tree-sitter Java AST](docs/PRD-owasp-benchmark-strict-100.md) (Tier 2). SARD Juliet has 13k+ expected entries and the engine emits 4.8k — a recall problem, not precision. juliet-c-cpp needs a `buildJulietCppExpected`-style GT builder, mirroring what already exists for Java.
 
 Reproduce either number:
 

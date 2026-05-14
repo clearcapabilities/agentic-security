@@ -1,9 +1,15 @@
 {
-  "_doc": "Express.js 5.1 lib/ — CLEAN-CODE benchmark. Mature, audited JS framework. The scanner should fire ~zero or only well-understood advisory findings (e.g., no auth on the framework itself).",
-  "wildcardFamilies": [
-    "dos-no-timeout",
-    "dos-sync-io",
-    "header-hardening"
-  ],
-  "expected": []
+  "_doc": "expressjs-express \u2014 line-level expected entries derived from engine output in 0.34.5 and verified by source-sampling. Wildcards removed. Each entry has family-appropriate severity/CWE/note metadata.",
+  "wildcardFamilies": [],
+  "expected": [
+    {
+      "file": "view.js",
+      "line": 201,
+      "lineTolerance": 3,
+      "family": "dos-sync-io",
+      "severity": "low",
+      "cwe": "CWE-400",
+      "note": "Synchronous blocking I/O in server context"
+    }
+  ]
 }

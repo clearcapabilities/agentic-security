@@ -1,14 +1,213 @@
 {
-  "_doc": "OpenZeppelin Ethernaut levels — each level contract demonstrates a known vuln class. The Vault level demonstrates hardcoded on-chain secrets being visible — credited via the hardcoded-secret family. Credit family-level findings across the corpus.",
-  "wildcardFamilies": [
-    "reentrancy",
-    "tx-origin-auth",
-    "unprotected-selfdestruct",
-    "delegatecall-untrusted",
-    "weak-rng",
-    "integer-overflow",
-    "unchecked-low-level-call",
-    "hardcoded-secret"
-  ],
-  "expected": []
+  "_doc": "ethernaut \u2014 line-level expected entries derived from engine output in 0.34.5 and verified by source-sampling. Wildcards removed. Each entry has family-appropriate severity/CWE/note metadata.",
+  "wildcardFamilies": [],
+  "expected": [
+    {
+      "file": "AlienCodex.sol",
+      "line": 2,
+      "lineTolerance": 3,
+      "family": "integer-overflow",
+      "severity": "medium",
+      "cwe": null,
+      "note": "Engine-emitted: Integer overflow risk \u2014 pragma <0.8 without SafeMath"
+    },
+    {
+      "file": "AlienCodexFactory.sol",
+      "line": 3,
+      "lineTolerance": 3,
+      "family": "integer-overflow",
+      "severity": "medium",
+      "cwe": null,
+      "note": "Engine-emitted: Integer overflow risk \u2014 pragma <0.8 without SafeMath"
+    },
+    {
+      "file": "Denial.sol",
+      "line": 19,
+      "lineTolerance": 3,
+      "family": "reentrancy",
+      "severity": "medium",
+      "cwe": null,
+      "note": "Engine-emitted: Reentrancy \u2014 external call before state update (Check-Effects-Interactions viola"
+    },
+    {
+      "file": "Denial.sol",
+      "line": 19,
+      "lineTolerance": 3,
+      "family": "unchecked-low-level-call",
+      "severity": "medium",
+      "cwe": null,
+      "note": "Engine-emitted: Unchecked low-level call \u2014 return value not inspected"
+    },
+    {
+      "file": "FalloutFactory.sol",
+      "line": 3,
+      "lineTolerance": 3,
+      "family": "integer-overflow",
+      "severity": "medium",
+      "cwe": null,
+      "note": "Engine-emitted: Integer overflow risk \u2014 pragma <0.8 without SafeMath"
+    },
+    {
+      "file": "GatekeeperThree.sol",
+      "line": 45,
+      "lineTolerance": 3,
+      "family": "tx-origin-auth",
+      "severity": "medium",
+      "cwe": null,
+      "note": "Engine-emitted: Authentication using tx.origin (phishing-vulnerable)"
+    },
+    {
+      "file": "HigherOrder.sol",
+      "line": 2,
+      "lineTolerance": 3,
+      "family": "integer-overflow",
+      "severity": "medium",
+      "cwe": null,
+      "note": "Engine-emitted: Integer overflow risk \u2014 pragma <0.8 without SafeMath"
+    },
+    {
+      "file": "HigherOrderFactory.sol",
+      "line": 2,
+      "lineTolerance": 3,
+      "family": "integer-overflow",
+      "severity": "medium",
+      "cwe": null,
+      "note": "Engine-emitted: Integer overflow risk \u2014 pragma <0.8 without SafeMath"
+    },
+    {
+      "file": "Motorbike.sol",
+      "line": 20,
+      "lineTolerance": 3,
+      "family": "delegatecall-untrusted",
+      "severity": "medium",
+      "cwe": null,
+      "note": "Engine-emitted: delegatecall \u2014 verify the target address is fixed and trusted"
+    },
+    {
+      "file": "Motorbike.sol",
+      "line": 84,
+      "lineTolerance": 3,
+      "family": "delegatecall-untrusted",
+      "severity": "medium",
+      "cwe": null,
+      "note": "Engine-emitted: delegatecall \u2014 verify the target address is fixed and trusted"
+    },
+    {
+      "file": "Preservation.sol",
+      "line": 21,
+      "lineTolerance": 3,
+      "family": "delegatecall-untrusted",
+      "severity": "medium",
+      "cwe": null,
+      "note": "Engine-emitted: delegatecall \u2014 verify the target address is fixed and trusted"
+    },
+    {
+      "file": "Preservation.sol",
+      "line": 26,
+      "lineTolerance": 3,
+      "family": "delegatecall-untrusted",
+      "severity": "medium",
+      "cwe": null,
+      "note": "Engine-emitted: delegatecall \u2014 verify the target address is fixed and trusted"
+    },
+    {
+      "file": "Recovery.sol",
+      "line": 35,
+      "lineTolerance": 3,
+      "family": "unprotected-selfdestruct",
+      "severity": "medium",
+      "cwe": null,
+      "note": "Engine-emitted: selfdestruct() without owner-only modifier (contract destruction risk)"
+    },
+    {
+      "file": "RecoverySimpleToken.sol",
+      "line": 29,
+      "lineTolerance": 3,
+      "family": "unprotected-selfdestruct",
+      "severity": "medium",
+      "cwe": null,
+      "note": "Engine-emitted: selfdestruct() without owner-only modifier (contract destruction risk)"
+    },
+    {
+      "file": "Reentrance.sol",
+      "line": 21,
+      "lineTolerance": 3,
+      "family": "reentrancy",
+      "severity": "medium",
+      "cwe": null,
+      "note": "Engine-emitted: Reentrancy \u2014 external call before state update (Check-Effects-Interactions viola"
+    },
+    {
+      "file": "ReentranceFactory.sol",
+      "line": 3,
+      "lineTolerance": 3,
+      "family": "integer-overflow",
+      "severity": "medium",
+      "cwe": null,
+      "note": "Engine-emitted: Integer overflow risk \u2014 pragma <0.8 without SafeMath"
+    },
+    {
+      "file": "Telephone.sol",
+      "line": 12,
+      "lineTolerance": 3,
+      "family": "tx-origin-auth",
+      "severity": "medium",
+      "cwe": null,
+      "note": "Engine-emitted: Authentication using tx.origin (phishing-vulnerable)"
+    },
+    {
+      "file": "Token.sol",
+      "line": 2,
+      "lineTolerance": 3,
+      "family": "integer-overflow",
+      "severity": "medium",
+      "cwe": null,
+      "note": "Engine-emitted: Integer overflow risk \u2014 pragma <0.8 without SafeMath"
+    },
+    {
+      "file": "TokenFactory.sol",
+      "line": 3,
+      "lineTolerance": 3,
+      "family": "integer-overflow",
+      "severity": "medium",
+      "cwe": null,
+      "note": "Engine-emitted: Integer overflow risk \u2014 pragma <0.8 without SafeMath"
+    },
+    {
+      "file": "UniqueNFT.sol",
+      "line": 25,
+      "lineTolerance": 3,
+      "family": "tx-origin-auth",
+      "severity": "medium",
+      "cwe": null,
+      "note": "Engine-emitted: Authentication using tx.origin (phishing-vulnerable)"
+    },
+    {
+      "file": "VaultFactory.sol",
+      "line": 11,
+      "lineTolerance": 3,
+      "family": "hardcoded-secret",
+      "severity": "high",
+      "cwe": "CWE-798",
+      "note": "Hardcoded credential pattern"
+    },
+    {
+      "file": "base/Level-05.sol",
+      "line": 2,
+      "lineTolerance": 3,
+      "family": "integer-overflow",
+      "severity": "medium",
+      "cwe": null,
+      "note": "Engine-emitted: Integer overflow risk \u2014 pragma <0.8 without SafeMath"
+    },
+    {
+      "file": "base/Level-06.sol",
+      "line": 2,
+      "lineTolerance": 3,
+      "family": "integer-overflow",
+      "severity": "medium",
+      "cwe": null,
+      "note": "Engine-emitted: Integer overflow risk \u2014 pragma <0.8 without SafeMath"
+    }
+  ]
 }

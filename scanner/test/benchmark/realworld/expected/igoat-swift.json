@@ -1,1 +1,60 @@
-{"_doc":"iGoat-Swift — informational. Limited mobile rule coverage today.","wildcardFamilies":["hardcoded-secret","weak-crypto","weak-rng","ssl-pinning","sql-injection","xss","path-traversal","command-injection","dos-no-timeout"],"expected":[]}
+{
+  "_doc": "igoat-swift \u2014 line-level expected entries derived from engine output in 0.34.5 and verified by source-sampling. Wildcards removed. Each entry has family-appropriate severity/CWE/note metadata.",
+  "wildcardFamilies": [],
+  "expected": [
+    {
+      "file": "iGoat-Swift/Source/Exercises/InsecureLocalDataStorage/CoreData/CoreDataExerciseVC.swift",
+      "line": 80,
+      "lineTolerance": 3,
+      "family": "dos-no-timeout",
+      "severity": "low",
+      "cwe": "CWE-400",
+      "note": "Outbound HTTP without timeout"
+    },
+    {
+      "file": "iGoat-Swift/Source/Exercises/InsecureLocalDataStorage/CoreData/CoreDataExerciseVC.swift",
+      "line": 98,
+      "lineTolerance": 3,
+      "family": "hardcoded-secret",
+      "severity": "high",
+      "cwe": "CWE-798",
+      "note": "Hardcoded credential pattern"
+    },
+    {
+      "file": "iGoat-Swift/Source/Exercises/InsecureLocalDataStorage/Yap/YapExerciseVC.swift",
+      "line": 7,
+      "lineTolerance": 3,
+      "family": "hardcoded-secret",
+      "severity": "high",
+      "cwe": "CWE-798",
+      "note": "Hardcoded credential pattern"
+    },
+    {
+      "file": "iGoat-Swift/Source/Exercises/InsecureLocalDataStorage/Yap/YapExerciseVC.swift",
+      "line": 9,
+      "lineTolerance": 3,
+      "family": "hardcoded-secret",
+      "severity": "high",
+      "cwe": "CWE-798",
+      "note": "Hardcoded credential pattern"
+    },
+    {
+      "file": "iGoat-Swift/maxpower.c",
+      "line": 1369,
+      "lineTolerance": 3,
+      "family": "weak-rng",
+      "severity": "low",
+      "cwe": "CWE-330",
+      "note": "Weak PRNG (Math.random / java.util.Random / etc.)"
+    },
+    {
+      "file": "iGoat-Swift/Source/Exercises/Key Management/Hard Coded Keys/BrokenCryptographyExerciseVC.swift",
+      "line": 32,
+      "lineTolerance": 3,
+      "family": "hardcoded-secret",
+      "severity": "high",
+      "cwe": "CWE-798",
+      "note": "Hardcoded credential pattern"
+    }
+  ]
+}

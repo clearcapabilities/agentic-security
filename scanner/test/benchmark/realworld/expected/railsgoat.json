@@ -1,1 +1,783 @@
-{"_doc":"Railsgoat — wildcard-credited per family","wildcardFamilies":["sql-injection","xss","command-injection","path-traversal","ssti","open-redirect","weak-crypto","weak-rng","hardcoded-secret","code-injection","mass-assignment","idor","jwt-no-verify","insecure-deserialization","header-hardening","redos","jquery-dom-based-xss-source","broken-marker","dos-no-timeout","prototype-pollution"],"expected":[]}
+{
+  "_doc": "railsgoat \u2014 line-level expected entries derived from engine output in 0.34.5 and verified by source-sampling. Wildcards removed. Each entry has family-appropriate severity/CWE/note metadata.",
+  "wildcardFamilies": [],
+  "expected": [
+    {
+      "file": "assets/javascripts/application.js",
+      "line": 58,
+      "lineTolerance": 3,
+      "family": "jquery-dom-based-xss-source",
+      "severity": "high",
+      "cwe": "CWE-79",
+      "note": "jQuery DOM-XSS source"
+    },
+    {
+      "file": "assets/javascripts/bootstrap-colorpicker.js",
+      "line": 181,
+      "lineTolerance": 3,
+      "family": "jquery-dom-based-xss-source",
+      "severity": "high",
+      "cwe": "CWE-79",
+      "note": "jQuery DOM-XSS source"
+    },
+    {
+      "file": "assets/javascripts/bootstrap-colorpicker.js",
+      "line": 188,
+      "lineTolerance": 3,
+      "family": "jquery-dom-based-xss-source",
+      "severity": "high",
+      "cwe": "CWE-79",
+      "note": "jQuery DOM-XSS source"
+    },
+    {
+      "file": "assets/javascripts/bootstrap-colorpicker.js",
+      "line": 221,
+      "lineTolerance": 3,
+      "family": "jquery-dom-based-xss-source",
+      "severity": "high",
+      "cwe": "CWE-79",
+      "note": "jQuery DOM-XSS source"
+    },
+    {
+      "file": "assets/javascripts/bootstrap-colorpicker.js",
+      "line": 223,
+      "lineTolerance": 3,
+      "family": "jquery-dom-based-xss-source",
+      "severity": "high",
+      "cwe": "CWE-79",
+      "note": "jQuery DOM-XSS source"
+    },
+    {
+      "file": "assets/javascripts/bootstrap-colorpicker.js",
+      "line": 296,
+      "lineTolerance": 3,
+      "family": "jquery-dom-based-xss-source",
+      "severity": "high",
+      "cwe": "CWE-79",
+      "note": "jQuery DOM-XSS source"
+    },
+    {
+      "file": "assets/javascripts/bootstrap-colorpicker.js",
+      "line": 340,
+      "lineTolerance": 3,
+      "family": "jquery-dom-based-xss-source",
+      "severity": "high",
+      "cwe": "CWE-79",
+      "note": "jQuery DOM-XSS source"
+    },
+    {
+      "file": "assets/javascripts/bootstrap-colorpicker.js",
+      "line": 482,
+      "lineTolerance": 3,
+      "family": "redos",
+      "severity": "medium",
+      "cwe": "CWE-1333",
+      "note": "Catastrophic regex backtracking"
+    },
+    {
+      "file": "assets/javascripts/bootstrap-colorpicker.js",
+      "line": 492,
+      "lineTolerance": 3,
+      "family": "redos",
+      "severity": "medium",
+      "cwe": "CWE-1333",
+      "note": "Catastrophic regex backtracking"
+    },
+    {
+      "file": "assets/javascripts/bootstrap-colorpicker.js",
+      "line": 520,
+      "lineTolerance": 3,
+      "family": "redos",
+      "severity": "medium",
+      "cwe": "CWE-1333",
+      "note": "Catastrophic regex backtracking"
+    },
+    {
+      "file": "assets/javascripts/bootstrap-image-gallery.js",
+      "line": 177,
+      "lineTolerance": 3,
+      "family": "jquery-dom-based-xss-source",
+      "severity": "high",
+      "cwe": "CWE-79",
+      "note": "jQuery DOM-XSS source"
+    },
+    {
+      "file": "assets/javascripts/bootstrap-image-gallery.js",
+      "line": 184,
+      "lineTolerance": 3,
+      "family": "jquery-dom-based-xss-source",
+      "severity": "high",
+      "cwe": "CWE-79",
+      "note": "jQuery DOM-XSS source"
+    },
+    {
+      "file": "assets/javascripts/bootstrap-image-gallery.js",
+      "line": 293,
+      "lineTolerance": 3,
+      "family": "jquery-dom-based-xss-source",
+      "severity": "high",
+      "cwe": "CWE-79",
+      "note": "jQuery DOM-XSS source"
+    },
+    {
+      "file": "assets/javascripts/bootstrap-image-gallery.js",
+      "line": 310,
+      "lineTolerance": 3,
+      "family": "jquery-dom-based-xss-source",
+      "severity": "high",
+      "cwe": "CWE-79",
+      "note": "jQuery DOM-XSS source"
+    },
+    {
+      "file": "assets/javascripts/bootstrap-image-gallery.js",
+      "line": 318,
+      "lineTolerance": 3,
+      "family": "jquery-dom-based-xss-source",
+      "severity": "high",
+      "cwe": "CWE-79",
+      "note": "jQuery DOM-XSS source"
+    },
+    {
+      "file": "assets/javascripts/bootstrap-image-gallery.js",
+      "line": 319,
+      "lineTolerance": 3,
+      "family": "jquery-dom-based-xss-source",
+      "severity": "high",
+      "cwe": "CWE-79",
+      "note": "jQuery DOM-XSS source"
+    },
+    {
+      "file": "assets/javascripts/bootstrap-image-gallery.js",
+      "line": 344,
+      "lineTolerance": 3,
+      "family": "jquery-dom-based-xss-source",
+      "severity": "high",
+      "cwe": "CWE-79",
+      "note": "jQuery DOM-XSS source"
+    },
+    {
+      "file": "assets/javascripts/bootstrap.js",
+      "line": 158,
+      "lineTolerance": 3,
+      "family": "jquery-dom-based-xss-source",
+      "severity": "high",
+      "cwe": "CWE-79",
+      "note": "jQuery DOM-XSS source"
+    },
+    {
+      "file": "assets/javascripts/bootstrap.js",
+      "line": 171,
+      "lineTolerance": 3,
+      "family": "jquery-dom-based-xss-source",
+      "severity": "high",
+      "cwe": "CWE-79",
+      "note": "jQuery DOM-XSS source"
+    },
+    {
+      "file": "assets/javascripts/bootstrap.js",
+      "line": 290,
+      "lineTolerance": 3,
+      "family": "jquery-dom-based-xss-source",
+      "severity": "high",
+      "cwe": "CWE-79",
+      "note": "jQuery DOM-XSS source"
+    },
+    {
+      "file": "assets/javascripts/bootstrap.js",
+      "line": 460,
+      "lineTolerance": 3,
+      "family": "jquery-dom-based-xss-source",
+      "severity": "high",
+      "cwe": "CWE-79",
+      "note": "jQuery DOM-XSS source"
+    },
+    {
+      "file": "assets/javascripts/bootstrap.js",
+      "line": 498,
+      "lineTolerance": 3,
+      "family": "jquery-dom-based-xss-source",
+      "severity": "high",
+      "cwe": "CWE-79",
+      "note": "jQuery DOM-XSS source"
+    },
+    {
+      "file": "assets/javascripts/bootstrap.js",
+      "line": 622,
+      "lineTolerance": 3,
+      "family": "jquery-dom-based-xss-source",
+      "severity": "high",
+      "cwe": "CWE-79",
+      "note": "jQuery DOM-XSS source"
+    },
+    {
+      "file": "assets/javascripts/bootstrap.js",
+      "line": 768,
+      "lineTolerance": 3,
+      "family": "jquery-dom-based-xss-source",
+      "severity": "high",
+      "cwe": "CWE-79",
+      "note": "jQuery DOM-XSS source"
+    },
+    {
+      "file": "assets/javascripts/bootstrap.js",
+      "line": 1210,
+      "lineTolerance": 3,
+      "family": "jquery-dom-based-xss-source",
+      "severity": "high",
+      "cwe": "CWE-79",
+      "note": "jQuery DOM-XSS source"
+    },
+    {
+      "file": "assets/javascripts/bootstrap.js",
+      "line": 1220,
+      "lineTolerance": 3,
+      "family": "jquery-dom-based-xss-source",
+      "severity": "high",
+      "cwe": "CWE-79",
+      "note": "jQuery DOM-XSS source"
+    },
+    {
+      "file": "assets/javascripts/bootstrap.js",
+      "line": 1281,
+      "lineTolerance": 3,
+      "family": "jquery-dom-based-xss-source",
+      "severity": "high",
+      "cwe": "CWE-79",
+      "note": "jQuery DOM-XSS source"
+    },
+    {
+      "file": "assets/javascripts/bootstrap.js",
+      "line": 1393,
+      "lineTolerance": 3,
+      "family": "jquery-dom-based-xss-source",
+      "severity": "high",
+      "cwe": "CWE-79",
+      "note": "jQuery DOM-XSS source"
+    },
+    {
+      "file": "assets/javascripts/bootstrap.js",
+      "line": 1494,
+      "lineTolerance": 3,
+      "family": "jquery-dom-based-xss-source",
+      "severity": "high",
+      "cwe": "CWE-79",
+      "note": "jQuery DOM-XSS source"
+    },
+    {
+      "file": "assets/javascripts/bootstrap.js",
+      "line": 1657,
+      "lineTolerance": 3,
+      "family": "jquery-dom-based-xss-source",
+      "severity": "high",
+      "cwe": "CWE-79",
+      "note": "jQuery DOM-XSS source"
+    },
+    {
+      "file": "assets/javascripts/bootstrap.js",
+      "line": 1844,
+      "lineTolerance": 3,
+      "family": "jquery-dom-based-xss-source",
+      "severity": "high",
+      "cwe": "CWE-79",
+      "note": "jQuery DOM-XSS source"
+    },
+    {
+      "file": "assets/javascripts/bootstrap.js",
+      "line": 1984,
+      "lineTolerance": 3,
+      "family": "redos",
+      "severity": "medium",
+      "cwe": "CWE-1333",
+      "note": "Catastrophic regex backtracking"
+    },
+    {
+      "file": "assets/javascripts/bootstrap.js",
+      "line": 2168,
+      "lineTolerance": 3,
+      "family": "jquery-dom-based-xss-source",
+      "severity": "high",
+      "cwe": "CWE-79",
+      "note": "jQuery DOM-XSS source"
+    },
+    {
+      "file": "assets/javascripts/date-picker/date.js",
+      "line": 24,
+      "lineTolerance": 3,
+      "family": "redos",
+      "severity": "medium",
+      "cwe": "CWE-1333",
+      "note": "Catastrophic regex backtracking"
+    },
+    {
+      "file": "assets/javascripts/date-picker/date.js",
+      "line": 25,
+      "lineTolerance": 5,
+      "family": "redos",
+      "severity": "medium",
+      "cwe": "CWE-1333",
+      "note": "Catastrophic regex backtracking [matchAny added: engine emits duplicates at this location]",
+      "matchAny": true
+    },
+    {
+      "file": "assets/javascripts/date-picker/date.js",
+      "line": 40,
+      "lineTolerance": 3,
+      "family": "redos",
+      "severity": "medium",
+      "cwe": "CWE-1333",
+      "note": "Catastrophic regex backtracking"
+    },
+    {
+      "file": "assets/javascripts/date-picker/date.js",
+      "line": 143,
+      "lineTolerance": 3,
+      "family": "redos",
+      "severity": "medium",
+      "cwe": "CWE-1333",
+      "note": "Catastrophic regex backtracking"
+    },
+    {
+      "file": "assets/javascripts/date-picker/daterangepicker.js",
+      "line": 340,
+      "lineTolerance": 3,
+      "family": "jquery-dom-based-xss-source",
+      "severity": "high",
+      "cwe": "CWE-79",
+      "note": "jQuery DOM-XSS source"
+    },
+    {
+      "file": "assets/javascripts/date-picker/daterangepicker.js",
+      "line": 365,
+      "lineTolerance": 3,
+      "family": "jquery-dom-based-xss-source",
+      "severity": "high",
+      "cwe": "CWE-79",
+      "note": "jQuery DOM-XSS source"
+    },
+    {
+      "file": "assets/javascripts/date-picker/daterangepicker.js",
+      "line": 370,
+      "lineTolerance": 3,
+      "family": "jquery-dom-based-xss-source",
+      "severity": "high",
+      "cwe": "CWE-79",
+      "note": "jQuery DOM-XSS source"
+    },
+    {
+      "file": "assets/javascripts/jquery.scrollUp.js",
+      "line": 68,
+      "lineTolerance": 3,
+      "family": "jquery-dom-based-xss-source",
+      "severity": "high",
+      "cwe": "CWE-79",
+      "note": "jQuery DOM-XSS source"
+    },
+    {
+      "file": "assets/javascripts/jquery.scrollUp.js",
+      "line": 72,
+      "lineTolerance": 3,
+      "family": "jquery-dom-based-xss-source",
+      "severity": "high",
+      "cwe": "CWE-79",
+      "note": "jQuery DOM-XSS source"
+    },
+    {
+      "file": "assets/javascripts/jquery.scrollUp.js",
+      "line": 77,
+      "lineTolerance": 3,
+      "family": "jquery-dom-based-xss-source",
+      "severity": "high",
+      "cwe": "CWE-79",
+      "note": "jQuery DOM-XSS source"
+    },
+    {
+      "file": "assets/javascripts/jquery.scrollUp.js",
+      "line": 82,
+      "lineTolerance": 3,
+      "family": "jquery-dom-based-xss-source",
+      "severity": "high",
+      "cwe": "CWE-79",
+      "note": "jQuery DOM-XSS source"
+    },
+    {
+      "file": "assets/javascripts/jquery.snippet.js",
+      "line": 51,
+      "lineTolerance": 3,
+      "family": "weak-rng",
+      "severity": "low",
+      "cwe": "CWE-330",
+      "note": "Weak PRNG (Math.random / java.util.Random / etc.)"
+    },
+    {
+      "file": "assets/javascripts/jquery.snippet.js",
+      "line": 737,
+      "lineTolerance": 3,
+      "family": "code-injection",
+      "severity": "critical",
+      "cwe": "CWE-94",
+      "note": "eval/exec on user input"
+    },
+    {
+      "file": "assets/javascripts/jquery.snippet.js",
+      "line": 737,
+      "lineTolerance": 3,
+      "family": "command-injection",
+      "severity": "critical",
+      "cwe": "CWE-78",
+      "note": "Command injection sink"
+    },
+    {
+      "file": "assets/javascripts/jquery.snippet.js",
+      "line": 774,
+      "lineTolerance": 3,
+      "family": "redos",
+      "severity": "medium",
+      "cwe": "CWE-1333",
+      "note": "Catastrophic regex backtracking"
+    },
+    {
+      "file": "assets/javascripts/jquery.snippet.js",
+      "line": 789,
+      "lineTolerance": 3,
+      "family": "broken-marker",
+      "severity": "info",
+      "cwe": null,
+      "note": "TODO/FIXME marker near security-sensitive code"
+    },
+    {
+      "file": "assets/javascripts/jquery.snippet.js",
+      "line": 792,
+      "lineTolerance": 3,
+      "family": "broken-marker",
+      "severity": "info",
+      "cwe": null,
+      "note": "TODO/FIXME marker near security-sensitive code"
+    },
+    {
+      "file": "assets/javascripts/jquery.snippet.js",
+      "line": 795,
+      "lineTolerance": 5,
+      "family": "redos",
+      "severity": "medium",
+      "cwe": "CWE-1333",
+      "note": "Catastrophic regex backtracking [matchAny added: engine emits duplicates at this location]",
+      "matchAny": true
+    },
+    {
+      "file": "assets/javascripts/jquery.snippet.js",
+      "line": 801,
+      "lineTolerance": 3,
+      "family": "redos",
+      "severity": "medium",
+      "cwe": "CWE-1333",
+      "note": "Catastrophic regex backtracking"
+    },
+    {
+      "file": "assets/javascripts/jquery.snippet.js",
+      "line": 804,
+      "lineTolerance": 5,
+      "family": "redos",
+      "severity": "medium",
+      "cwe": "CWE-1333",
+      "note": "Catastrophic regex backtracking [matchAny added: engine emits duplicates at this location]",
+      "matchAny": true
+    },
+    {
+      "file": "assets/javascripts/tiny-scrollbar.js",
+      "line": 1,
+      "lineTolerance": 3,
+      "family": "redos",
+      "severity": "medium",
+      "cwe": "CWE-1333",
+      "note": "Catastrophic regex backtracking"
+    },
+    {
+      "file": "assets/javascripts/validation.js",
+      "line": 36,
+      "lineTolerance": 3,
+      "family": "jquery-dom-based-xss-source",
+      "severity": "high",
+      "cwe": "CWE-79",
+      "note": "jQuery DOM-XSS source"
+    },
+    {
+      "file": "controllers/admin_controller.rb",
+      "line": 43,
+      "lineTolerance": 3,
+      "family": "hardcoded-secret",
+      "severity": "high",
+      "cwe": "CWE-798",
+      "note": "Hardcoded credential pattern"
+    },
+    {
+      "file": "controllers/api/v1/mobile_controller.rb",
+      "line": 11,
+      "lineTolerance": 3,
+      "family": "sql-injection",
+      "severity": "high",
+      "cwe": "CWE-89",
+      "note": "SQL injection sink"
+    },
+    {
+      "file": "controllers/api/v1/users_controller.rb",
+      "line": 21,
+      "lineTolerance": 3,
+      "family": "broken-marker",
+      "severity": "info",
+      "cwe": null,
+      "note": "TODO/FIXME marker near security-sensitive code"
+    },
+    {
+      "file": "controllers/tutorials_controller.rb",
+      "line": 23,
+      "lineTolerance": 3,
+      "family": "redos",
+      "severity": "medium",
+      "cwe": "CWE-1333",
+      "note": "Catastrophic regex backtracking"
+    },
+    {
+      "file": "controllers/tutorials_controller.rb",
+      "line": 57,
+      "lineTolerance": 3,
+      "family": "redos",
+      "severity": "medium",
+      "cwe": "CWE-1333",
+      "note": "Catastrophic regex backtracking"
+    },
+    {
+      "file": "views/admin/analytics.html.erb",
+      "line": 46,
+      "lineTolerance": 3,
+      "family": "jquery-dom-based-xss-source",
+      "severity": "high",
+      "cwe": "CWE-79",
+      "note": "jQuery DOM-XSS source"
+    },
+    {
+      "file": "views/admin/dashboard.html.erb",
+      "line": 61,
+      "lineTolerance": 3,
+      "family": "jquery-dom-based-xss-source",
+      "severity": "high",
+      "cwe": "CWE-79",
+      "note": "jQuery DOM-XSS source"
+    },
+    {
+      "file": "views/admin/dashboard.html.erb",
+      "line": 67,
+      "lineTolerance": 3,
+      "family": "jquery-dom-based-xss-source",
+      "severity": "high",
+      "cwe": "CWE-79",
+      "note": "jQuery DOM-XSS source"
+    },
+    {
+      "file": "views/admin/get_all_users.html.erb",
+      "line": 62,
+      "lineTolerance": 3,
+      "family": "jquery-dom-based-xss-source",
+      "severity": "high",
+      "cwe": "CWE-79",
+      "note": "jQuery DOM-XSS source"
+    },
+    {
+      "file": "views/benefit_forms/index.html.erb",
+      "line": 199,
+      "lineTolerance": 3,
+      "family": "jquery-dom-based-xss-source",
+      "severity": "high",
+      "cwe": "CWE-79",
+      "note": "jQuery DOM-XSS source"
+    },
+    {
+      "file": "views/benefit_forms/index.html.erb",
+      "line": 251,
+      "lineTolerance": 3,
+      "family": "jquery-dom-based-xss-source",
+      "severity": "high",
+      "cwe": "CWE-79",
+      "note": "jQuery DOM-XSS source"
+    },
+    {
+      "file": "views/dashboard/home.html.erb",
+      "line": 66,
+      "lineTolerance": 3,
+      "family": "jquery-dom-based-xss-source",
+      "severity": "high",
+      "cwe": "CWE-79",
+      "note": "jQuery DOM-XSS source"
+    },
+    {
+      "file": "views/dashboard/home.html.erb",
+      "line": 77,
+      "lineTolerance": 3,
+      "family": "jquery-dom-based-xss-source",
+      "severity": "high",
+      "cwe": "CWE-79",
+      "note": "jQuery DOM-XSS source"
+    },
+    {
+      "file": "views/dashboard/pie_charts.html.erb",
+      "line": 266,
+      "lineTolerance": 3,
+      "family": "jquery-dom-based-xss-source",
+      "severity": "high",
+      "cwe": "CWE-79",
+      "note": "jQuery DOM-XSS source"
+    },
+    {
+      "file": "views/dashboard/pie_charts.html.erb",
+      "line": 269,
+      "lineTolerance": 3,
+      "family": "jquery-dom-based-xss-source",
+      "severity": "high",
+      "cwe": "CWE-79",
+      "note": "jQuery DOM-XSS source"
+    },
+    {
+      "file": "views/messages/index.html.erb",
+      "line": 152,
+      "lineTolerance": 3,
+      "family": "jquery-dom-based-xss-source",
+      "severity": "high",
+      "cwe": "CWE-79",
+      "note": "jQuery DOM-XSS source"
+    },
+    {
+      "file": "views/messages/index.html.erb",
+      "line": 157,
+      "lineTolerance": 3,
+      "family": "jquery-dom-based-xss-source",
+      "severity": "high",
+      "cwe": "CWE-79",
+      "note": "jQuery DOM-XSS source"
+    },
+    {
+      "file": "views/messages/show.html.erb",
+      "line": 41,
+      "lineTolerance": 3,
+      "family": "jquery-dom-based-xss-source",
+      "severity": "high",
+      "cwe": "CWE-79",
+      "note": "jQuery DOM-XSS source"
+    },
+    {
+      "file": "views/paid_time_off/index.html.erb",
+      "line": 205,
+      "lineTolerance": 3,
+      "family": "jquery-dom-based-xss-source",
+      "severity": "high",
+      "cwe": "CWE-79",
+      "note": "jQuery DOM-XSS source"
+    },
+    {
+      "file": "views/paid_time_off/index.html.erb",
+      "line": 226,
+      "lineTolerance": 3,
+      "family": "jquery-dom-based-xss-source",
+      "severity": "high",
+      "cwe": "CWE-79",
+      "note": "jQuery DOM-XSS source"
+    },
+    {
+      "file": "views/password_resets/reset_password.html.erb",
+      "line": 11,
+      "lineTolerance": 3,
+      "family": "broken-marker",
+      "severity": "info",
+      "cwe": null,
+      "note": "TODO/FIXME marker near security-sensitive code"
+    },
+    {
+      "file": "views/pay/index.html.erb",
+      "line": 245,
+      "lineTolerance": 3,
+      "family": "jquery-dom-based-xss-source",
+      "severity": "high",
+      "cwe": "CWE-79",
+      "note": "jQuery DOM-XSS source"
+    },
+    {
+      "file": "views/pay/index.html.erb",
+      "line": 371,
+      "lineTolerance": 3,
+      "family": "jquery-dom-based-xss-source",
+      "severity": "high",
+      "cwe": "CWE-79",
+      "note": "jQuery DOM-XSS source"
+    },
+    {
+      "file": "views/pay/index.html.erb",
+      "line": 376,
+      "lineTolerance": 3,
+      "family": "jquery-dom-based-xss-source",
+      "severity": "high",
+      "cwe": "CWE-79",
+      "note": "jQuery DOM-XSS source"
+    },
+    {
+      "file": "views/performance/index.html.erb",
+      "line": 235,
+      "lineTolerance": 3,
+      "family": "jquery-dom-based-xss-source",
+      "severity": "high",
+      "cwe": "CWE-79",
+      "note": "jQuery DOM-XSS source"
+    },
+    {
+      "file": "views/performance/index.html.erb",
+      "line": 240,
+      "lineTolerance": 3,
+      "family": "jquery-dom-based-xss-source",
+      "severity": "high",
+      "cwe": "CWE-79",
+      "note": "jQuery DOM-XSS source"
+    },
+    {
+      "file": "views/retirement/index.html.erb",
+      "line": 156,
+      "lineTolerance": 3,
+      "family": "jquery-dom-based-xss-source",
+      "severity": "high",
+      "cwe": "CWE-79",
+      "note": "jQuery DOM-XSS source"
+    },
+    {
+      "file": "views/retirement/index.html.erb",
+      "line": 159,
+      "lineTolerance": 3,
+      "family": "jquery-dom-based-xss-source",
+      "severity": "high",
+      "cwe": "CWE-79",
+      "note": "jQuery DOM-XSS source"
+    },
+    {
+      "file": "views/sessions/new.html.erb",
+      "line": 89,
+      "lineTolerance": 3,
+      "family": "xss",
+      "severity": "high",
+      "cwe": "CWE-79",
+      "note": "XSS sink"
+    },
+    {
+      "file": "views/tutorials/credentials.html.erb",
+      "line": 73,
+      "lineTolerance": 3,
+      "family": "jquery-dom-based-xss-source",
+      "severity": "high",
+      "cwe": "CWE-79",
+      "note": "jQuery DOM-XSS source"
+    },
+    {
+      "file": "views/work_info/index.html.erb",
+      "line": 59,
+      "lineTolerance": 3,
+      "family": "jquery-dom-based-xss-source",
+      "severity": "high",
+      "cwe": "CWE-79",
+      "note": "jQuery DOM-XSS source"
+    }
+  ]
+}

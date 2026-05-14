@@ -1,1 +1,429 @@
-{"_doc":"Gitea services/ — polyglot clean baseline. Real-world Go code at scale with HTTP-heavy framework patterns.","wildcardFamilies":["dos-no-timeout","header-hardening","weak-rng","vulnerable-dep","pipeline-third-party-action-pinned-to-ma","pipeline-github-action-pinned-to-floatin","redos","weak-crypto","sql-injection","ssrf","mass-assignment","xss","path-traversal","command-injection","hardcoded-secret","insecure-deserialization","timing-oracle","jwt-no-verify","jwt-alg-confusion","insecure-http","broken-marker","exposed-jwt-token","model-load-pickle-load-rce-on-untrusted-","data-exposure","permissive-cors-allow-origin","missing-positive-integer-validation-on-f","ssti","redos","unsafe-block"],"expected":[]}
+{
+  "_doc": "gitea-polyglot \u2014 line-level expected entries derived from engine output in 0.34.5 and verified by source-sampling. Wildcards removed. Each entry has family-appropriate severity/CWE/note metadata.",
+  "wildcardFamilies": [],
+  "expected": [
+    {
+      "file": "auth/oauth2.go",
+      "line": 110,
+      "lineTolerance": 3,
+      "family": "broken-marker",
+      "severity": "info",
+      "cwe": null,
+      "note": "TODO/FIXME marker near security-sensitive code"
+    },
+    {
+      "file": "auth/source/ldap/source_authenticate.go",
+      "line": 34,
+      "lineTolerance": 3,
+      "family": "broken-marker",
+      "severity": "info",
+      "cwe": null,
+      "note": "TODO/FIXME marker near security-sensitive code"
+    },
+    {
+      "file": "auth/source/ldap/source_sync.go",
+      "line": 30,
+      "lineTolerance": 3,
+      "family": "broken-marker",
+      "severity": "info",
+      "cwe": null,
+      "note": "TODO/FIXME marker near security-sensitive code"
+    },
+    {
+      "file": "auth/source/oauth2/init.go",
+      "line": 33,
+      "lineTolerance": 3,
+      "family": "broken-marker",
+      "severity": "info",
+      "cwe": null,
+      "note": "TODO/FIXME marker near security-sensitive code"
+    },
+    {
+      "file": "auth/source/smtp/auth.go",
+      "line": 36,
+      "lineTolerance": 3,
+      "family": "hardcoded-secret",
+      "severity": "high",
+      "cwe": "CWE-798",
+      "note": "Hardcoded credential pattern"
+    },
+    {
+      "file": "auth/sspi.go",
+      "line": 92,
+      "lineTolerance": 3,
+      "family": "broken-marker",
+      "severity": "info",
+      "cwe": null,
+      "note": "TODO/FIXME marker near security-sensitive code"
+    },
+    {
+      "file": "auth/sspiauth_posix.go",
+      "line": 28,
+      "lineTolerance": 3,
+      "family": "broken-marker",
+      "severity": "info",
+      "cwe": null,
+      "note": "TODO/FIXME marker near security-sensitive code"
+    },
+    {
+      "file": "context/context.go",
+      "line": 189,
+      "lineTolerance": 3,
+      "family": "broken-marker",
+      "severity": "info",
+      "cwe": null,
+      "note": "TODO/FIXME marker near security-sensitive code"
+    },
+    {
+      "file": "context/context.go",
+      "line": 205,
+      "lineTolerance": 3,
+      "family": "broken-marker",
+      "severity": "info",
+      "cwe": null,
+      "note": "TODO/FIXME marker near security-sensitive code"
+    },
+    {
+      "file": "context/package.go",
+      "line": 125,
+      "lineTolerance": 3,
+      "family": "broken-marker",
+      "severity": "info",
+      "cwe": null,
+      "note": "TODO/FIXME marker near security-sensitive code"
+    },
+    {
+      "file": "convert/repository.go",
+      "line": 32,
+      "lineTolerance": 3,
+      "family": "broken-marker",
+      "severity": "info",
+      "cwe": null,
+      "note": "TODO/FIXME marker near security-sensitive code"
+    },
+    {
+      "file": "convert/repository.go",
+      "line": 38,
+      "lineTolerance": 3,
+      "family": "broken-marker",
+      "severity": "info",
+      "cwe": null,
+      "note": "TODO/FIXME marker near security-sensitive code"
+    },
+    {
+      "file": "convert/repository.go",
+      "line": 52,
+      "lineTolerance": 3,
+      "family": "broken-marker",
+      "severity": "info",
+      "cwe": null,
+      "note": "TODO/FIXME marker near security-sensitive code"
+    },
+    {
+      "file": "forms/user_form.go",
+      "line": 129,
+      "lineTolerance": 3,
+      "family": "broken-marker",
+      "severity": "info",
+      "cwe": null,
+      "note": "TODO/FIXME marker near security-sensitive code"
+    },
+    {
+      "file": "git/commit.go",
+      "line": 37,
+      "lineTolerance": 3,
+      "family": "broken-marker",
+      "severity": "info",
+      "cwe": null,
+      "note": "TODO/FIXME marker near security-sensitive code"
+    },
+    {
+      "file": "gitdiff/highlightdiff.go",
+      "line": 291,
+      "lineTolerance": 3,
+      "family": "broken-marker",
+      "severity": "info",
+      "cwe": null,
+      "note": "TODO/FIXME marker near security-sensitive code"
+    },
+    {
+      "file": "issue/commit.go",
+      "line": 169,
+      "lineTolerance": 3,
+      "family": "broken-marker",
+      "severity": "info",
+      "cwe": null,
+      "note": "TODO/FIXME marker near security-sensitive code"
+    },
+    {
+      "file": "mailer/incoming/incoming.go",
+      "line": 168,
+      "lineTolerance": 3,
+      "family": "dos-no-timeout",
+      "severity": "low",
+      "cwe": "CWE-400",
+      "note": "Outbound HTTP without timeout"
+    },
+    {
+      "file": "mailer/sender/smtp_auth.go",
+      "line": 34,
+      "lineTolerance": 3,
+      "family": "hardcoded-secret",
+      "severity": "high",
+      "cwe": "CWE-798",
+      "note": "Hardcoded credential pattern"
+    },
+    {
+      "file": "mailer/token/token.go",
+      "line": 47,
+      "lineTolerance": 3,
+      "family": "hardcoded-secret",
+      "severity": "high",
+      "cwe": "CWE-798",
+      "note": "Hardcoded credential pattern"
+    },
+    {
+      "file": "migrations/codebase.go",
+      "line": 137,
+      "lineTolerance": 3,
+      "family": "ssrf",
+      "severity": "high",
+      "cwe": "CWE-918",
+      "note": "SSRF sink"
+    },
+    {
+      "file": "migrations/common.go",
+      "line": 51,
+      "lineTolerance": 3,
+      "family": "broken-marker",
+      "severity": "info",
+      "cwe": null,
+      "note": "TODO/FIXME marker near security-sensitive code"
+    },
+    {
+      "file": "migrations/dump.go",
+      "line": 313,
+      "lineTolerance": 3,
+      "family": "dos-no-timeout",
+      "severity": "low",
+      "cwe": "CWE-400",
+      "note": "Outbound HTTP without timeout"
+    },
+    {
+      "file": "migrations/dump.go",
+      "line": 454,
+      "lineTolerance": 3,
+      "family": "dos-no-timeout",
+      "severity": "low",
+      "cwe": "CWE-400",
+      "note": "Outbound HTTP without timeout"
+    },
+    {
+      "file": "migrations/dump.go",
+      "line": 454,
+      "lineTolerance": 3,
+      "family": "ssrf",
+      "severity": "high",
+      "cwe": "CWE-918",
+      "note": "SSRF sink"
+    },
+    {
+      "file": "migrations/gitea_downloader.go",
+      "line": 302,
+      "lineTolerance": 3,
+      "family": "ssrf",
+      "severity": "high",
+      "cwe": "CWE-918",
+      "note": "SSRF sink"
+    },
+    {
+      "file": "migrations/github.go",
+      "line": 365,
+      "lineTolerance": 3,
+      "family": "ssrf",
+      "severity": "high",
+      "cwe": "CWE-918",
+      "note": "SSRF sink"
+    },
+    {
+      "file": "migrations/gitlab.go",
+      "line": 337,
+      "lineTolerance": 3,
+      "family": "ssrf",
+      "severity": "high",
+      "cwe": "CWE-918",
+      "note": "SSRF sink"
+    },
+    {
+      "file": "migrations/onedev.go",
+      "line": 127,
+      "lineTolerance": 3,
+      "family": "ssrf",
+      "severity": "high",
+      "cwe": "CWE-918",
+      "note": "SSRF sink"
+    },
+    {
+      "file": "mirror/mirror_pull.go",
+      "line": 130,
+      "lineTolerance": 3,
+      "family": "dos-no-timeout",
+      "severity": "low",
+      "cwe": "CWE-400",
+      "note": "Outbound HTTP without timeout"
+    },
+    {
+      "file": "mirror/mirror_pull.go",
+      "line": 144,
+      "lineTolerance": 3,
+      "family": "dos-no-timeout",
+      "severity": "low",
+      "cwe": "CWE-400",
+      "note": "Outbound HTTP without timeout"
+    },
+    {
+      "file": "oauth2_provider/access_token.go",
+      "line": 101,
+      "lineTolerance": 3,
+      "family": "broken-marker",
+      "severity": "info",
+      "cwe": null,
+      "note": "TODO/FIXME marker near security-sensitive code"
+    },
+    {
+      "file": "pull/merge_squash.go",
+      "line": 70,
+      "lineTolerance": 3,
+      "family": "broken-marker",
+      "severity": "info",
+      "cwe": null,
+      "note": "TODO/FIXME marker near security-sensitive code"
+    },
+    {
+      "file": "pull/pull.go",
+      "line": 841,
+      "lineTolerance": 3,
+      "family": "broken-marker",
+      "severity": "info",
+      "cwe": null,
+      "note": "TODO/FIXME marker near security-sensitive code"
+    },
+    {
+      "file": "pull/pull.go",
+      "line": 915,
+      "lineTolerance": 3,
+      "family": "broken-marker",
+      "severity": "info",
+      "cwe": null,
+      "note": "TODO/FIXME marker near security-sensitive code"
+    },
+    {
+      "file": "repository/contributors_graph.go",
+      "line": 146,
+      "lineTolerance": 3,
+      "family": "broken-marker",
+      "severity": "info",
+      "cwe": null,
+      "note": "TODO/FIXME marker near security-sensitive code"
+    },
+    {
+      "file": "user/user.go",
+      "line": 149,
+      "lineTolerance": 3,
+      "family": "broken-marker",
+      "severity": "info",
+      "cwe": null,
+      "note": "TODO/FIXME marker near security-sensitive code"
+    },
+    {
+      "file": "user/user.go",
+      "line": 297,
+      "lineTolerance": 3,
+      "family": "broken-marker",
+      "severity": "info",
+      "cwe": null,
+      "note": "TODO/FIXME marker near security-sensitive code"
+    },
+    {
+      "file": "webhook/deliver.go",
+      "line": 42,
+      "lineTolerance": 3,
+      "family": "ssrf",
+      "severity": "high",
+      "cwe": "CWE-918",
+      "note": "SSRF sink"
+    },
+    {
+      "file": "webhook/deliver.go",
+      "line": 53,
+      "lineTolerance": 3,
+      "family": "ssrf",
+      "severity": "high",
+      "cwe": "CWE-918",
+      "note": "SSRF sink"
+    },
+    {
+      "file": "webhook/deliver.go",
+      "line": 70,
+      "lineTolerance": 3,
+      "family": "ssrf",
+      "severity": "high",
+      "cwe": "CWE-918",
+      "note": "SSRF sink"
+    },
+    {
+      "file": "webhook/deliver.go",
+      "line": 82,
+      "lineTolerance": 3,
+      "family": "ssrf",
+      "severity": "high",
+      "cwe": "CWE-918",
+      "note": "SSRF sink"
+    },
+    {
+      "file": "webhook/matrix.go",
+      "line": 54,
+      "lineTolerance": 3,
+      "family": "ssrf",
+      "severity": "high",
+      "cwe": "CWE-918",
+      "note": "SSRF sink"
+    },
+    {
+      "file": "webhook/notifier.go",
+      "line": 811,
+      "lineTolerance": 3,
+      "family": "broken-marker",
+      "severity": "info",
+      "cwe": null,
+      "note": "TODO/FIXME marker near security-sensitive code"
+    },
+    {
+      "file": "webhook/notifier.go",
+      "line": 846,
+      "lineTolerance": 3,
+      "family": "broken-marker",
+      "severity": "info",
+      "cwe": null,
+      "note": "TODO/FIXME marker near security-sensitive code"
+    },
+    {
+      "file": "webhook/payloader.go",
+      "line": 112,
+      "lineTolerance": 3,
+      "family": "ssrf",
+      "severity": "high",
+      "cwe": "CWE-918",
+      "note": "SSRF sink"
+    },
+    {
+      "file": "wiki/wiki.go",
+      "line": 171,
+      "lineTolerance": 3,
+      "family": "broken-marker",
+      "severity": "info",
+      "cwe": null,
+      "note": "TODO/FIXME marker near security-sensitive code"
+    }
+  ]
+}

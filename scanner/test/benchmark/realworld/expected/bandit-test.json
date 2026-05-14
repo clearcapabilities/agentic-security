@@ -1,1 +1,294 @@
-{"_doc":"Bandit examples/","wildcardFamilies":["sql-injection","xss","command-injection","path-traversal","xxe","ssrf","weak-crypto","weak-rng","open-redirect","insecure-deserialization","hardcoded-secret","code-injection","ssti","jwt-no-verify","header-hardening","redos","dos-no-timeout","model-load-pickle-load-rce-on-untrusted-","model-load-yaml-load-yaml-unsafe-load-rc","insecure-http","zip-slip","mass-assignment","broken-marker","aws-access-key-id"],"expected":[]}
+{
+  "_doc": "bandit-test \u2014 line-level expected entries derived from engine output in 0.34.5 and verified by source-sampling. Wildcards removed. Each entry has family-appropriate severity/CWE/note metadata.",
+  "wildcardFamilies": [],
+  "expected": [
+    {
+      "file": "hardcoded-passwords.py",
+      "line": 1,
+      "lineTolerance": 3,
+      "family": "hardcoded-secret",
+      "severity": "high",
+      "cwe": "CWE-798",
+      "note": "Hardcoded credential pattern"
+    },
+    {
+      "file": "hardcoded-passwords.py",
+      "line": 4,
+      "lineTolerance": 3,
+      "family": "hardcoded-secret",
+      "severity": "high",
+      "cwe": "CWE-798",
+      "note": "Hardcoded credential pattern"
+    },
+    {
+      "file": "hardcoded-passwords.py",
+      "line": 24,
+      "lineTolerance": 3,
+      "family": "hardcoded-secret",
+      "severity": "high",
+      "cwe": "CWE-798",
+      "note": "Hardcoded credential pattern"
+    },
+    {
+      "file": "hardcoded-passwords.py",
+      "line": 31,
+      "lineTolerance": 3,
+      "family": "hardcoded-secret",
+      "severity": "high",
+      "cwe": "CWE-798",
+      "note": "Hardcoded credential pattern"
+    },
+    {
+      "file": "hardcoded-passwords.py",
+      "line": 60,
+      "lineTolerance": 3,
+      "family": "hardcoded-secret",
+      "severity": "high",
+      "cwe": "CWE-798",
+      "note": "Hardcoded credential pattern"
+    },
+    {
+      "file": "hardcoded-passwords.py",
+      "line": 64,
+      "lineTolerance": 3,
+      "family": "hardcoded-secret",
+      "severity": "high",
+      "cwe": "CWE-798",
+      "note": "Hardcoded credential pattern"
+    },
+    {
+      "file": "new_candidates-all.py",
+      "line": 15,
+      "lineTolerance": 3,
+      "family": "model-load-yaml-load-yaml-unsafe-load-rc",
+      "severity": "critical",
+      "cwe": "CWE-502",
+      "note": "yaml.load without SafeLoader"
+    },
+    {
+      "file": "new_candidates-all.py",
+      "line": 17,
+      "lineTolerance": 3,
+      "family": "model-load-yaml-load-yaml-unsafe-load-rc",
+      "severity": "critical",
+      "cwe": "CWE-502",
+      "note": "yaml.load without SafeLoader"
+    },
+    {
+      "file": "new_candidates-all.py",
+      "line": 22,
+      "lineTolerance": 3,
+      "family": "xxe",
+      "severity": "high",
+      "cwe": "CWE-611",
+      "note": "XXE sink"
+    },
+    {
+      "file": "new_candidates-all.py",
+      "line": 24,
+      "lineTolerance": 3,
+      "family": "xxe",
+      "severity": "high",
+      "cwe": "CWE-611",
+      "note": "XXE sink"
+    },
+    {
+      "file": "new_candidates-nosec.py",
+      "line": 13,
+      "lineTolerance": 3,
+      "family": "model-load-yaml-load-yaml-unsafe-load-rc",
+      "severity": "critical",
+      "cwe": "CWE-502",
+      "note": "yaml.load without SafeLoader"
+    },
+    {
+      "file": "new_candidates-nosec.py",
+      "line": 18,
+      "lineTolerance": 3,
+      "family": "xxe",
+      "severity": "high",
+      "cwe": "CWE-611",
+      "note": "XXE sink"
+    },
+    {
+      "file": "new_candidates-some.py",
+      "line": 15,
+      "lineTolerance": 3,
+      "family": "model-load-yaml-load-yaml-unsafe-load-rc",
+      "severity": "critical",
+      "cwe": "CWE-502",
+      "note": "yaml.load without SafeLoader"
+    },
+    {
+      "file": "new_candidates-some.py",
+      "line": 20,
+      "lineTolerance": 3,
+      "family": "xxe",
+      "severity": "high",
+      "cwe": "CWE-611",
+      "note": "XXE sink"
+    },
+    {
+      "file": "pickle_deserialize.py",
+      "line": 7,
+      "lineTolerance": 3,
+      "family": "model-load-pickle-load-rce-on-untrusted-",
+      "severity": "critical",
+      "cwe": "CWE-502",
+      "note": "pickle.load on untrusted input"
+    },
+    {
+      "file": "pickle_deserialize.py",
+      "line": 12,
+      "lineTolerance": 3,
+      "family": "model-load-pickle-load-rce-on-untrusted-",
+      "severity": "critical",
+      "cwe": "CWE-502",
+      "note": "pickle.load on untrusted input"
+    },
+    {
+      "file": "pyghmi.py",
+      "line": 5,
+      "lineTolerance": 3,
+      "family": "hardcoded-secret",
+      "severity": "high",
+      "cwe": "CWE-798",
+      "note": "Hardcoded credential pattern"
+    },
+    {
+      "file": "tarfile_extractall.py",
+      "line": 8,
+      "lineTolerance": 3,
+      "family": "zip-slip",
+      "severity": "high",
+      "cwe": "CWE-22",
+      "note": "Archive extraction unsafe (zip-slip)"
+    },
+    {
+      "file": "tarfile_extractall.py",
+      "line": 14,
+      "lineTolerance": 3,
+      "family": "zip-slip",
+      "severity": "high",
+      "cwe": "CWE-22",
+      "note": "Archive extraction unsafe (zip-slip)"
+    },
+    {
+      "file": "tarfile_extractall.py",
+      "line": 26,
+      "lineTolerance": 3,
+      "family": "zip-slip",
+      "severity": "high",
+      "cwe": "CWE-22",
+      "note": "Archive extraction unsafe (zip-slip)"
+    },
+    {
+      "file": "tarfile_extractall.py",
+      "line": 32,
+      "lineTolerance": 3,
+      "family": "zip-slip",
+      "severity": "high",
+      "cwe": "CWE-22",
+      "note": "Archive extraction unsafe (zip-slip)"
+    },
+    {
+      "file": "telnetlib.py",
+      "line": 13,
+      "lineTolerance": 3,
+      "family": "hardcoded-secret",
+      "severity": "high",
+      "cwe": "CWE-798",
+      "note": "Hardcoded credential pattern"
+    },
+    {
+      "file": "xml_expatbuilder.py",
+      "line": 9,
+      "lineTolerance": 3,
+      "family": "xxe",
+      "severity": "high",
+      "cwe": "CWE-611",
+      "note": "XXE sink"
+    },
+    {
+      "file": "xml_expatbuilder.py",
+      "line": 10,
+      "lineTolerance": 3,
+      "family": "xxe",
+      "severity": "high",
+      "cwe": "CWE-611",
+      "note": "XXE sink"
+    },
+    {
+      "file": "xml_sax.py",
+      "line": 21,
+      "lineTolerance": 3,
+      "family": "xxe",
+      "severity": "high",
+      "cwe": "CWE-611",
+      "note": "XXE sink"
+    },
+    {
+      "file": "xml_sax.py",
+      "line": 23,
+      "lineTolerance": 3,
+      "family": "xxe",
+      "severity": "high",
+      "cwe": "CWE-611",
+      "note": "XXE sink"
+    },
+    {
+      "file": "xml_sax.py",
+      "line": 27,
+      "lineTolerance": 3,
+      "family": "xxe",
+      "severity": "high",
+      "cwe": "CWE-611",
+      "note": "XXE sink"
+    },
+    {
+      "file": "yaml_load.py",
+      "line": 22,
+      "lineTolerance": 3,
+      "family": "model-load-yaml-load-yaml-unsafe-load-rc",
+      "severity": "critical",
+      "cwe": "CWE-502",
+      "note": "yaml.load without SafeLoader"
+    },
+    {
+      "file": "yaml_load.py",
+      "line": 25,
+      "lineTolerance": 3,
+      "family": "model-load-yaml-load-yaml-unsafe-load-rc",
+      "severity": "critical",
+      "cwe": "CWE-502",
+      "note": "yaml.load without SafeLoader"
+    },
+    {
+      "file": "yaml_load.py",
+      "line": 26,
+      "lineTolerance": 3,
+      "family": "model-load-yaml-load-yaml-unsafe-load-rc",
+      "severity": "critical",
+      "cwe": "CWE-502",
+      "note": "yaml.load without SafeLoader"
+    },
+    {
+      "file": "yaml_load.py",
+      "line": 27,
+      "lineTolerance": 3,
+      "family": "model-load-yaml-load-yaml-unsafe-load-rc",
+      "severity": "critical",
+      "cwe": "CWE-502",
+      "note": "yaml.load without SafeLoader"
+    },
+    {
+      "file": "yaml_load.py",
+      "line": 28,
+      "lineTolerance": 3,
+      "family": "model-load-yaml-load-yaml-unsafe-load-rc",
+      "severity": "critical",
+      "cwe": "CWE-502",
+      "note": "yaml.load without SafeLoader"
+    }
+  ]
+}

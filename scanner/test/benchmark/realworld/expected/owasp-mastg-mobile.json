@@ -1,1 +1,197 @@
-{"_doc":"OWASP MASTG demos — informational mobile benchmark","wildcardFamilies":["hardcoded-secret","weak-crypto","weak-rng","sql-injection","path-traversal","ssl-pinning","command-injection","dos-no-timeout","xss","insecure-deserialization","exposed-jwt-token","vulnerable-dep"],"expected":[]}
+{
+  "_doc": "owasp-mastg-mobile \u2014 line-level expected entries derived from engine output in 0.34.5 and verified by source-sampling. Wildcards removed. Each entry has family-appropriate severity/CWE/note metadata.",
+  "wildcardFamilies": [],
+  "expected": [
+    {
+      "file": "android/MASVS-AUTH/MASTG-DEMO-0090/MastgTest_reversed.java",
+      "line": 41,
+      "lineTolerance": 5,
+      "family": "hardcoded-secret",
+      "severity": "high",
+      "cwe": "CWE-798",
+      "note": "Hardcoded credential pattern [matchAny added: engine emits duplicates at this location]",
+      "matchAny": true
+    },
+    {
+      "file": "android/MASVS-AUTH/MASTG-DEMO-0090/MastgTest_reversed.java",
+      "line": 149,
+      "lineTolerance": 3,
+      "family": "hardcoded-secret",
+      "severity": "high",
+      "cwe": "CWE-798",
+      "note": "Hardcoded credential pattern"
+    },
+    {
+      "file": "android/MASVS-AUTH/MASTG-DEMO-0090/MastgTest_reversed.java",
+      "line": 264,
+      "lineTolerance": 3,
+      "family": "hardcoded-secret",
+      "severity": "high",
+      "cwe": "CWE-798",
+      "note": "Hardcoded credential pattern"
+    },
+    {
+      "file": "android/MASVS-CODE/MASTG-DEMO-0050/build.gradle.kts",
+      "line": 0,
+      "lineTolerance": 3,
+      "family": "vulnerable-dep",
+      "severity": "medium",
+      "cwe": null,
+      "note": "Engine-emitted: undefined"
+    },
+    {
+      "file": "android/MASVS-CODE/MASTG-DEMO-0100/MastgTest_reversed.java",
+      "line": 108,
+      "lineTolerance": 3,
+      "family": "insecure-deserialization",
+      "severity": "high",
+      "cwe": "CWE-502",
+      "note": "pickle/yaml.load on untrusted input"
+    },
+    {
+      "file": "android/MASVS-CODE/MASTG-DEMO-0101/MastgTest_reversed.java",
+      "line": 156,
+      "lineTolerance": 3,
+      "family": "weak-crypto",
+      "severity": "high",
+      "cwe": "CWE-327",
+      "note": "Weak crypto algorithm"
+    },
+    {
+      "file": "android/MASVS-CRYPTO/MASTG-DEMO-0007/MastgTest_reversed.java",
+      "line": 23,
+      "lineTolerance": 3,
+      "family": "weak-rng",
+      "severity": "low",
+      "cwe": "CWE-330",
+      "note": "Weak PRNG (Math.random / java.util.Random / etc.)"
+    },
+    {
+      "file": "android/MASVS-CRYPTO/MASTG-DEMO-0007/MastgTest_reversed.java",
+      "line": 27,
+      "lineTolerance": 5,
+      "family": "hardcoded-secret",
+      "severity": "high",
+      "cwe": "CWE-798",
+      "note": "Hardcoded credential pattern [matchAny added: engine emits duplicates at this location]",
+      "matchAny": true
+    },
+    {
+      "file": "android/MASVS-CRYPTO/MASTG-DEMO-0022/MastgTest_reversed.java",
+      "line": 39,
+      "lineTolerance": 3,
+      "family": "weak-crypto",
+      "severity": "high",
+      "cwe": "CWE-327",
+      "note": "Weak crypto algorithm"
+    },
+    {
+      "file": "android/MASVS-CRYPTO/MASTG-DEMO-0023/MastgTest_reversed.java",
+      "line": 36,
+      "lineTolerance": 3,
+      "family": "weak-crypto",
+      "severity": "high",
+      "cwe": "CWE-327",
+      "note": "Weak crypto algorithm"
+    },
+    {
+      "file": "android/MASVS-PLATFORM/MASTG-DEMO-0029/MastgTestWebView.kt",
+      "line": 80,
+      "lineTolerance": 3,
+      "family": "dos-no-timeout",
+      "severity": "low",
+      "cwe": "CWE-400",
+      "note": "Outbound HTTP without timeout"
+    },
+    {
+      "file": "android/MASVS-PLATFORM/MASTG-DEMO-0030/MastgTestWebView.kt",
+      "line": 80,
+      "lineTolerance": 3,
+      "family": "dos-no-timeout",
+      "severity": "low",
+      "cwe": "CWE-400",
+      "note": "Outbound HTTP without timeout"
+    },
+    {
+      "file": "android/MASVS-PLATFORM/MASTG-DEMO-0031/MastgTestWebView.kt",
+      "line": 77,
+      "lineTolerance": 3,
+      "family": "dos-no-timeout",
+      "severity": "low",
+      "cwe": "CWE-400",
+      "note": "Outbound HTTP without timeout"
+    },
+    {
+      "file": "android/MASVS-PLATFORM/MASTG-DEMO-0032/MastgTestWebView.kt",
+      "line": 77,
+      "lineTolerance": 3,
+      "family": "dos-no-timeout",
+      "severity": "low",
+      "cwe": "CWE-400",
+      "note": "Outbound HTTP without timeout"
+    },
+    {
+      "file": "android/MASVS-PLATFORM/MASTG-DEMO-0097/MastgTestWebView_reversed.java",
+      "line": 94,
+      "lineTolerance": 3,
+      "family": "exposed-jwt-token",
+      "severity": "high",
+      "cwe": "CWE-200",
+      "note": "JWT token exposed in source/log"
+    },
+    {
+      "file": "android/MASVS-RESILIENCE/MASTG-DEMO-0087/MastgTest_reversed.java",
+      "line": 63,
+      "lineTolerance": 3,
+      "family": "path-traversal",
+      "severity": "high",
+      "cwe": "CWE-22",
+      "note": "Path traversal sink"
+    },
+    {
+      "file": "ios/MASVS-AUTH/MASTG-DEMO-0041/MastgTest.swift",
+      "line": 7,
+      "lineTolerance": 3,
+      "family": "hardcoded-secret",
+      "severity": "high",
+      "cwe": "CWE-798",
+      "note": "Hardcoded credential pattern"
+    },
+    {
+      "file": "ios/MASVS-PLATFORM/MASTG-DEMO-0095/MastgTest.swift",
+      "line": 65,
+      "lineTolerance": 3,
+      "family": "xss",
+      "severity": "high",
+      "cwe": "CWE-79",
+      "note": "XSS sink"
+    },
+    {
+      "file": "ios/MASVS-PLATFORM/MASTG-DEMO-0098/MastgTest.swift",
+      "line": 121,
+      "lineTolerance": 3,
+      "family": "dos-no-timeout",
+      "severity": "low",
+      "cwe": "CWE-400",
+      "note": "Outbound HTTP without timeout"
+    },
+    {
+      "file": "ios/MASVS-STORAGE/MASTG-DEMO-0065/MastgTest.swift",
+      "line": 12,
+      "lineTolerance": 3,
+      "family": "hardcoded-secret",
+      "severity": "high",
+      "cwe": "CWE-798",
+      "note": "Hardcoded credential pattern"
+    },
+    {
+      "file": "ios/MASVS-STORAGE/MASTG-DEMO-0067/MastgTest.swift",
+      "line": 9,
+      "lineTolerance": 3,
+      "family": "hardcoded-secret",
+      "severity": "high",
+      "cwe": "CWE-798",
+      "note": "Hardcoded credential pattern"
+    }
+  ]
+}

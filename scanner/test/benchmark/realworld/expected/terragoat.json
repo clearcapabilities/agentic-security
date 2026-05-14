@@ -1,1 +1,132 @@
-{"_doc":"Terragoat","wildcardFamilies":["iac-public-bucket","iac-public-port","iac-secret-in-state","iac-no-encryption","hardcoded-secret","iac-overly-permissive-iam","iac-misconfigured-security-group","iac-public-storage","iac-no-encryption-at-rest","iac-no-mfa","weak-crypto","container-base-image","container-eol","terraform-encryption-disabled-at-rest","aws-access-key-id","aws-secret-access-key","high-entropy-credential-candidate"],"expected":[]}
+{
+  "_doc": "terragoat \u2014 line-level expected entries derived from engine output in 0.34.5 and verified by source-sampling. Wildcards removed. Each entry has family-appropriate severity/CWE/note metadata.",
+  "wildcardFamilies": [],
+  "expected": [
+    {
+      "file": "aws/db-app.tf",
+      "line": 19,
+      "lineTolerance": 3,
+      "family": "terraform-encryption-disabled-at-rest",
+      "severity": "medium",
+      "cwe": null,
+      "note": "Engine-emitted: Terraform: encryption disabled at rest"
+    },
+    {
+      "file": "aws/ec2.tf",
+      "line": 15,
+      "lineTolerance": 3,
+      "family": "aws-access-key-id",
+      "severity": "high",
+      "cwe": "CWE-798",
+      "note": "AWS access key pattern"
+    },
+    {
+      "file": "aws/ec2.tf",
+      "line": 37,
+      "lineTolerance": 3,
+      "family": "terraform-encryption-disabled-at-rest",
+      "severity": "medium",
+      "cwe": null,
+      "note": "Engine-emitted: Terraform: encryption disabled at rest"
+    },
+    {
+      "file": "aws/neptune.tf",
+      "line": 9,
+      "lineTolerance": 3,
+      "family": "terraform-encryption-disabled-at-rest",
+      "severity": "medium",
+      "cwe": null,
+      "note": "Engine-emitted: Terraform: encryption disabled at rest"
+    },
+    {
+      "file": "aws/resources/Dockerfile",
+      "line": 1,
+      "lineTolerance": 3,
+      "family": "container-base-image",
+      "severity": "medium",
+      "cwe": "CWE-1395",
+      "note": "Container base image is EOL or vulnerable"
+    },
+    {
+      "file": "azure/mssql.tf",
+      "line": 26,
+      "lineTolerance": 3,
+      "family": "hardcoded-secret",
+      "severity": "high",
+      "cwe": "CWE-798",
+      "note": "Hardcoded credential pattern"
+    },
+    {
+      "file": "azure/mssql.tf",
+      "line": 45,
+      "lineTolerance": 3,
+      "family": "hardcoded-secret",
+      "severity": "high",
+      "cwe": "CWE-798",
+      "note": "Hardcoded credential pattern"
+    },
+    {
+      "file": "azure/mssql.tf",
+      "line": 64,
+      "lineTolerance": 3,
+      "family": "hardcoded-secret",
+      "severity": "high",
+      "cwe": "CWE-798",
+      "note": "Hardcoded credential pattern"
+    },
+    {
+      "file": "azure/mssql.tf",
+      "line": 83,
+      "lineTolerance": 3,
+      "family": "hardcoded-secret",
+      "severity": "high",
+      "cwe": "CWE-798",
+      "note": "Hardcoded credential pattern"
+    },
+    {
+      "file": "azure/mssql.tf",
+      "line": 102,
+      "lineTolerance": 3,
+      "family": "hardcoded-secret",
+      "severity": "high",
+      "cwe": "CWE-798",
+      "note": "Hardcoded credential pattern"
+    },
+    {
+      "file": "azure/mssql.tf",
+      "line": 121,
+      "lineTolerance": 3,
+      "family": "hardcoded-secret",
+      "severity": "high",
+      "cwe": "CWE-798",
+      "note": "Hardcoded credential pattern"
+    },
+    {
+      "file": "azure/mssql.tf",
+      "line": 140,
+      "lineTolerance": 3,
+      "family": "hardcoded-secret",
+      "severity": "high",
+      "cwe": "CWE-798",
+      "note": "Hardcoded credential pattern"
+    },
+    {
+      "file": "azure/sql.tf",
+      "line": 15,
+      "lineTolerance": 3,
+      "family": "hardcoded-secret",
+      "severity": "high",
+      "cwe": "CWE-798",
+      "note": "Hardcoded credential pattern"
+    },
+    {
+      "file": "azure/sql.tf",
+      "line": 83,
+      "lineTolerance": 3,
+      "family": "hardcoded-secret",
+      "severity": "high",
+      "cwe": "CWE-798",
+      "note": "Hardcoded credential pattern"
+    }
+  ]
+}

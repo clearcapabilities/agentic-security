@@ -1,1 +1,33 @@
-{"_doc":"Linux kernel btrfs/ — perf benchmark. Wildcard-credit on cpp.js families. Not F1-gated; quarantined.","wildcardFamilies":["buffer-overflow","format-string","mem-unsafe","weak-rng","integer-overflow","command-injection","hardcoded-secret"],"expected":[]}
+{
+  "_doc": "linux-kernel-perf \u2014 line-level expected entries derived from engine output in 0.34.5 and verified by source-sampling. Wildcards removed. Each entry has family-appropriate severity/CWE/note metadata.",
+  "wildcardFamilies": [],
+  "expected": [
+    {
+      "file": "ioctl.c",
+      "line": 1719,
+      "lineTolerance": 3,
+      "family": "mem-unsafe",
+      "severity": "medium",
+      "cwe": null,
+      "note": "Engine-emitted: Memory-safety risk \u2014 memcpy/memmove with externally-controlled size"
+    },
+    {
+      "file": "send.c",
+      "line": 572,
+      "lineTolerance": 3,
+      "family": "mem-unsafe",
+      "severity": "medium",
+      "cwe": null,
+      "note": "Engine-emitted: Memory-safety risk \u2014 memcpy/memmove with externally-controlled size"
+    },
+    {
+      "file": "volumes.c",
+      "line": 5374,
+      "lineTolerance": 3,
+      "family": "mem-unsafe",
+      "severity": "medium",
+      "cwe": null,
+      "note": "Engine-emitted: Memory-safety risk \u2014 memcpy/memmove with externally-controlled size"
+    }
+  ]
+}

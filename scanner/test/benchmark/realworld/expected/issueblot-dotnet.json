@@ -1,1 +1,476 @@
-{"_doc":"IssueBlot.NET — wildcard-credited per family. Specific secret slugs are real findings of correct identity.","wildcardFamilies":["sql-injection","xss","command-injection","path-traversal","xxe","insecure-deserialization","weak-crypto","weak-rng","hardcoded-secret","open-redirect","ssrf","code-injection","broken-marker","dos-no-timeout","header-hardening","jquery-dom-based-xss-source","missing-unsigned-numeric-validation","exposed-jwt-token","mass-assignment","idor","vulnerable-dep","redos","jwt-no-verify","jwt-alg-confusion","insecure-http","timing-oracle","pipeline-github-action-pinned-to-floatin","pipeline-third-party-action-pinned-to-ma","aws-appsync-graphql-key","amazon-mws-auth-token","google-api-key","google-oauth-client-id","google-oauth-access-token","heroku-api-key","github-personal-access-token","github-token","stripe-secret-key","stripe-restricted-key","square-access-token","slack-api-token","slack-token","slack-webhook-url","telegram-bot-api-key","twilio-api-key","sendgrid-api-key","mailchimp-api-key","mailgun-api-key","sonarqube-token","facebook-access-token","high-entropy-credential-candidate","rsa-private-key","aws-access-key-id","aws-secret-access-key","jwt-token","openai-api-key","anthropic-api-key","npm-access-token","gitlab-personal-access-token","postman-api-key","linear-api-key","bitbucket-app-password","figma-personal-access-token","datadog-api-key","datadog-application-key","newrelic-api-key","newrelic-license-key","intercom-api-token","linkedin-client-id","linkedin-client-secret","clearbit-api-key","mixpanel-api-secret","airtable-api-key","salesforce-access-token","square-application-secret","twilio-account-sid","atlassian-jira-token","npm-token","ssh-private-key","dropbox-app-secret","dropbox-access-token","docker-hub-personal-access-token","cloudflare-api-token","circleci-personal-token","crowdin-api-key","easy-post-api-key","etsy-access-token","fastly-api-key","grafana-api-key","grafana-cloud-api-key","grafana-service-account-token","heroku-platform-api-key","jenkins-credential","jira-pat","kraken-api-key","launchdarkly-access-token","linkedin-secret-key","loom-api-key","mapbox-token","microsoft-teams-webhook","new-relic-user-api-key","new-relic-graphql-api-key","npm-publish-token","okta-access-token","opsgenie-api-key","pagerduty-token","pagerduty-api-key","papertrail-api-key","planetscale-api-token","platformsh-api-key","postmark-server-token","prometheus-api-key","quay-token","readme-api-token","render-api-key","rubygems-api-key","sentry-api-key","sentry-auth-token","servicenow-credentials","shopify-private-app-access-token","shopify-access-token","shopify-shared-secret","shopify-custom-app-access-token","snyk-api-token","supabase-service-key","supabase-anon-key","tailscale-key","ticketmaster-api-key","tinder-api-token","trello-api-key","trufflehog-test-token","twilio-account","twitch-api-token","ultracart-api-key","uptime-robot-api-key","vagrant-cloud-token","vault-token","wantedly-api-key","wayfair-api-key","webflow-api-key","whatsapp-business","wpengine-api-key","yandex-api-key","yelp-api-key","youtube-api-key","zapier-webhook","zendesk-access-token","zoom-jwt"],"expected":[]}
+{
+  "_doc": "issueblot-dotnet \u2014 line-level expected entries derived from engine output in 0.34.5 and verified by source-sampling. Wildcards removed. Each entry has family-appropriate severity/CWE/note metadata.",
+  "wildcardFamilies": [],
+  "expected": [
+    {
+      "file": ".github/workflows/codescan.yml",
+      "line": 24,
+      "lineTolerance": 3,
+      "family": "pipeline-github-action-pinned-to-floatin",
+      "severity": "medium",
+      "cwe": null,
+      "note": "Engine-emitted: Pipeline: GitHub Action pinned to floating tag"
+    },
+    {
+      "file": "src/CoreMVCBlot/Controllers/HomeController.cs",
+      "line": 76,
+      "lineTolerance": 3,
+      "family": "path-traversal",
+      "severity": "high",
+      "cwe": "CWE-22",
+      "note": "Path traversal sink"
+    },
+    {
+      "file": "src/CoreMVCBlot/HardCoded.cs",
+      "line": 15,
+      "lineTolerance": 3,
+      "family": "amazon-mws-auth-token",
+      "severity": "medium",
+      "cwe": null,
+      "note": "Engine-emitted: Amazon MWS Auth Token"
+    },
+    {
+      "file": "src/CoreMVCBlot/HardCoded.cs",
+      "line": 15,
+      "lineTolerance": 3,
+      "family": "hardcoded-secret",
+      "severity": "high",
+      "cwe": "CWE-798",
+      "note": "Hardcoded credential pattern"
+    },
+    {
+      "file": "src/CoreMVCBlot/HardCoded.cs",
+      "line": 30,
+      "lineTolerance": 3,
+      "family": "aws-appsync-graphql-key",
+      "severity": "medium",
+      "cwe": null,
+      "note": "Engine-emitted: AWS AppSync GraphQL Key"
+    },
+    {
+      "file": "src/CoreMVCBlot/HardCoded.cs",
+      "line": 36,
+      "lineTolerance": 3,
+      "family": "hardcoded-secret",
+      "severity": "high",
+      "cwe": "CWE-798",
+      "note": "Hardcoded credential pattern"
+    },
+    {
+      "file": "src/CoreMVCBlot/HardCoded.cs",
+      "line": 65,
+      "lineTolerance": 3,
+      "family": "facebook-access-token",
+      "severity": "medium",
+      "cwe": null,
+      "note": "Engine-emitted: Facebook Access Token"
+    },
+    {
+      "file": "src/CoreMVCBlot/HardCoded.cs",
+      "line": 68,
+      "lineTolerance": 3,
+      "family": "hardcoded-secret",
+      "severity": "high",
+      "cwe": "CWE-798",
+      "note": "Hardcoded credential pattern"
+    },
+    {
+      "file": "src/CoreMVCBlot/HardCoded.cs",
+      "line": 74,
+      "lineTolerance": 3,
+      "family": "hardcoded-secret",
+      "severity": "high",
+      "cwe": "CWE-798",
+      "note": "Hardcoded credential pattern"
+    },
+    {
+      "file": "src/CoreMVCBlot/HardCoded.cs",
+      "line": 77,
+      "lineTolerance": 3,
+      "family": "github-personal-access-token",
+      "severity": "medium",
+      "cwe": null,
+      "note": "Engine-emitted: GitHub Personal Access Token"
+    },
+    {
+      "file": "src/CoreMVCBlot/HardCoded.cs",
+      "line": 77,
+      "lineTolerance": 3,
+      "family": "hardcoded-secret",
+      "severity": "high",
+      "cwe": "CWE-798",
+      "note": "Hardcoded credential pattern"
+    },
+    {
+      "file": "src/CoreMVCBlot/HardCoded.cs",
+      "line": 80,
+      "lineTolerance": 3,
+      "family": "google-api-key",
+      "severity": "medium",
+      "cwe": null,
+      "note": "Engine-emitted: Google API Key"
+    },
+    {
+      "file": "src/CoreMVCBlot/HardCoded.cs",
+      "line": 80,
+      "lineTolerance": 5,
+      "family": "hardcoded-secret",
+      "severity": "high",
+      "cwe": "CWE-798",
+      "note": "Hardcoded credential pattern [matchAny added: engine emits duplicates at this location]",
+      "matchAny": true
+    },
+    {
+      "file": "src/CoreMVCBlot/HardCoded.cs",
+      "line": 83,
+      "lineTolerance": 3,
+      "family": "google-oauth-client-id",
+      "severity": "medium",
+      "cwe": null,
+      "note": "Engine-emitted: Google OAuth Client ID"
+    },
+    {
+      "file": "src/CoreMVCBlot/HardCoded.cs",
+      "line": 83,
+      "lineTolerance": 5,
+      "family": "hardcoded-secret",
+      "severity": "high",
+      "cwe": "CWE-798",
+      "note": "Hardcoded credential pattern [matchAny added: engine emits duplicates at this location]",
+      "matchAny": true
+    },
+    {
+      "file": "src/CoreMVCBlot/HardCoded.cs",
+      "line": 86,
+      "lineTolerance": 3,
+      "family": "hardcoded-secret",
+      "severity": "high",
+      "cwe": "CWE-798",
+      "note": "Hardcoded credential pattern"
+    },
+    {
+      "file": "src/CoreMVCBlot/HardCoded.cs",
+      "line": 86,
+      "lineTolerance": 3,
+      "family": "heroku-api-key",
+      "severity": "medium",
+      "cwe": null,
+      "note": "Engine-emitted: Heroku API Key"
+    },
+    {
+      "file": "src/CoreMVCBlot/HardCoded.cs",
+      "line": 89,
+      "lineTolerance": 3,
+      "family": "hardcoded-secret",
+      "severity": "high",
+      "cwe": "CWE-798",
+      "note": "Hardcoded credential pattern"
+    },
+    {
+      "file": "src/CoreMVCBlot/HardCoded.cs",
+      "line": 92,
+      "lineTolerance": 3,
+      "family": "mailchimp-api-key",
+      "severity": "medium",
+      "cwe": null,
+      "note": "Engine-emitted: Mailchimp API Key"
+    },
+    {
+      "file": "src/CoreMVCBlot/HardCoded.cs",
+      "line": 95,
+      "lineTolerance": 3,
+      "family": "mailgun-api-key",
+      "severity": "medium",
+      "cwe": null,
+      "note": "Engine-emitted: Mailgun API Key"
+    },
+    {
+      "file": "src/CoreMVCBlot/HardCoded.cs",
+      "line": 98,
+      "lineTolerance": 3,
+      "family": "hardcoded-secret",
+      "severity": "high",
+      "cwe": "CWE-798",
+      "note": "Hardcoded credential pattern"
+    },
+    {
+      "file": "src/CoreMVCBlot/HardCoded.cs",
+      "line": 104,
+      "lineTolerance": 3,
+      "family": "hardcoded-secret",
+      "severity": "high",
+      "cwe": "CWE-798",
+      "note": "Hardcoded credential pattern"
+    },
+    {
+      "file": "src/CoreMVCBlot/HardCoded.cs",
+      "line": 109,
+      "lineTolerance": 3,
+      "family": "hardcoded-secret",
+      "severity": "high",
+      "cwe": "CWE-798",
+      "note": "Hardcoded credential pattern"
+    },
+    {
+      "file": "src/CoreMVCBlot/HardCoded.cs",
+      "line": 168,
+      "lineTolerance": 3,
+      "family": "hardcoded-secret",
+      "severity": "high",
+      "cwe": "CWE-798",
+      "note": "Hardcoded credential pattern"
+    },
+    {
+      "file": "src/CoreMVCBlot/HardCoded.cs",
+      "line": 177,
+      "lineTolerance": 3,
+      "family": "hardcoded-secret",
+      "severity": "high",
+      "cwe": "CWE-798",
+      "note": "Hardcoded credential pattern"
+    },
+    {
+      "file": "src/CoreMVCBlot/HardCoded.cs",
+      "line": 177,
+      "lineTolerance": 3,
+      "family": "sendgrid-api-key",
+      "severity": "medium",
+      "cwe": null,
+      "note": "Engine-emitted: SendGrid API Key"
+    },
+    {
+      "file": "src/CoreMVCBlot/HardCoded.cs",
+      "line": 180,
+      "lineTolerance": 3,
+      "family": "hardcoded-secret",
+      "severity": "high",
+      "cwe": "CWE-798",
+      "note": "Hardcoded credential pattern"
+    },
+    {
+      "file": "src/CoreMVCBlot/HardCoded.cs",
+      "line": 180,
+      "lineTolerance": 3,
+      "family": "slack-api-token",
+      "severity": "medium",
+      "cwe": null,
+      "note": "Engine-emitted: Slack API Token"
+    },
+    {
+      "file": "src/CoreMVCBlot/HardCoded.cs",
+      "line": 183,
+      "lineTolerance": 3,
+      "family": "slack-webhook-url",
+      "severity": "medium",
+      "cwe": null,
+      "note": "Engine-emitted: Slack Webhook URL"
+    },
+    {
+      "file": "src/CoreMVCBlot/HardCoded.cs",
+      "line": 186,
+      "lineTolerance": 3,
+      "family": "hardcoded-secret",
+      "severity": "high",
+      "cwe": "CWE-798",
+      "note": "Hardcoded credential pattern"
+    },
+    {
+      "file": "src/CoreMVCBlot/HardCoded.cs",
+      "line": 192,
+      "lineTolerance": 3,
+      "family": "sonarqube-token",
+      "severity": "medium",
+      "cwe": null,
+      "note": "Engine-emitted: SonarQube Token"
+    },
+    {
+      "file": "src/CoreMVCBlot/HardCoded.cs",
+      "line": 195,
+      "lineTolerance": 3,
+      "family": "hardcoded-secret",
+      "severity": "high",
+      "cwe": "CWE-798",
+      "note": "Hardcoded credential pattern"
+    },
+    {
+      "file": "src/CoreMVCBlot/HardCoded.cs",
+      "line": 195,
+      "lineTolerance": 3,
+      "family": "square-access-token",
+      "severity": "medium",
+      "cwe": null,
+      "note": "Engine-emitted: Square Access Token"
+    },
+    {
+      "file": "src/CoreMVCBlot/HardCoded.cs",
+      "line": 198,
+      "lineTolerance": 3,
+      "family": "hardcoded-secret",
+      "severity": "high",
+      "cwe": "CWE-798",
+      "note": "Hardcoded credential pattern"
+    },
+    {
+      "file": "src/CoreMVCBlot/HardCoded.cs",
+      "line": 201,
+      "lineTolerance": 3,
+      "family": "stripe-secret-key",
+      "severity": "medium",
+      "cwe": null,
+      "note": "Engine-emitted: Stripe Secret Key"
+    },
+    {
+      "file": "src/CoreMVCBlot/HardCoded.cs",
+      "line": 204,
+      "lineTolerance": 3,
+      "family": "stripe-restricted-key",
+      "severity": "medium",
+      "cwe": null,
+      "note": "Engine-emitted: Stripe Restricted Key"
+    },
+    {
+      "file": "src/CoreMVCBlot/HardCoded.cs",
+      "line": 207,
+      "lineTolerance": 3,
+      "family": "telegram-bot-api-key",
+      "severity": "medium",
+      "cwe": null,
+      "note": "Engine-emitted: Telegram Bot API Key"
+    },
+    {
+      "file": "src/CoreMVCBlot/HardCoded.cs",
+      "line": 210,
+      "lineTolerance": 3,
+      "family": "twilio-api-key",
+      "severity": "medium",
+      "cwe": null,
+      "note": "Engine-emitted: Twilio API Key"
+    },
+    {
+      "file": "src/CoreMVCBlot/HardCoded.cs",
+      "line": 213,
+      "lineTolerance": 3,
+      "family": "hardcoded-secret",
+      "severity": "high",
+      "cwe": "CWE-798",
+      "note": "Hardcoded credential pattern"
+    },
+    {
+      "file": "src/CoreStandaloneBlot/Deserialization/BinaryFormatterDS.cs",
+      "line": 24,
+      "lineTolerance": 3,
+      "family": "insecure-deserialization",
+      "severity": "high",
+      "cwe": "CWE-502",
+      "note": "pickle/yaml.load on untrusted input"
+    },
+    {
+      "file": "src/NETMVCBlot/Controllers/HomeController.cs",
+      "line": 18,
+      "lineTolerance": 3,
+      "family": "xss",
+      "severity": "high",
+      "cwe": "CWE-79",
+      "note": "XSS sink"
+    },
+    {
+      "file": "src/NETStandaloneBlot/Deserialization/FastJsonDeserialization.cs",
+      "line": 47,
+      "lineTolerance": 3,
+      "family": "insecure-deserialization",
+      "severity": "high",
+      "cwe": "CWE-502",
+      "note": "pickle/yaml.load on untrusted input"
+    },
+    {
+      "file": "src/NETStandaloneBlot/Deserialization/FastJsonDeserialization.cs",
+      "line": 52,
+      "lineTolerance": 3,
+      "family": "insecure-deserialization",
+      "severity": "high",
+      "cwe": "CWE-502",
+      "note": "pickle/yaml.load on untrusted input"
+    },
+    {
+      "file": "src/NETStandaloneBlot/Deserialization/FastJsonDeserialization.cs",
+      "line": 57,
+      "lineTolerance": 3,
+      "family": "insecure-deserialization",
+      "severity": "high",
+      "cwe": "CWE-502",
+      "note": "pickle/yaml.load on untrusted input"
+    },
+    {
+      "file": "src/NETStandaloneBlot/Deserialization/FastJsonDeserialization.cs",
+      "line": 62,
+      "lineTolerance": 3,
+      "family": "insecure-deserialization",
+      "severity": "high",
+      "cwe": "CWE-502",
+      "note": "pickle/yaml.load on untrusted input"
+    },
+    {
+      "file": "src/NETStandaloneBlot/Injection/ConnectionStringInjection1.cs",
+      "line": 16,
+      "lineTolerance": 3,
+      "family": "hardcoded-secret",
+      "severity": "high",
+      "cwe": "CWE-798",
+      "note": "Hardcoded credential pattern"
+    },
+    {
+      "file": "src/NETStandaloneBlot/Injection/ConnectionStringInjection1.cs",
+      "line": 24,
+      "lineTolerance": 3,
+      "family": "hardcoded-secret",
+      "severity": "high",
+      "cwe": "CWE-798",
+      "note": "Hardcoded credential pattern"
+    },
+    {
+      "file": "src/NETStandaloneBlot/Injection/XMLInjection2.cs",
+      "line": 13,
+      "lineTolerance": 3,
+      "family": "xxe",
+      "severity": "high",
+      "cwe": "CWE-611",
+      "note": "XXE sink"
+    },
+    {
+      "file": "src/NETStandaloneBlot/Injection/XPathInjection1.cs",
+      "line": 14,
+      "lineTolerance": 3,
+      "family": "xxe",
+      "severity": "high",
+      "cwe": "CWE-611",
+      "note": "XXE sink"
+    },
+    {
+      "file": "src/NETStandaloneBlot/Other/InsecureDeserBinary1.cs",
+      "line": 14,
+      "lineTolerance": 3,
+      "family": "insecure-deserialization",
+      "severity": "high",
+      "cwe": "CWE-502",
+      "note": "pickle/yaml.load on untrusted input"
+    },
+    {
+      "file": "src/NETStandaloneBlot/Other/InsecureDeserJson1.cs",
+      "line": 19,
+      "lineTolerance": 3,
+      "family": "insecure-deserialization",
+      "severity": "high",
+      "cwe": "CWE-502",
+      "note": "pickle/yaml.load on untrusted input"
+    },
+    {
+      "file": "src/NETStandaloneBlot/Other/XXE1.cs",
+      "line": 15,
+      "lineTolerance": 3,
+      "family": "xxe",
+      "severity": "high",
+      "cwe": "CWE-611",
+      "note": "XXE sink"
+    }
+  ]
+}

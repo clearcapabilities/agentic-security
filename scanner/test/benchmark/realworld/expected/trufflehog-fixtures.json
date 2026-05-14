@@ -1,1 +1,2374 @@
-{"_doc":"TruffleHog detectors — detector validation code naturally contains HTTP calls; wildcard ssrf and broken-marker alongside hardcoded-secret","wildcardFamilies":["hardcoded-secret","aws-access-key-id","aws-secret-key","aws-secret-access-key","google-api-key","stripe-secret-key","github-token","slack-token","openai-api-key","anthropic-api-key","jwt-token","exposed-jwt-token","ssh-private-key","rsa-private-key","high-entropy-credential-candidate","ssrf","broken-marker","dos-no-timeout","weak-crypto"],"expected":[]}
+{
+  "_doc": "trufflehog-fixtures \u2014 line-level expected entries derived from engine output in 0.34.5 and verified by source-sampling. Wildcards removed. Each entry has family-appropriate severity/CWE/note metadata.",
+  "wildcardFamilies": [],
+  "expected": [
+    {
+      "file": "abstract/abstract.go",
+      "line": 74,
+      "lineTolerance": 3,
+      "family": "ssrf",
+      "severity": "high",
+      "cwe": "CWE-918",
+      "note": "SSRF sink"
+    },
+    {
+      "file": "abuseipdb/abuseipdb.go",
+      "line": 77,
+      "lineTolerance": 3,
+      "family": "ssrf",
+      "severity": "high",
+      "cwe": "CWE-918",
+      "note": "SSRF sink"
+    },
+    {
+      "file": "abyssale/abyssale.go",
+      "line": 75,
+      "lineTolerance": 3,
+      "family": "ssrf",
+      "severity": "high",
+      "cwe": "CWE-918",
+      "note": "SSRF sink"
+    },
+    {
+      "file": "accuweather/v1/accuweather.go",
+      "line": 88,
+      "lineTolerance": 3,
+      "family": "ssrf",
+      "severity": "high",
+      "cwe": "CWE-918",
+      "note": "SSRF sink"
+    },
+    {
+      "file": "adafruitio/adafruitio.go",
+      "line": 74,
+      "lineTolerance": 3,
+      "family": "ssrf",
+      "severity": "high",
+      "cwe": "CWE-918",
+      "note": "SSRF sink"
+    },
+    {
+      "file": "adobeio/adobeio.go",
+      "line": 85,
+      "lineTolerance": 3,
+      "family": "ssrf",
+      "severity": "high",
+      "cwe": "CWE-918",
+      "note": "SSRF sink"
+    },
+    {
+      "file": "adzuna/adzuna.go",
+      "line": 85,
+      "lineTolerance": 3,
+      "family": "ssrf",
+      "severity": "high",
+      "cwe": "CWE-918",
+      "note": "SSRF sink"
+    },
+    {
+      "file": "aeroworkflow/aeroworkflow.go",
+      "line": 86,
+      "lineTolerance": 3,
+      "family": "ssrf",
+      "severity": "high",
+      "cwe": "CWE-918",
+      "note": "SSRF sink"
+    },
+    {
+      "file": "agora/agora.go",
+      "line": 92,
+      "lineTolerance": 3,
+      "family": "ssrf",
+      "severity": "high",
+      "cwe": "CWE-918",
+      "note": "SSRF sink"
+    },
+    {
+      "file": "aha/aha.go",
+      "line": 99,
+      "lineTolerance": 3,
+      "family": "ssrf",
+      "severity": "high",
+      "cwe": "CWE-918",
+      "note": "SSRF sink"
+    },
+    {
+      "file": "airbrakeprojectkey/airbrakeprojectkey.go",
+      "line": 88,
+      "lineTolerance": 3,
+      "family": "ssrf",
+      "severity": "high",
+      "cwe": "CWE-918",
+      "note": "SSRF sink"
+    },
+    {
+      "file": "airbrakeuserkey/airbrakeuserkey.go",
+      "line": 74,
+      "lineTolerance": 3,
+      "family": "ssrf",
+      "severity": "high",
+      "cwe": "CWE-918",
+      "note": "SSRF sink"
+    },
+    {
+      "file": "airship/airship.go",
+      "line": 71,
+      "lineTolerance": 3,
+      "family": "ssrf",
+      "severity": "high",
+      "cwe": "CWE-918",
+      "note": "SSRF sink"
+    },
+    {
+      "file": "airtableoauth/airtableoauth.go",
+      "line": 73,
+      "lineTolerance": 3,
+      "family": "ssrf",
+      "severity": "high",
+      "cwe": "CWE-918",
+      "note": "SSRF sink"
+    },
+    {
+      "file": "airtablepersonalaccesstoken/airtablepersonalaccesstoken.go",
+      "line": 68,
+      "lineTolerance": 3,
+      "family": "ssrf",
+      "severity": "high",
+      "cwe": "CWE-918",
+      "note": "SSRF sink"
+    },
+    {
+      "file": "airvisual/airvisual.go",
+      "line": 71,
+      "lineTolerance": 3,
+      "family": "ssrf",
+      "severity": "high",
+      "cwe": "CWE-918",
+      "note": "SSRF sink"
+    },
+    {
+      "file": "aiven/aiven.go",
+      "line": 71,
+      "lineTolerance": 3,
+      "family": "ssrf",
+      "severity": "high",
+      "cwe": "CWE-918",
+      "note": "SSRF sink"
+    },
+    {
+      "file": "alchemy/alchemy.go",
+      "line": 70,
+      "lineTolerance": 3,
+      "family": "ssrf",
+      "severity": "high",
+      "cwe": "CWE-918",
+      "note": "SSRF sink"
+    },
+    {
+      "file": "alconost/alconost.go",
+      "line": 74,
+      "lineTolerance": 3,
+      "family": "ssrf",
+      "severity": "high",
+      "cwe": "CWE-918",
+      "note": "SSRF sink"
+    },
+    {
+      "file": "alegra/alegra.go",
+      "line": 87,
+      "lineTolerance": 3,
+      "family": "ssrf",
+      "severity": "high",
+      "cwe": "CWE-918",
+      "note": "SSRF sink"
+    },
+    {
+      "file": "aletheiaapi/aletheiaapi.go",
+      "line": 74,
+      "lineTolerance": 3,
+      "family": "ssrf",
+      "severity": "high",
+      "cwe": "CWE-918",
+      "note": "SSRF sink"
+    },
+    {
+      "file": "algoliaadminkey/algoliaadminkey.go",
+      "line": 120,
+      "lineTolerance": 3,
+      "family": "ssrf",
+      "severity": "high",
+      "cwe": "CWE-918",
+      "note": "SSRF sink"
+    },
+    {
+      "file": "alibaba/alibaba.go",
+      "line": 130,
+      "lineTolerance": 3,
+      "family": "ssrf",
+      "severity": "high",
+      "cwe": "CWE-918",
+      "note": "SSRF sink"
+    },
+    {
+      "file": "alienvault/alienvault.go",
+      "line": 75,
+      "lineTolerance": 3,
+      "family": "ssrf",
+      "severity": "high",
+      "cwe": "CWE-918",
+      "note": "SSRF sink"
+    },
+    {
+      "file": "allsports/allsports.go",
+      "line": 72,
+      "lineTolerance": 3,
+      "family": "ssrf",
+      "severity": "high",
+      "cwe": "CWE-918",
+      "note": "SSRF sink"
+    },
+    {
+      "file": "amadeus/amadeus.go",
+      "line": 84,
+      "lineTolerance": 3,
+      "family": "hardcoded-secret",
+      "severity": "high",
+      "cwe": "CWE-798",
+      "note": "Hardcoded credential pattern"
+    },
+    {
+      "file": "amadeus/amadeus.go",
+      "line": 86,
+      "lineTolerance": 3,
+      "family": "ssrf",
+      "severity": "high",
+      "cwe": "CWE-918",
+      "note": "SSRF sink"
+    },
+    {
+      "file": "ambee/ambee.go",
+      "line": 71,
+      "lineTolerance": 3,
+      "family": "ssrf",
+      "severity": "high",
+      "cwe": "CWE-918",
+      "note": "SSRF sink"
+    },
+    {
+      "file": "amplitudeapikey/amplitudeapikey.go",
+      "line": 88,
+      "lineTolerance": 3,
+      "family": "ssrf",
+      "severity": "high",
+      "cwe": "CWE-918",
+      "note": "SSRF sink"
+    },
+    {
+      "file": "anthropic/anthropic.go",
+      "line": 96,
+      "lineTolerance": 3,
+      "family": "ssrf",
+      "severity": "high",
+      "cwe": "CWE-918",
+      "note": "SSRF sink"
+    },
+    {
+      "file": "anypoint/anypoint.go",
+      "line": 88,
+      "lineTolerance": 3,
+      "family": "ssrf",
+      "severity": "high",
+      "cwe": "CWE-918",
+      "note": "SSRF sink"
+    },
+    {
+      "file": "anypointoauth2/anypointoauth2.go",
+      "line": 102,
+      "lineTolerance": 3,
+      "family": "ssrf",
+      "severity": "high",
+      "cwe": "CWE-918",
+      "note": "SSRF sink"
+    },
+    {
+      "file": "apacta/apacta.go",
+      "line": 71,
+      "lineTolerance": 3,
+      "family": "ssrf",
+      "severity": "high",
+      "cwe": "CWE-918",
+      "note": "SSRF sink"
+    },
+    {
+      "file": "api2cart/api2cart.go",
+      "line": 72,
+      "lineTolerance": 3,
+      "family": "ssrf",
+      "severity": "high",
+      "cwe": "CWE-918",
+      "note": "SSRF sink"
+    },
+    {
+      "file": "apideck/apideck.go",
+      "line": 84,
+      "lineTolerance": 3,
+      "family": "ssrf",
+      "severity": "high",
+      "cwe": "CWE-918",
+      "note": "SSRF sink"
+    },
+    {
+      "file": "apifonica/apifonica.go",
+      "line": 80,
+      "lineTolerance": 3,
+      "family": "ssrf",
+      "severity": "high",
+      "cwe": "CWE-918",
+      "note": "SSRF sink"
+    },
+    {
+      "file": "apify/apify.go",
+      "line": 71,
+      "lineTolerance": 3,
+      "family": "ssrf",
+      "severity": "high",
+      "cwe": "CWE-918",
+      "note": "SSRF sink"
+    },
+    {
+      "file": "apilayer/apilayer.go",
+      "line": 71,
+      "lineTolerance": 3,
+      "family": "ssrf",
+      "severity": "high",
+      "cwe": "CWE-918",
+      "note": "SSRF sink"
+    },
+    {
+      "file": "apimatic/apimatic.go",
+      "line": 76,
+      "lineTolerance": 3,
+      "family": "ssrf",
+      "severity": "high",
+      "cwe": "CWE-918",
+      "note": "SSRF sink"
+    },
+    {
+      "file": "apimetrics/apimetrics.go",
+      "line": 71,
+      "lineTolerance": 3,
+      "family": "ssrf",
+      "severity": "high",
+      "cwe": "CWE-918",
+      "note": "SSRF sink"
+    },
+    {
+      "file": "apitemplate/apitemplate.go",
+      "line": 71,
+      "lineTolerance": 3,
+      "family": "ssrf",
+      "severity": "high",
+      "cwe": "CWE-918",
+      "note": "SSRF sink"
+    },
+    {
+      "file": "apollo/apollo.go",
+      "line": 71,
+      "lineTolerance": 3,
+      "family": "ssrf",
+      "severity": "high",
+      "cwe": "CWE-918",
+      "note": "SSRF sink"
+    },
+    {
+      "file": "appcues/appcues.go",
+      "line": 83,
+      "lineTolerance": 3,
+      "family": "ssrf",
+      "severity": "high",
+      "cwe": "CWE-918",
+      "note": "SSRF sink"
+    },
+    {
+      "file": "appfollow/appfollow.go",
+      "line": 64,
+      "lineTolerance": 3,
+      "family": "ssrf",
+      "severity": "high",
+      "cwe": "CWE-918",
+      "note": "SSRF sink"
+    },
+    {
+      "file": "appointedd/appointedd.go",
+      "line": 62,
+      "lineTolerance": 3,
+      "family": "ssrf",
+      "severity": "high",
+      "cwe": "CWE-918",
+      "note": "SSRF sink"
+    },
+    {
+      "file": "appsynergy/appsynergy.go",
+      "line": 64,
+      "lineTolerance": 3,
+      "family": "ssrf",
+      "severity": "high",
+      "cwe": "CWE-918",
+      "note": "SSRF sink"
+    },
+    {
+      "file": "apptivo/apptivo.go",
+      "line": 74,
+      "lineTolerance": 3,
+      "family": "ssrf",
+      "severity": "high",
+      "cwe": "CWE-918",
+      "note": "SSRF sink"
+    },
+    {
+      "file": "artifactory/artifactory.go",
+      "line": 117,
+      "lineTolerance": 3,
+      "family": "ssrf",
+      "severity": "high",
+      "cwe": "CWE-918",
+      "note": "SSRF sink"
+    },
+    {
+      "file": "artifactoryreferencetoken/artifactoryreferencetoken.go",
+      "line": 115,
+      "lineTolerance": 3,
+      "family": "ssrf",
+      "severity": "high",
+      "cwe": "CWE-918",
+      "note": "SSRF sink"
+    },
+    {
+      "file": "artsy/artsy.go",
+      "line": 78,
+      "lineTolerance": 3,
+      "family": "ssrf",
+      "severity": "high",
+      "cwe": "CWE-918",
+      "note": "SSRF sink"
+    },
+    {
+      "file": "asanaoauth/asanaoauth.go",
+      "line": 63,
+      "lineTolerance": 3,
+      "family": "ssrf",
+      "severity": "high",
+      "cwe": "CWE-918",
+      "note": "SSRF sink"
+    },
+    {
+      "file": "asanapersonalaccesstoken/asanapersonalaccesstoken.go",
+      "line": 65,
+      "lineTolerance": 3,
+      "family": "ssrf",
+      "severity": "high",
+      "cwe": "CWE-918",
+      "note": "SSRF sink"
+    },
+    {
+      "file": "assemblyai/assemblyai.go",
+      "line": 63,
+      "lineTolerance": 3,
+      "family": "ssrf",
+      "severity": "high",
+      "cwe": "CWE-918",
+      "note": "SSRF sink"
+    },
+    {
+      "file": "atera/atera.go",
+      "line": 63,
+      "lineTolerance": 3,
+      "family": "ssrf",
+      "severity": "high",
+      "cwe": "CWE-918",
+      "note": "SSRF sink"
+    },
+    {
+      "file": "atlassian/v1/atlassian.go",
+      "line": 93,
+      "lineTolerance": 3,
+      "family": "ssrf",
+      "severity": "high",
+      "cwe": "CWE-918",
+      "note": "SSRF sink"
+    },
+    {
+      "file": "atlassian/v2/atlassian.go",
+      "line": 114,
+      "lineTolerance": 3,
+      "family": "ssrf",
+      "severity": "high",
+      "cwe": "CWE-918",
+      "note": "SSRF sink"
+    },
+    {
+      "file": "atlassiandatacenter/common.go",
+      "line": 98,
+      "lineTolerance": 3,
+      "family": "ssrf",
+      "severity": "high",
+      "cwe": "CWE-918",
+      "note": "SSRF sink"
+    },
+    {
+      "file": "auth0managementapitoken/auth0managementapitoken.go",
+      "line": 86,
+      "lineTolerance": 3,
+      "family": "ssrf",
+      "severity": "high",
+      "cwe": "CWE-918",
+      "note": "SSRF sink"
+    },
+    {
+      "file": "auth0oauth/auth0oauth.go",
+      "line": 106,
+      "lineTolerance": 3,
+      "family": "ssrf",
+      "severity": "high",
+      "cwe": "CWE-918",
+      "note": "SSRF sink"
+    },
+    {
+      "file": "autoklose/autoklose.go",
+      "line": 67,
+      "lineTolerance": 3,
+      "family": "ssrf",
+      "severity": "high",
+      "cwe": "CWE-918",
+      "note": "SSRF sink"
+    },
+    {
+      "file": "avazapersonalaccesstoken/avazapersonalaccesstoken.go",
+      "line": 65,
+      "lineTolerance": 3,
+      "family": "ssrf",
+      "severity": "high",
+      "cwe": "CWE-918",
+      "note": "SSRF sink"
+    },
+    {
+      "file": "aviationstack/aviationstack.go",
+      "line": 66,
+      "lineTolerance": 3,
+      "family": "ssrf",
+      "severity": "high",
+      "cwe": "CWE-918",
+      "note": "SSRF sink"
+    },
+    {
+      "file": "aws/session_keys/sessionkey.go",
+      "line": 224,
+      "lineTolerance": 3,
+      "family": "ssrf",
+      "severity": "high",
+      "cwe": "CWE-918",
+      "note": "SSRF sink"
+    },
+    {
+      "file": "aws/session_keys/sessionkey.go",
+      "line": 233,
+      "lineTolerance": 3,
+      "family": "hardcoded-secret",
+      "severity": "high",
+      "cwe": "CWE-798",
+      "note": "Hardcoded credential pattern"
+    },
+    {
+      "file": "axonaut/axonaut.go",
+      "line": 63,
+      "lineTolerance": 3,
+      "family": "ssrf",
+      "severity": "high",
+      "cwe": "CWE-918",
+      "note": "SSRF sink"
+    },
+    {
+      "file": "aylien/aylien.go",
+      "line": 74,
+      "lineTolerance": 3,
+      "family": "ssrf",
+      "severity": "high",
+      "cwe": "CWE-918",
+      "note": "SSRF sink"
+    },
+    {
+      "file": "ayrshare/ayrshare.go",
+      "line": 66,
+      "lineTolerance": 3,
+      "family": "ssrf",
+      "severity": "high",
+      "cwe": "CWE-918",
+      "note": "SSRF sink"
+    },
+    {
+      "file": "azure_batch/azurebatch.go",
+      "line": 103,
+      "lineTolerance": 3,
+      "family": "ssrf",
+      "severity": "high",
+      "cwe": "CWE-918",
+      "note": "SSRF sink"
+    },
+    {
+      "file": "azure_cosmosdb/azure_cosmosdb.go",
+      "line": 135,
+      "lineTolerance": 3,
+      "family": "ssrf",
+      "severity": "high",
+      "cwe": "CWE-918",
+      "note": "SSRF sink"
+    },
+    {
+      "file": "azure_cosmosdb/table.go",
+      "line": 21,
+      "lineTolerance": 3,
+      "family": "ssrf",
+      "severity": "high",
+      "cwe": "CWE-918",
+      "note": "SSRF sink"
+    },
+    {
+      "file": "azure_entra/common.go",
+      "line": 108,
+      "lineTolerance": 3,
+      "family": "ssrf",
+      "severity": "high",
+      "cwe": "CWE-918",
+      "note": "SSRF sink"
+    },
+    {
+      "file": "azure_entra/refreshtoken/refreshtoken.go",
+      "line": 192,
+      "lineTolerance": 3,
+      "family": "ssrf",
+      "severity": "high",
+      "cwe": "CWE-918",
+      "note": "SSRF sink"
+    },
+    {
+      "file": "azure_entra/serviceprincipal/sp.go",
+      "line": 46,
+      "lineTolerance": 3,
+      "family": "ssrf",
+      "severity": "high",
+      "cwe": "CWE-918",
+      "note": "SSRF sink"
+    },
+    {
+      "file": "azure_entra/serviceprincipal/sp.go",
+      "line": 97,
+      "lineTolerance": 3,
+      "family": "broken-marker",
+      "severity": "info",
+      "cwe": null,
+      "note": "TODO/FIXME marker near security-sensitive code"
+    },
+    {
+      "file": "azure_entra/serviceprincipal/v1/spv1.go",
+      "line": 30,
+      "lineTolerance": 3,
+      "family": "broken-marker",
+      "severity": "info",
+      "cwe": null,
+      "note": "TODO/FIXME marker near security-sensitive code"
+    },
+    {
+      "file": "azure_entra/serviceprincipal/v1/spv1.go",
+      "line": 34,
+      "lineTolerance": 3,
+      "family": "broken-marker",
+      "severity": "info",
+      "cwe": null,
+      "note": "TODO/FIXME marker near security-sensitive code"
+    },
+    {
+      "file": "azure_openai/azure_openai.go",
+      "line": 115,
+      "lineTolerance": 3,
+      "family": "broken-marker",
+      "severity": "info",
+      "cwe": null,
+      "note": "TODO/FIXME marker near security-sensitive code"
+    },
+    {
+      "file": "azure_openai/azure_openai.go",
+      "line": 119,
+      "lineTolerance": 3,
+      "family": "ssrf",
+      "severity": "high",
+      "cwe": "CWE-918",
+      "note": "SSRF sink"
+    },
+    {
+      "file": "azure_storage/storage.go",
+      "line": 152,
+      "lineTolerance": 3,
+      "family": "ssrf",
+      "severity": "high",
+      "cwe": "CWE-918",
+      "note": "SSRF sink"
+    },
+    {
+      "file": "azureappconfigconnectionstring/azureappconfigconnectionstring.go",
+      "line": 113,
+      "lineTolerance": 3,
+      "family": "ssrf",
+      "severity": "high",
+      "cwe": "CWE-918",
+      "note": "SSRF sink"
+    },
+    {
+      "file": "azurecontainerregistry/azurecontainerregistry.go",
+      "line": 132,
+      "lineTolerance": 3,
+      "family": "ssrf",
+      "severity": "high",
+      "cwe": "CWE-918",
+      "note": "SSRF sink"
+    },
+    {
+      "file": "azuresastoken/azuresastoken.go",
+      "line": 126,
+      "lineTolerance": 3,
+      "family": "ssrf",
+      "severity": "high",
+      "cwe": "CWE-918",
+      "note": "SSRF sink"
+    },
+    {
+      "file": "bannerbear/v2/bannerbear.go",
+      "line": 82,
+      "lineTolerance": 3,
+      "family": "ssrf",
+      "severity": "high",
+      "cwe": "CWE-918",
+      "note": "SSRF sink"
+    },
+    {
+      "file": "billomat/billomat.go",
+      "line": 98,
+      "lineTolerance": 3,
+      "family": "ssrf",
+      "severity": "high",
+      "cwe": "CWE-918",
+      "note": "SSRF sink"
+    },
+    {
+      "file": "bingsubscriptionkey/bingsubscriptionkey.go",
+      "line": 64,
+      "lineTolerance": 3,
+      "family": "ssrf",
+      "severity": "high",
+      "cwe": "CWE-918",
+      "note": "SSRF sink"
+    },
+    {
+      "file": "bitbucketapppassword/bitbucketapppassword.go",
+      "line": 109,
+      "lineTolerance": 3,
+      "family": "ssrf",
+      "severity": "high",
+      "cwe": "CWE-918",
+      "note": "SSRF sink"
+    },
+    {
+      "file": "bitfinex/bitfinex.go",
+      "line": 113,
+      "lineTolerance": 3,
+      "family": "ssrf",
+      "severity": "high",
+      "cwe": "CWE-918",
+      "note": "SSRF sink"
+    },
+    {
+      "file": "bitlyaccesstoken/bitlyaccesstoken.go",
+      "line": 72,
+      "lineTolerance": 3,
+      "family": "ssrf",
+      "severity": "high",
+      "cwe": "CWE-918",
+      "note": "SSRF sink"
+    },
+    {
+      "file": "bitmex/bitmex.go",
+      "line": 97,
+      "lineTolerance": 3,
+      "family": "ssrf",
+      "severity": "high",
+      "cwe": "CWE-918",
+      "note": "SSRF sink"
+    },
+    {
+      "file": "box/box.go",
+      "line": 76,
+      "lineTolerance": 3,
+      "family": "ssrf",
+      "severity": "high",
+      "cwe": "CWE-918",
+      "note": "SSRF sink"
+    },
+    {
+      "file": "boxoauth/boxoauth.go",
+      "line": 122,
+      "lineTolerance": 3,
+      "family": "hardcoded-secret",
+      "severity": "high",
+      "cwe": "CWE-798",
+      "note": "Hardcoded credential pattern"
+    },
+    {
+      "file": "boxoauth/boxoauth.go",
+      "line": 123,
+      "lineTolerance": 3,
+      "family": "ssrf",
+      "severity": "high",
+      "cwe": "CWE-918",
+      "note": "SSRF sink"
+    },
+    {
+      "file": "boxoauth/boxoauth.go",
+      "line": 179,
+      "lineTolerance": 3,
+      "family": "ssrf",
+      "severity": "high",
+      "cwe": "CWE-918",
+      "note": "SSRF sink"
+    },
+    {
+      "file": "braintreepayments/braintreepayments.go",
+      "line": 94,
+      "lineTolerance": 3,
+      "family": "ssrf",
+      "severity": "high",
+      "cwe": "CWE-918",
+      "note": "SSRF sink"
+    },
+    {
+      "file": "brandfetch/v2/brandfetch.go",
+      "line": 87,
+      "lineTolerance": 3,
+      "family": "ssrf",
+      "severity": "high",
+      "cwe": "CWE-918",
+      "note": "SSRF sink"
+    },
+    {
+      "file": "browserstack/browserstack.go",
+      "line": 96,
+      "lineTolerance": 3,
+      "family": "ssrf",
+      "severity": "high",
+      "cwe": "CWE-918",
+      "note": "SSRF sink"
+    },
+    {
+      "file": "caflou/caflou.go",
+      "line": 79,
+      "lineTolerance": 3,
+      "family": "ssrf",
+      "severity": "high",
+      "cwe": "CWE-918",
+      "note": "SSRF sink"
+    },
+    {
+      "file": "campayn/campayn.go",
+      "line": 53,
+      "lineTolerance": 3,
+      "family": "hardcoded-secret",
+      "severity": "high",
+      "cwe": "CWE-798",
+      "note": "Hardcoded credential pattern"
+    },
+    {
+      "file": "cannyio/cannyio.go",
+      "line": 48,
+      "lineTolerance": 3,
+      "family": "hardcoded-secret",
+      "severity": "high",
+      "cwe": "CWE-798",
+      "note": "Hardcoded credential pattern"
+    },
+    {
+      "file": "circleci/v1/circleci.go",
+      "line": 89,
+      "lineTolerance": 3,
+      "family": "ssrf",
+      "severity": "high",
+      "cwe": "CWE-918",
+      "note": "SSRF sink"
+    },
+    {
+      "file": "clickhelp/clickhelp.go",
+      "line": 93,
+      "lineTolerance": 3,
+      "family": "ssrf",
+      "severity": "high",
+      "cwe": "CWE-918",
+      "note": "SSRF sink"
+    },
+    {
+      "file": "clickuppersonaltoken/clickuppersonaltoken.go",
+      "line": 78,
+      "lineTolerance": 3,
+      "family": "ssrf",
+      "severity": "high",
+      "cwe": "CWE-918",
+      "note": "SSRF sink"
+    },
+    {
+      "file": "clientary/clientary.go",
+      "line": 114,
+      "lineTolerance": 3,
+      "family": "ssrf",
+      "severity": "high",
+      "cwe": "CWE-918",
+      "note": "SSRF sink"
+    },
+    {
+      "file": "cloudinary/cloudinary.go",
+      "line": 101,
+      "lineTolerance": 3,
+      "family": "ssrf",
+      "severity": "high",
+      "cwe": "CWE-918",
+      "note": "SSRF sink"
+    },
+    {
+      "file": "coinbase/coinbase.go",
+      "line": 138,
+      "lineTolerance": 3,
+      "family": "ssrf",
+      "severity": "high",
+      "cwe": "CWE-918",
+      "note": "SSRF sink"
+    },
+    {
+      "file": "copper/copper.go",
+      "line": 82,
+      "lineTolerance": 3,
+      "family": "ssrf",
+      "severity": "high",
+      "cwe": "CWE-918",
+      "note": "SSRF sink"
+    },
+    {
+      "file": "currentsapi/currentsapi.go",
+      "line": 72,
+      "lineTolerance": 3,
+      "family": "ssrf",
+      "severity": "high",
+      "cwe": "CWE-918",
+      "note": "SSRF sink"
+    },
+    {
+      "file": "datadogapikey/datadogapikey.go",
+      "line": 93,
+      "lineTolerance": 3,
+      "family": "ssrf",
+      "severity": "high",
+      "cwe": "CWE-918",
+      "note": "SSRF sink"
+    },
+    {
+      "file": "deepseek/deepseek.go",
+      "line": 72,
+      "lineTolerance": 3,
+      "family": "ssrf",
+      "severity": "high",
+      "cwe": "CWE-918",
+      "note": "SSRF sink"
+    },
+    {
+      "file": "digitaloceantoken/digitaloceantoken.go",
+      "line": 68,
+      "lineTolerance": 3,
+      "family": "ssrf",
+      "severity": "high",
+      "cwe": "CWE-918",
+      "note": "SSRF sink"
+    },
+    {
+      "file": "digitaloceanv2/digitaloceanv2.go",
+      "line": 91,
+      "lineTolerance": 3,
+      "family": "ssrf",
+      "severity": "high",
+      "cwe": "CWE-918",
+      "note": "SSRF sink"
+    },
+    {
+      "file": "digitaloceanv2/digitaloceanv2.go",
+      "line": 134,
+      "lineTolerance": 3,
+      "family": "ssrf",
+      "severity": "high",
+      "cwe": "CWE-918",
+      "note": "SSRF sink"
+    },
+    {
+      "file": "discordwebhook/discordwebhook.go",
+      "line": 45,
+      "lineTolerance": 3,
+      "family": "ssrf",
+      "severity": "high",
+      "cwe": "CWE-918",
+      "note": "SSRF sink"
+    },
+    {
+      "file": "docker/docker_auth_config.go",
+      "line": 109,
+      "lineTolerance": 3,
+      "family": "broken-marker",
+      "severity": "info",
+      "cwe": null,
+      "note": "TODO/FIXME marker near security-sensitive code"
+    },
+    {
+      "file": "docker/docker_auth_config.go",
+      "line": 155,
+      "lineTolerance": 3,
+      "family": "ssrf",
+      "severity": "high",
+      "cwe": "CWE-918",
+      "note": "SSRF sink"
+    },
+    {
+      "file": "docker/docker_auth_config.go",
+      "line": 204,
+      "lineTolerance": 3,
+      "family": "ssrf",
+      "severity": "high",
+      "cwe": "CWE-918",
+      "note": "SSRF sink"
+    },
+    {
+      "file": "dockerhub/v1/dockerhub.go",
+      "line": 106,
+      "lineTolerance": 3,
+      "family": "ssrf",
+      "severity": "high",
+      "cwe": "CWE-918",
+      "note": "SSRF sink"
+    },
+    {
+      "file": "dockerhub/v2/dockerhub.go",
+      "line": 106,
+      "lineTolerance": 3,
+      "family": "ssrf",
+      "severity": "high",
+      "cwe": "CWE-918",
+      "note": "SSRF sink"
+    },
+    {
+      "file": "dotdigital/dotdigital.go",
+      "line": 95,
+      "lineTolerance": 3,
+      "family": "ssrf",
+      "severity": "high",
+      "cwe": "CWE-918",
+      "note": "SSRF sink"
+    },
+    {
+      "file": "dovico/dovico.go",
+      "line": 96,
+      "lineTolerance": 3,
+      "family": "ssrf",
+      "severity": "high",
+      "cwe": "CWE-918",
+      "note": "SSRF sink"
+    },
+    {
+      "file": "dovico/dovico.go",
+      "line": 101,
+      "lineTolerance": 3,
+      "family": "hardcoded-secret",
+      "severity": "high",
+      "cwe": "CWE-798",
+      "note": "Hardcoded credential pattern"
+    },
+    {
+      "file": "dropbox/dropbox.go",
+      "line": 73,
+      "lineTolerance": 3,
+      "family": "ssrf",
+      "severity": "high",
+      "cwe": "CWE-918",
+      "note": "SSRF sink"
+    },
+    {
+      "file": "dwolla/dwolla.go",
+      "line": 96,
+      "lineTolerance": 3,
+      "family": "ssrf",
+      "severity": "high",
+      "cwe": "CWE-918",
+      "note": "SSRF sink"
+    },
+    {
+      "file": "elevenlabs/v1/elevenlabs.go",
+      "line": 87,
+      "lineTolerance": 3,
+      "family": "ssrf",
+      "severity": "high",
+      "cwe": "CWE-918",
+      "note": "SSRF sink"
+    },
+    {
+      "file": "elevenlabs/v2/elevenlabs.go",
+      "line": 88,
+      "lineTolerance": 3,
+      "family": "ssrf",
+      "severity": "high",
+      "cwe": "CWE-918",
+      "note": "SSRF sink"
+    },
+    {
+      "file": "endorlabs/endorlabs.go",
+      "line": 88,
+      "lineTolerance": 3,
+      "family": "ssrf",
+      "severity": "high",
+      "cwe": "CWE-918",
+      "note": "SSRF sink"
+    },
+    {
+      "file": "eraser/eraser.go",
+      "line": 78,
+      "lineTolerance": 3,
+      "family": "ssrf",
+      "severity": "high",
+      "cwe": "CWE-918",
+      "note": "SSRF sink"
+    },
+    {
+      "file": "ethplorer/ethplorer.go",
+      "line": 49,
+      "lineTolerance": 3,
+      "family": "hardcoded-secret",
+      "severity": "high",
+      "cwe": "CWE-798",
+      "note": "Hardcoded credential pattern"
+    },
+    {
+      "file": "exchangerateapi/exchangerateapi.go",
+      "line": 71,
+      "lineTolerance": 3,
+      "family": "ssrf",
+      "severity": "high",
+      "cwe": "CWE-918",
+      "note": "SSRF sink"
+    },
+    {
+      "file": "fetchrss/fetchrss.go",
+      "line": 71,
+      "lineTolerance": 3,
+      "family": "ssrf",
+      "severity": "high",
+      "cwe": "CWE-918",
+      "note": "SSRF sink"
+    },
+    {
+      "file": "fibery/fibery.go",
+      "line": 89,
+      "lineTolerance": 3,
+      "family": "ssrf",
+      "severity": "high",
+      "cwe": "CWE-918",
+      "note": "SSRF sink"
+    },
+    {
+      "file": "flexport/flexport.go",
+      "line": 74,
+      "lineTolerance": 3,
+      "family": "ssrf",
+      "severity": "high",
+      "cwe": "CWE-918",
+      "note": "SSRF sink"
+    },
+    {
+      "file": "flightlabs/flightlabs.go",
+      "line": 77,
+      "lineTolerance": 3,
+      "family": "ssrf",
+      "severity": "high",
+      "cwe": "CWE-918",
+      "note": "SSRF sink"
+    },
+    {
+      "file": "flyio/flyio.go",
+      "line": 79,
+      "lineTolerance": 3,
+      "family": "ssrf",
+      "severity": "high",
+      "cwe": "CWE-918",
+      "note": "SSRF sink"
+    },
+    {
+      "file": "gcp/gcp.go",
+      "line": 226,
+      "lineTolerance": 3,
+      "family": "ssrf",
+      "severity": "high",
+      "cwe": "CWE-918",
+      "note": "SSRF sink"
+    },
+    {
+      "file": "gcpapplicationdefaultcredentials/gcpapplicationdefaultcredentials.go",
+      "line": 145,
+      "lineTolerance": 3,
+      "family": "ssrf",
+      "severity": "high",
+      "cwe": "CWE-918",
+      "note": "SSRF sink"
+    },
+    {
+      "file": "generic/generic.go",
+      "line": 87,
+      "lineTolerance": 3,
+      "family": "broken-marker",
+      "severity": "info",
+      "cwe": null,
+      "note": "TODO/FIXME marker near security-sensitive code"
+    },
+    {
+      "file": "github/v1/github_old.go",
+      "line": 41,
+      "lineTolerance": 3,
+      "family": "broken-marker",
+      "severity": "info",
+      "cwe": null,
+      "note": "TODO/FIXME marker near security-sensitive code"
+    },
+    {
+      "file": "github/v1/github_old.go",
+      "line": 157,
+      "lineTolerance": 3,
+      "family": "ssrf",
+      "severity": "high",
+      "cwe": "CWE-918",
+      "note": "SSRF sink"
+    },
+    {
+      "file": "github/v2/github.go",
+      "line": 38,
+      "lineTolerance": 3,
+      "family": "broken-marker",
+      "severity": "info",
+      "cwe": null,
+      "note": "TODO/FIXME marker near security-sensitive code"
+    },
+    {
+      "file": "githubapp/githubapp.go",
+      "line": 31,
+      "lineTolerance": 3,
+      "family": "hardcoded-secret",
+      "severity": "high",
+      "cwe": "CWE-798",
+      "note": "Hardcoded credential pattern"
+    },
+    {
+      "file": "gitlab/v1/gitlab.go",
+      "line": 124,
+      "lineTolerance": 3,
+      "family": "ssrf",
+      "severity": "high",
+      "cwe": "CWE-918",
+      "note": "SSRF sink"
+    },
+    {
+      "file": "gitlaboauth2/gitlaboauth2.go",
+      "line": 105,
+      "lineTolerance": 3,
+      "family": "hardcoded-secret",
+      "severity": "high",
+      "cwe": "CWE-798",
+      "note": "Hardcoded credential pattern"
+    },
+    {
+      "file": "gitlaboauth2/gitlaboauth2.go",
+      "line": 107,
+      "lineTolerance": 3,
+      "family": "ssrf",
+      "severity": "high",
+      "cwe": "CWE-918",
+      "note": "SSRF sink"
+    },
+    {
+      "file": "googlegemini/googlegemini.go",
+      "line": 78,
+      "lineTolerance": 3,
+      "family": "ssrf",
+      "severity": "high",
+      "cwe": "CWE-918",
+      "note": "SSRF sink"
+    },
+    {
+      "file": "googleoauth2/googleoauth2_access_token.go",
+      "line": 77,
+      "lineTolerance": 3,
+      "family": "ssrf",
+      "severity": "high",
+      "cwe": "CWE-918",
+      "note": "SSRF sink"
+    },
+    {
+      "file": "grafana/grafana.go",
+      "line": 81,
+      "lineTolerance": 3,
+      "family": "ssrf",
+      "severity": "high",
+      "cwe": "CWE-918",
+      "note": "SSRF sink"
+    },
+    {
+      "file": "groq/groq.go",
+      "line": 72,
+      "lineTolerance": 3,
+      "family": "ssrf",
+      "severity": "high",
+      "cwe": "CWE-918",
+      "note": "SSRF sink"
+    },
+    {
+      "file": "gumroad/gumroad.go",
+      "line": 47,
+      "lineTolerance": 3,
+      "family": "hardcoded-secret",
+      "severity": "high",
+      "cwe": "CWE-798",
+      "note": "Hardcoded credential pattern"
+    },
+    {
+      "file": "harness/harness.go",
+      "line": 92,
+      "lineTolerance": 3,
+      "family": "ssrf",
+      "severity": "high",
+      "cwe": "CWE-918",
+      "note": "SSRF sink"
+    },
+    {
+      "file": "hashicorpvaultauth/hashicorpvaultauth.go",
+      "line": 125,
+      "lineTolerance": 3,
+      "family": "ssrf",
+      "severity": "high",
+      "cwe": "CWE-918",
+      "note": "SSRF sink"
+    },
+    {
+      "file": "hasura/hasura.go",
+      "line": 108,
+      "lineTolerance": 3,
+      "family": "ssrf",
+      "severity": "high",
+      "cwe": "CWE-918",
+      "note": "SSRF sink"
+    },
+    {
+      "file": "heroku/v1/heroku.go",
+      "line": 76,
+      "lineTolerance": 3,
+      "family": "ssrf",
+      "severity": "high",
+      "cwe": "CWE-918",
+      "note": "SSRF sink"
+    },
+    {
+      "file": "hubspot_apikey/v1/apikey.go",
+      "line": 75,
+      "lineTolerance": 3,
+      "family": "ssrf",
+      "severity": "high",
+      "cwe": "CWE-918",
+      "note": "SSRF sink"
+    },
+    {
+      "file": "hubspot_apikey/v2/apikey.go",
+      "line": 74,
+      "lineTolerance": 3,
+      "family": "ssrf",
+      "severity": "high",
+      "cwe": "CWE-918",
+      "note": "SSRF sink"
+    },
+    {
+      "file": "huggingface/huggingface.go",
+      "line": 70,
+      "lineTolerance": 3,
+      "family": "ssrf",
+      "severity": "high",
+      "cwe": "CWE-918",
+      "note": "SSRF sink"
+    },
+    {
+      "file": "instamojo/instamojo.go",
+      "line": 64,
+      "lineTolerance": 3,
+      "family": "hardcoded-secret",
+      "severity": "high",
+      "cwe": "CWE-798",
+      "note": "Hardcoded credential pattern"
+    },
+    {
+      "file": "intra42/intra42.go",
+      "line": 94,
+      "lineTolerance": 3,
+      "family": "ssrf",
+      "severity": "high",
+      "cwe": "CWE-918",
+      "note": "SSRF sink"
+    },
+    {
+      "file": "jiratoken/v1/jiratoken.go",
+      "line": 149,
+      "lineTolerance": 3,
+      "family": "ssrf",
+      "severity": "high",
+      "cwe": "CWE-918",
+      "note": "SSRF sink"
+    },
+    {
+      "file": "jwt/jwt.go",
+      "line": 167,
+      "lineTolerance": 3,
+      "family": "ssrf",
+      "severity": "high",
+      "cwe": "CWE-918",
+      "note": "SSRF sink"
+    },
+    {
+      "file": "kontent/kontent.go",
+      "line": 95,
+      "lineTolerance": 3,
+      "family": "ssrf",
+      "severity": "high",
+      "cwe": "CWE-918",
+      "note": "SSRF sink"
+    },
+    {
+      "file": "kucoin/kucoin.go",
+      "line": 79,
+      "lineTolerance": 3,
+      "family": "ssrf",
+      "severity": "high",
+      "cwe": "CWE-918",
+      "note": "SSRF sink"
+    },
+    {
+      "file": "langfuse/langfuse.go",
+      "line": 76,
+      "lineTolerance": 3,
+      "family": "ssrf",
+      "severity": "high",
+      "cwe": "CWE-918",
+      "note": "SSRF sink"
+    },
+    {
+      "file": "langsmith/langsmith.go",
+      "line": 69,
+      "lineTolerance": 3,
+      "family": "ssrf",
+      "severity": "high",
+      "cwe": "CWE-918",
+      "note": "SSRF sink"
+    },
+    {
+      "file": "larksuite/larksuite.go",
+      "line": 73,
+      "lineTolerance": 3,
+      "family": "hardcoded-secret",
+      "severity": "high",
+      "cwe": "CWE-798",
+      "note": "Hardcoded credential pattern"
+    },
+    {
+      "file": "larksuite/larksuite.go",
+      "line": 75,
+      "lineTolerance": 3,
+      "family": "hardcoded-secret",
+      "severity": "high",
+      "cwe": "CWE-798",
+      "note": "Hardcoded credential pattern"
+    },
+    {
+      "file": "larksuite/larksuite.go",
+      "line": 136,
+      "lineTolerance": 3,
+      "family": "ssrf",
+      "severity": "high",
+      "cwe": "CWE-918",
+      "note": "SSRF sink"
+    },
+    {
+      "file": "larksuiteapikey/larksuiteapikey.go",
+      "line": 96,
+      "lineTolerance": 3,
+      "family": "ssrf",
+      "severity": "high",
+      "cwe": "CWE-918",
+      "note": "SSRF sink"
+    },
+    {
+      "file": "launchdarkly/launchdarkly.go",
+      "line": 100,
+      "lineTolerance": 3,
+      "family": "ssrf",
+      "severity": "high",
+      "cwe": "CWE-918",
+      "note": "SSRF sink"
+    },
+    {
+      "file": "lokalisetoken/lokalisetoken.go",
+      "line": 82,
+      "lineTolerance": 3,
+      "family": "ssrf",
+      "severity": "high",
+      "cwe": "CWE-918",
+      "note": "SSRF sink"
+    },
+    {
+      "file": "mailgun/mailgun.go",
+      "line": 83,
+      "lineTolerance": 3,
+      "family": "ssrf",
+      "severity": "high",
+      "cwe": "CWE-918",
+      "note": "SSRF sink"
+    },
+    {
+      "file": "maxmindlicense/v2/maxmindlicense_v2.go",
+      "line": 80,
+      "lineTolerance": 3,
+      "family": "ssrf",
+      "severity": "high",
+      "cwe": "CWE-918",
+      "note": "SSRF sink"
+    },
+    {
+      "file": "mesibo/mesibo.go",
+      "line": 90,
+      "lineTolerance": 3,
+      "family": "ssrf",
+      "severity": "high",
+      "cwe": "CWE-918",
+      "note": "SSRF sink"
+    },
+    {
+      "file": "metabase/metabase.go",
+      "line": 69,
+      "lineTolerance": 3,
+      "family": "ssrf",
+      "severity": "high",
+      "cwe": "CWE-918",
+      "note": "SSRF sink"
+    },
+    {
+      "file": "monday/monday.go",
+      "line": 72,
+      "lineTolerance": 3,
+      "family": "ssrf",
+      "severity": "high",
+      "cwe": "CWE-918",
+      "note": "SSRF sink"
+    },
+    {
+      "file": "mongodb/mongodb.go",
+      "line": 33,
+      "lineTolerance": 3,
+      "family": "broken-marker",
+      "severity": "info",
+      "cwe": null,
+      "note": "TODO/FIXME marker near security-sensitive code"
+    },
+    {
+      "file": "moonclerk/moonclerk.go",
+      "line": 53,
+      "lineTolerance": 3,
+      "family": "hardcoded-secret",
+      "severity": "high",
+      "cwe": "CWE-798",
+      "note": "Hardcoded credential pattern"
+    },
+    {
+      "file": "myfreshworks/myfreshworks.go",
+      "line": 79,
+      "lineTolerance": 3,
+      "family": "ssrf",
+      "severity": "high",
+      "cwe": "CWE-918",
+      "note": "SSRF sink"
+    },
+    {
+      "file": "netlify/v1/netlify_v1.go",
+      "line": 75,
+      "lineTolerance": 3,
+      "family": "ssrf",
+      "severity": "high",
+      "cwe": "CWE-918",
+      "note": "SSRF sink"
+    },
+    {
+      "file": "netlify/v2/netlify_v2.go",
+      "line": 75,
+      "lineTolerance": 3,
+      "family": "ssrf",
+      "severity": "high",
+      "cwe": "CWE-918",
+      "note": "SSRF sink"
+    },
+    {
+      "file": "netsuite/netsuite.go",
+      "line": 154,
+      "lineTolerance": 3,
+      "family": "ssrf",
+      "severity": "high",
+      "cwe": "CWE-918",
+      "note": "SSRF sink"
+    },
+    {
+      "file": "netsuite/netsuite.go",
+      "line": 211,
+      "lineTolerance": 3,
+      "family": "hardcoded-secret",
+      "severity": "high",
+      "cwe": "CWE-798",
+      "note": "Hardcoded credential pattern"
+    },
+    {
+      "file": "ngc/ngc.go",
+      "line": 55,
+      "lineTolerance": 3,
+      "family": "hardcoded-secret",
+      "severity": "high",
+      "cwe": "CWE-798",
+      "note": "Hardcoded credential pattern"
+    },
+    {
+      "file": "ngrok/ngrok.go",
+      "line": 79,
+      "lineTolerance": 3,
+      "family": "ssrf",
+      "severity": "high",
+      "cwe": "CWE-918",
+      "note": "SSRF sink"
+    },
+    {
+      "file": "nvapi/nvapi.go",
+      "line": 75,
+      "lineTolerance": 3,
+      "family": "ssrf",
+      "severity": "high",
+      "cwe": "CWE-918",
+      "note": "SSRF sink"
+    },
+    {
+      "file": "okta/okta.go",
+      "line": 28,
+      "lineTolerance": 3,
+      "family": "broken-marker",
+      "severity": "info",
+      "cwe": null,
+      "note": "TODO/FIXME marker near security-sensitive code"
+    },
+    {
+      "file": "okta/okta.go",
+      "line": 89,
+      "lineTolerance": 3,
+      "family": "ssrf",
+      "severity": "high",
+      "cwe": "CWE-918",
+      "note": "SSRF sink"
+    },
+    {
+      "file": "onelogin/onelogin.go",
+      "line": 26,
+      "lineTolerance": 3,
+      "family": "broken-marker",
+      "severity": "info",
+      "cwe": null,
+      "note": "TODO/FIXME marker near security-sensitive code"
+    },
+    {
+      "file": "onfleet/onfleet.go",
+      "line": 71,
+      "lineTolerance": 3,
+      "family": "ssrf",
+      "severity": "high",
+      "cwe": "CWE-918",
+      "note": "SSRF sink"
+    },
+    {
+      "file": "openaiadmin/openaiadmin.go",
+      "line": 74,
+      "lineTolerance": 3,
+      "family": "ssrf",
+      "severity": "high",
+      "cwe": "CWE-918",
+      "note": "SSRF sink"
+    },
+    {
+      "file": "opsgenie/opsgenie.go",
+      "line": 92,
+      "lineTolerance": 3,
+      "family": "ssrf",
+      "severity": "high",
+      "cwe": "CWE-918",
+      "note": "SSRF sink"
+    },
+    {
+      "file": "pagarme/pagarme.go",
+      "line": 74,
+      "lineTolerance": 3,
+      "family": "ssrf",
+      "severity": "high",
+      "cwe": "CWE-918",
+      "note": "SSRF sink"
+    },
+    {
+      "file": "pagerdutyapikey/pagerdutyapikey.go",
+      "line": 72,
+      "lineTolerance": 3,
+      "family": "ssrf",
+      "severity": "high",
+      "cwe": "CWE-918",
+      "note": "SSRF sink"
+    },
+    {
+      "file": "parseur/parseur.go",
+      "line": 65,
+      "lineTolerance": 3,
+      "family": "ssrf",
+      "severity": "high",
+      "cwe": "CWE-918",
+      "note": "SSRF sink"
+    },
+    {
+      "file": "photoroom/photoroom.go",
+      "line": 71,
+      "lineTolerance": 3,
+      "family": "ssrf",
+      "severity": "high",
+      "cwe": "CWE-918",
+      "note": "SSRF sink"
+    },
+    {
+      "file": "phraseaccesstoken/phraseaccesstoken.go",
+      "line": 69,
+      "lineTolerance": 3,
+      "family": "ssrf",
+      "severity": "high",
+      "cwe": "CWE-918",
+      "note": "SSRF sink"
+    },
+    {
+      "file": "pinecone/pinecone.go",
+      "line": 86,
+      "lineTolerance": 3,
+      "family": "ssrf",
+      "severity": "high",
+      "cwe": "CWE-918",
+      "note": "SSRF sink"
+    },
+    {
+      "file": "postgres/postgres.go",
+      "line": 27,
+      "lineTolerance": 3,
+      "family": "hardcoded-secret",
+      "severity": "high",
+      "cwe": "CWE-798",
+      "note": "Hardcoded credential pattern"
+    },
+    {
+      "file": "postman/postman.go",
+      "line": 74,
+      "lineTolerance": 3,
+      "family": "ssrf",
+      "severity": "high",
+      "cwe": "CWE-918",
+      "note": "SSRF sink"
+    },
+    {
+      "file": "postmark/postmark.go",
+      "line": 118,
+      "lineTolerance": 3,
+      "family": "ssrf",
+      "severity": "high",
+      "cwe": "CWE-918",
+      "note": "SSRF sink"
+    },
+    {
+      "file": "pubnubsubscriptionkey/pubnubsubscriptionkey.go",
+      "line": 71,
+      "lineTolerance": 3,
+      "family": "ssrf",
+      "severity": "high",
+      "cwe": "CWE-918",
+      "note": "SSRF sink"
+    },
+    {
+      "file": "pusherchannelkey/pusherchannelkey.go",
+      "line": 136,
+      "lineTolerance": 3,
+      "family": "ssrf",
+      "severity": "high",
+      "cwe": "CWE-918",
+      "note": "SSRF sink"
+    },
+    {
+      "file": "pypi/pypi.go",
+      "line": 86,
+      "lineTolerance": 3,
+      "family": "ssrf",
+      "severity": "high",
+      "cwe": "CWE-918",
+      "note": "SSRF sink"
+    },
+    {
+      "file": "qase/qase.go",
+      "line": 71,
+      "lineTolerance": 3,
+      "family": "ssrf",
+      "severity": "high",
+      "cwe": "CWE-918",
+      "note": "SSRF sink"
+    },
+    {
+      "file": "qualaroo/qualaroo.go",
+      "line": 71,
+      "lineTolerance": 3,
+      "family": "ssrf",
+      "severity": "high",
+      "cwe": "CWE-918",
+      "note": "SSRF sink"
+    },
+    {
+      "file": "qubole/qubole.go",
+      "line": 71,
+      "lineTolerance": 3,
+      "family": "ssrf",
+      "severity": "high",
+      "cwe": "CWE-918",
+      "note": "SSRF sink"
+    },
+    {
+      "file": "readme/readme.go",
+      "line": 45,
+      "lineTolerance": 3,
+      "family": "ssrf",
+      "severity": "high",
+      "cwe": "CWE-918",
+      "note": "SSRF sink"
+    },
+    {
+      "file": "robinhoodcrypto/robinhoodcrypto.go",
+      "line": 119,
+      "lineTolerance": 3,
+      "family": "ssrf",
+      "severity": "high",
+      "cwe": "CWE-918",
+      "note": "SSRF sink"
+    },
+    {
+      "file": "rootly/rootly.go",
+      "line": 65,
+      "lineTolerance": 3,
+      "family": "ssrf",
+      "severity": "high",
+      "cwe": "CWE-918",
+      "note": "SSRF sink"
+    },
+    {
+      "file": "saladcloudapikey/saladcloudapikey.go",
+      "line": 76,
+      "lineTolerance": 3,
+      "family": "ssrf",
+      "severity": "high",
+      "cwe": "CWE-918",
+      "note": "SSRF sink"
+    },
+    {
+      "file": "salesforceoauth2/salesforceoauth2.go",
+      "line": 131,
+      "lineTolerance": 3,
+      "family": "ssrf",
+      "severity": "high",
+      "cwe": "CWE-918",
+      "note": "SSRF sink"
+    },
+    {
+      "file": "salesforcerefreshtoken/salesforcerefreshtoken.go",
+      "line": 110,
+      "lineTolerance": 3,
+      "family": "ssrf",
+      "severity": "high",
+      "cwe": "CWE-918",
+      "note": "SSRF sink"
+    },
+    {
+      "file": "saucelabs/saucelabs.go",
+      "line": 106,
+      "lineTolerance": 3,
+      "family": "ssrf",
+      "severity": "high",
+      "cwe": "CWE-918",
+      "note": "SSRF sink"
+    },
+    {
+      "file": "scrapingant/scrapingant.go",
+      "line": 77,
+      "lineTolerance": 3,
+      "family": "ssrf",
+      "severity": "high",
+      "cwe": "CWE-918",
+      "note": "SSRF sink"
+    },
+    {
+      "file": "scrapingbee/scrapingbee.go",
+      "line": 78,
+      "lineTolerance": 3,
+      "family": "ssrf",
+      "severity": "high",
+      "cwe": "CWE-918",
+      "note": "SSRF sink"
+    },
+    {
+      "file": "sendgrid/sendgrid.go",
+      "line": 75,
+      "lineTolerance": 3,
+      "family": "ssrf",
+      "severity": "high",
+      "cwe": "CWE-918",
+      "note": "SSRF sink"
+    },
+    {
+      "file": "sentryorgtoken/sentryorgtoken.go",
+      "line": 78,
+      "lineTolerance": 3,
+      "family": "ssrf",
+      "severity": "high",
+      "cwe": "CWE-918",
+      "note": "SSRF sink"
+    },
+    {
+      "file": "sentrytoken/v1/sentrytoken.go",
+      "line": 85,
+      "lineTolerance": 3,
+      "family": "ssrf",
+      "severity": "high",
+      "cwe": "CWE-918",
+      "note": "SSRF sink"
+    },
+    {
+      "file": "shodankey/shodankey.go",
+      "line": 75,
+      "lineTolerance": 3,
+      "family": "ssrf",
+      "severity": "high",
+      "cwe": "CWE-918",
+      "note": "SSRF sink"
+    },
+    {
+      "file": "shopifyoauth/shopifyoauth.go",
+      "line": 114,
+      "lineTolerance": 3,
+      "family": "ssrf",
+      "severity": "high",
+      "cwe": "CWE-918",
+      "note": "SSRF sink"
+    },
+    {
+      "file": "shortcut/shortcut.go",
+      "line": 58,
+      "lineTolerance": 3,
+      "family": "ssrf",
+      "severity": "high",
+      "cwe": "CWE-918",
+      "note": "SSRF sink"
+    },
+    {
+      "file": "signable/signable.go",
+      "line": 91,
+      "lineTolerance": 3,
+      "family": "ssrf",
+      "severity": "high",
+      "cwe": "CWE-918",
+      "note": "SSRF sink"
+    },
+    {
+      "file": "smartsheets/smartsheets.go",
+      "line": 72,
+      "lineTolerance": 3,
+      "family": "ssrf",
+      "severity": "high",
+      "cwe": "CWE-918",
+      "note": "SSRF sink"
+    },
+    {
+      "file": "snykkey/snykkey.go",
+      "line": 68,
+      "lineTolerance": 3,
+      "family": "ssrf",
+      "severity": "high",
+      "cwe": "CWE-918",
+      "note": "SSRF sink"
+    },
+    {
+      "file": "sonarcloud/sonarcloud.go",
+      "line": 76,
+      "lineTolerance": 3,
+      "family": "ssrf",
+      "severity": "high",
+      "cwe": "CWE-918",
+      "note": "SSRF sink"
+    },
+    {
+      "file": "spectralops/spectralops.go",
+      "line": 90,
+      "lineTolerance": 3,
+      "family": "ssrf",
+      "severity": "high",
+      "cwe": "CWE-918",
+      "note": "SSRF sink"
+    },
+    {
+      "file": "storyblok/storyblok.go",
+      "line": 74,
+      "lineTolerance": 3,
+      "family": "ssrf",
+      "severity": "high",
+      "cwe": "CWE-918",
+      "note": "SSRF sink"
+    },
+    {
+      "file": "storyblokpersonalaccesstoken/storyblok.go",
+      "line": 75,
+      "lineTolerance": 3,
+      "family": "ssrf",
+      "severity": "high",
+      "cwe": "CWE-918",
+      "note": "SSRF sink"
+    },
+    {
+      "file": "strava/strava.go",
+      "line": 64,
+      "lineTolerance": 5,
+      "family": "hardcoded-secret",
+      "severity": "high",
+      "cwe": "CWE-798",
+      "note": "Hardcoded credential pattern [matchAny added: engine emits duplicates at this location]",
+      "matchAny": true
+    },
+    {
+      "file": "stripepaymentintent/stripepaymentintent.go",
+      "line": 142,
+      "lineTolerance": 3,
+      "family": "ssrf",
+      "severity": "high",
+      "cwe": "CWE-918",
+      "note": "SSRF sink"
+    },
+    {
+      "file": "stripepaymentintent/stripepaymentintent.go",
+      "line": 185,
+      "lineTolerance": 3,
+      "family": "ssrf",
+      "severity": "high",
+      "cwe": "CWE-918",
+      "note": "SSRF sink"
+    },
+    {
+      "file": "sumologickey/sumologickey.go",
+      "line": 114,
+      "lineTolerance": 3,
+      "family": "ssrf",
+      "severity": "high",
+      "cwe": "CWE-918",
+      "note": "SSRF sink"
+    },
+    {
+      "file": "tableau/tableau.go",
+      "line": 211,
+      "lineTolerance": 3,
+      "family": "ssrf",
+      "severity": "high",
+      "cwe": "CWE-918",
+      "note": "SSRF sink"
+    },
+    {
+      "file": "tailscale/tailscale.go",
+      "line": 52,
+      "lineTolerance": 3,
+      "family": "ssrf",
+      "severity": "high",
+      "cwe": "CWE-918",
+      "note": "SSRF sink"
+    },
+    {
+      "file": "twitch/twitch.go",
+      "line": 100,
+      "lineTolerance": 3,
+      "family": "ssrf",
+      "severity": "high",
+      "cwe": "CWE-918",
+      "note": "SSRF sink"
+    },
+    {
+      "file": "twitchaccesstoken/twitchaccesstoken.go",
+      "line": 70,
+      "lineTolerance": 3,
+      "family": "ssrf",
+      "severity": "high",
+      "cwe": "CWE-918",
+      "note": "SSRF sink"
+    },
+    {
+      "file": "twitter/v1/twitter_v1.go",
+      "line": 87,
+      "lineTolerance": 3,
+      "family": "ssrf",
+      "severity": "high",
+      "cwe": "CWE-918",
+      "note": "SSRF sink"
+    },
+    {
+      "file": "twitterconsumerkey/twitterconsumerkey.go",
+      "line": 99,
+      "lineTolerance": 3,
+      "family": "ssrf",
+      "severity": "high",
+      "cwe": "CWE-918",
+      "note": "SSRF sink"
+    },
+    {
+      "file": "twitterconsumerkey/twitterconsumerkey.go",
+      "line": 123,
+      "lineTolerance": 3,
+      "family": "ssrf",
+      "severity": "high",
+      "cwe": "CWE-918",
+      "note": "SSRF sink"
+    },
+    {
+      "file": "uri/uri.go",
+      "line": 161,
+      "lineTolerance": 3,
+      "family": "ssrf",
+      "severity": "high",
+      "cwe": "CWE-918",
+      "note": "SSRF sink"
+    },
+    {
+      "file": "uri/uri.go",
+      "line": 182,
+      "lineTolerance": 3,
+      "family": "ssrf",
+      "severity": "high",
+      "cwe": "CWE-918",
+      "note": "SSRF sink"
+    },
+    {
+      "file": "virustotal/virustotal.go",
+      "line": 57,
+      "lineTolerance": 3,
+      "family": "ssrf",
+      "severity": "high",
+      "cwe": "CWE-918",
+      "note": "SSRF sink"
+    },
+    {
+      "file": "webex/webex.go",
+      "line": 53,
+      "lineTolerance": 3,
+      "family": "hardcoded-secret",
+      "severity": "high",
+      "cwe": "CWE-798",
+      "note": "Hardcoded credential pattern"
+    },
+    {
+      "file": "webexbot/webexbot.go",
+      "line": 82,
+      "lineTolerance": 3,
+      "family": "ssrf",
+      "severity": "high",
+      "cwe": "CWE-918",
+      "note": "SSRF sink"
+    },
+    {
+      "file": "weightsandbiases/weightsandbiases.go",
+      "line": 84,
+      "lineTolerance": 3,
+      "family": "ssrf",
+      "severity": "high",
+      "cwe": "CWE-918",
+      "note": "SSRF sink"
+    },
+    {
+      "file": "wiz/wiz.go",
+      "line": 96,
+      "lineTolerance": 3,
+      "family": "ssrf",
+      "severity": "high",
+      "cwe": "CWE-918",
+      "note": "SSRF sink"
+    },
+    {
+      "file": "xai/xai.go",
+      "line": 72,
+      "lineTolerance": 3,
+      "family": "ssrf",
+      "severity": "high",
+      "cwe": "CWE-918",
+      "note": "SSRF sink"
+    },
+    {
+      "file": "zapierwebhook/zapierwebhook.go",
+      "line": 70,
+      "lineTolerance": 3,
+      "family": "ssrf",
+      "severity": "high",
+      "cwe": "CWE-918",
+      "note": "SSRF sink"
+    },
+    {
+      "file": "zendeskapi/zendeskapi.go",
+      "line": 88,
+      "lineTolerance": 3,
+      "family": "ssrf",
+      "severity": "high",
+      "cwe": "CWE-918",
+      "note": "SSRF sink"
+    },
+    {
+      "file": "zenkitapi/zenkitapi.go",
+      "line": 71,
+      "lineTolerance": 3,
+      "family": "ssrf",
+      "severity": "high",
+      "cwe": "CWE-918",
+      "note": "SSRF sink"
+    },
+    {
+      "file": "zenrows/zenrows.go",
+      "line": 71,
+      "lineTolerance": 3,
+      "family": "ssrf",
+      "severity": "high",
+      "cwe": "CWE-918",
+      "note": "SSRF sink"
+    },
+    {
+      "file": "zenscrape/zenscrape.go",
+      "line": 71,
+      "lineTolerance": 3,
+      "family": "ssrf",
+      "severity": "high",
+      "cwe": "CWE-918",
+      "note": "SSRF sink"
+    },
+    {
+      "file": "zenserp/zenserp.go",
+      "line": 71,
+      "lineTolerance": 3,
+      "family": "ssrf",
+      "severity": "high",
+      "cwe": "CWE-918",
+      "note": "SSRF sink"
+    },
+    {
+      "file": "zeplin/zeplin.go",
+      "line": 71,
+      "lineTolerance": 3,
+      "family": "ssrf",
+      "severity": "high",
+      "cwe": "CWE-918",
+      "note": "SSRF sink"
+    },
+    {
+      "file": "zerobounce/zerobounce.go",
+      "line": 71,
+      "lineTolerance": 3,
+      "family": "ssrf",
+      "severity": "high",
+      "cwe": "CWE-918",
+      "note": "SSRF sink"
+    },
+    {
+      "file": "zerotier/zerotier.go",
+      "line": 78,
+      "lineTolerance": 3,
+      "family": "ssrf",
+      "severity": "high",
+      "cwe": "CWE-918",
+      "note": "SSRF sink"
+    },
+    {
+      "file": "zipapi/zipapi.go",
+      "line": 88,
+      "lineTolerance": 3,
+      "family": "ssrf",
+      "severity": "high",
+      "cwe": "CWE-918",
+      "note": "SSRF sink"
+    },
+    {
+      "file": "zipbooks/zipbooks.go",
+      "line": 81,
+      "lineTolerance": 3,
+      "family": "ssrf",
+      "severity": "high",
+      "cwe": "CWE-918",
+      "note": "SSRF sink"
+    },
+    {
+      "file": "zipcodeapi/zipcodeapi.go",
+      "line": 71,
+      "lineTolerance": 3,
+      "family": "ssrf",
+      "severity": "high",
+      "cwe": "CWE-918",
+      "note": "SSRF sink"
+    },
+    {
+      "file": "zipcodebase/zipcodebase.go",
+      "line": 71,
+      "lineTolerance": 3,
+      "family": "ssrf",
+      "severity": "high",
+      "cwe": "CWE-918",
+      "note": "SSRF sink"
+    },
+    {
+      "file": "zohocrm/zohocrm.go",
+      "line": 77,
+      "lineTolerance": 3,
+      "family": "ssrf",
+      "severity": "high",
+      "cwe": "CWE-918",
+      "note": "SSRF sink"
+    },
+    {
+      "file": "zonkafeedback/zonkafeedback.go",
+      "line": 71,
+      "lineTolerance": 3,
+      "family": "ssrf",
+      "severity": "high",
+      "cwe": "CWE-918",
+      "note": "SSRF sink"
+    },
+    {
+      "file": "zulipchat/zulipchat.go",
+      "line": 94,
+      "lineTolerance": 3,
+      "family": "ssrf",
+      "severity": "high",
+      "cwe": "CWE-918",
+      "note": "SSRF sink"
+    }
+  ]
+}

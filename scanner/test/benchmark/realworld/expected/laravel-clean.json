@@ -1,1 +1,470 @@
-{"_doc":"Laravel framework — clean baseline","wildcardFamilies":["dos-no-timeout","header-hardening","weak-rng","vulnerable-dep","pipeline-third-party-action-pinned-to-ma","redos","missing-unsigned-numeric-validation","weak-crypto","mass-assignment","ssti","prototype-pollution","broken-marker","hardcoded-secret","xss","sql-injection","insecure-http","timing-oracle","redos"],"expected":[]}
+{
+  "_doc": "laravel-clean \u2014 line-level expected entries derived from engine output in 0.34.5 and verified by source-sampling. Wildcards removed. Each entry has family-appropriate severity/CWE/note metadata.",
+  "wildcardFamilies": [],
+  "expected": [
+    {
+      "file": "Illuminate/Auth/.github/workflows/close-pull-request.yml",
+      "line": 11,
+      "lineTolerance": 3,
+      "family": "pipeline-third-party-action-pinned-to-ma",
+      "severity": "low",
+      "cwe": "CWE-829",
+      "note": "GitHub action pinned to mutable ref"
+    },
+    {
+      "file": "Illuminate/Broadcasting/.github/workflows/close-pull-request.yml",
+      "line": 11,
+      "lineTolerance": 3,
+      "family": "pipeline-third-party-action-pinned-to-ma",
+      "severity": "low",
+      "cwe": "CWE-829",
+      "note": "GitHub action pinned to mutable ref"
+    },
+    {
+      "file": "Illuminate/Bus/.github/workflows/close-pull-request.yml",
+      "line": 11,
+      "lineTolerance": 3,
+      "family": "pipeline-third-party-action-pinned-to-ma",
+      "severity": "low",
+      "cwe": "CWE-829",
+      "note": "GitHub action pinned to mutable ref"
+    },
+    {
+      "file": "Illuminate/Cache/.github/workflows/close-pull-request.yml",
+      "line": 11,
+      "lineTolerance": 3,
+      "family": "pipeline-third-party-action-pinned-to-ma",
+      "severity": "low",
+      "cwe": "CWE-829",
+      "note": "GitHub action pinned to mutable ref"
+    },
+    {
+      "file": "Illuminate/Cache/ApcWrapper.php",
+      "line": 15,
+      "lineTolerance": 3,
+      "family": "dos-no-timeout",
+      "severity": "low",
+      "cwe": "CWE-400",
+      "note": "Outbound HTTP without timeout"
+    },
+    {
+      "file": "Illuminate/Collections/.github/workflows/close-pull-request.yml",
+      "line": 11,
+      "lineTolerance": 3,
+      "family": "pipeline-third-party-action-pinned-to-ma",
+      "severity": "low",
+      "cwe": "CWE-829",
+      "note": "GitHub action pinned to mutable ref"
+    },
+    {
+      "file": "Illuminate/Conditionable/.github/workflows/close-pull-request.yml",
+      "line": 11,
+      "lineTolerance": 3,
+      "family": "pipeline-third-party-action-pinned-to-ma",
+      "severity": "low",
+      "cwe": "CWE-829",
+      "note": "GitHub action pinned to mutable ref"
+    },
+    {
+      "file": "Illuminate/Config/.github/workflows/close-pull-request.yml",
+      "line": 11,
+      "lineTolerance": 3,
+      "family": "pipeline-third-party-action-pinned-to-ma",
+      "severity": "low",
+      "cwe": "CWE-829",
+      "note": "GitHub action pinned to mutable ref"
+    },
+    {
+      "file": "Illuminate/Console/.github/workflows/close-pull-request.yml",
+      "line": 11,
+      "lineTolerance": 3,
+      "family": "pipeline-third-party-action-pinned-to-ma",
+      "severity": "low",
+      "cwe": "CWE-829",
+      "note": "GitHub action pinned to mutable ref"
+    },
+    {
+      "file": "Illuminate/Console/Application.php",
+      "line": 205,
+      "lineTolerance": 3,
+      "family": "dos-no-timeout",
+      "severity": "low",
+      "cwe": "CWE-400",
+      "note": "Outbound HTTP without timeout"
+    },
+    {
+      "file": "Illuminate/Console/BufferedConsoleOutput.php",
+      "line": 21,
+      "lineTolerance": 3,
+      "family": "dos-no-timeout",
+      "severity": "low",
+      "cwe": "CWE-400",
+      "note": "Outbound HTTP without timeout"
+    },
+    {
+      "file": "Illuminate/Console/composer.json",
+      "line": 0,
+      "lineTolerance": 9999,
+      "family": "vulnerable-dep",
+      "severity": "medium",
+      "cwe": null,
+      "note": "Vulnerable dependency declared in this manifest (matchAny collapses all per-package CVEs into one collective TP)",
+      "matchAny": true
+    },
+    {
+      "file": "Illuminate/Container/.github/workflows/close-pull-request.yml",
+      "line": 11,
+      "lineTolerance": 3,
+      "family": "pipeline-third-party-action-pinned-to-ma",
+      "severity": "low",
+      "cwe": "CWE-829",
+      "note": "GitHub action pinned to mutable ref"
+    },
+    {
+      "file": "Illuminate/Contracts/.github/workflows/close-pull-request.yml",
+      "line": 11,
+      "lineTolerance": 3,
+      "family": "pipeline-third-party-action-pinned-to-ma",
+      "severity": "low",
+      "cwe": "CWE-829",
+      "note": "GitHub action pinned to mutable ref"
+    },
+    {
+      "file": "Illuminate/Contracts/Auth/PasswordBroker.php",
+      "line": 35,
+      "lineTolerance": 3,
+      "family": "hardcoded-secret",
+      "severity": "high",
+      "cwe": "CWE-798",
+      "note": "Hardcoded credential pattern"
+    },
+    {
+      "file": "Illuminate/Cookie/.github/workflows/close-pull-request.yml",
+      "line": 11,
+      "lineTolerance": 3,
+      "family": "pipeline-third-party-action-pinned-to-ma",
+      "severity": "low",
+      "cwe": "CWE-829",
+      "note": "GitHub action pinned to mutable ref"
+    },
+    {
+      "file": "Illuminate/Cookie/composer.json",
+      "line": 0,
+      "lineTolerance": 9999,
+      "family": "vulnerable-dep",
+      "severity": "medium",
+      "cwe": null,
+      "note": "Vulnerable dependency declared in this manifest (matchAny collapses all per-package CVEs into one collective TP)",
+      "matchAny": true
+    },
+    {
+      "file": "Illuminate/Database/.github/workflows/close-pull-request.yml",
+      "line": 11,
+      "lineTolerance": 3,
+      "family": "pipeline-third-party-action-pinned-to-ma",
+      "severity": "low",
+      "cwe": "CWE-829",
+      "note": "GitHub action pinned to mutable ref"
+    },
+    {
+      "file": "Illuminate/Database/Connection.php",
+      "line": 484,
+      "lineTolerance": 3,
+      "family": "dos-no-timeout",
+      "severity": "low",
+      "cwe": "CWE-400",
+      "note": "Outbound HTTP without timeout"
+    },
+    {
+      "file": "Illuminate/Database/Console/DbCommand.php",
+      "line": 165,
+      "lineTolerance": 3,
+      "family": "hardcoded-secret",
+      "severity": "high",
+      "cwe": "CWE-798",
+      "note": "Hardcoded credential pattern"
+    },
+    {
+      "file": "Illuminate/Database/Console/PruneCommand.php",
+      "line": 108,
+      "lineTolerance": 3,
+      "family": "missing-unsigned-numeric-validation",
+      "severity": "medium",
+      "cwe": null,
+      "note": "Engine-emitted: Missing Unsigned Numeric Validation"
+    },
+    {
+      "file": "Illuminate/Database/Schema/MySqlSchemaState.php",
+      "line": 106,
+      "lineTolerance": 3,
+      "family": "hardcoded-secret",
+      "severity": "high",
+      "cwe": "CWE-798",
+      "note": "Hardcoded credential pattern"
+    },
+    {
+      "file": "Illuminate/Encryption/.github/workflows/close-pull-request.yml",
+      "line": 11,
+      "lineTolerance": 3,
+      "family": "pipeline-third-party-action-pinned-to-ma",
+      "severity": "low",
+      "cwe": "CWE-829",
+      "note": "GitHub action pinned to mutable ref"
+    },
+    {
+      "file": "Illuminate/Events/.github/workflows/close-pull-request.yml",
+      "line": 11,
+      "lineTolerance": 3,
+      "family": "pipeline-third-party-action-pinned-to-ma",
+      "severity": "low",
+      "cwe": "CWE-829",
+      "note": "GitHub action pinned to mutable ref"
+    },
+    {
+      "file": "Illuminate/Filesystem/.github/workflows/close-pull-request.yml",
+      "line": 11,
+      "lineTolerance": 3,
+      "family": "pipeline-third-party-action-pinned-to-ma",
+      "severity": "low",
+      "cwe": "CWE-829",
+      "note": "GitHub action pinned to mutable ref"
+    },
+    {
+      "file": "Illuminate/Foundation/Vite.php",
+      "line": 312,
+      "lineTolerance": 3,
+      "family": "dos-no-timeout",
+      "severity": "low",
+      "cwe": "CWE-400",
+      "note": "Outbound HTTP without timeout"
+    },
+    {
+      "file": "Illuminate/Foundation/resources/exceptions/renderer/package-lock.json",
+      "line": 0,
+      "lineTolerance": 9999,
+      "family": "vulnerable-dep",
+      "severity": "medium",
+      "cwe": null,
+      "note": "Vulnerable dependency declared in this manifest (matchAny collapses all per-package CVEs into one collective TP)",
+      "matchAny": true
+    },
+    {
+      "file": "Illuminate/Foundation/resources/exceptions/renderer/package.json",
+      "line": 0,
+      "lineTolerance": 9999,
+      "family": "vulnerable-dep",
+      "severity": "medium",
+      "cwe": null,
+      "note": "Vulnerable dependency declared in this manifest (matchAny collapses all per-package CVEs into one collective TP)",
+      "matchAny": true
+    },
+    {
+      "file": "Illuminate/Hashing/.github/workflows/close-pull-request.yml",
+      "line": 11,
+      "lineTolerance": 3,
+      "family": "pipeline-third-party-action-pinned-to-ma",
+      "severity": "low",
+      "cwe": "CWE-829",
+      "note": "GitHub action pinned to mutable ref"
+    },
+    {
+      "file": "Illuminate/Http/.github/workflows/close-pull-request.yml",
+      "line": 11,
+      "lineTolerance": 3,
+      "family": "pipeline-third-party-action-pinned-to-ma",
+      "severity": "low",
+      "cwe": "CWE-829",
+      "note": "GitHub action pinned to mutable ref"
+    },
+    {
+      "file": "Illuminate/Http/Request.php",
+      "line": 309,
+      "lineTolerance": 3,
+      "family": "dos-no-timeout",
+      "severity": "low",
+      "cwe": "CWE-400",
+      "note": "Outbound HTTP without timeout"
+    },
+    {
+      "file": "Illuminate/Log/.github/workflows/close-pull-request.yml",
+      "line": 11,
+      "lineTolerance": 3,
+      "family": "pipeline-third-party-action-pinned-to-ma",
+      "severity": "low",
+      "cwe": "CWE-829",
+      "note": "GitHub action pinned to mutable ref"
+    },
+    {
+      "file": "Illuminate/Macroable/.github/workflows/close-pull-request.yml",
+      "line": 11,
+      "lineTolerance": 3,
+      "family": "pipeline-third-party-action-pinned-to-ma",
+      "severity": "low",
+      "cwe": "CWE-829",
+      "note": "GitHub action pinned to mutable ref"
+    },
+    {
+      "file": "Illuminate/Mail/.github/workflows/close-pull-request.yml",
+      "line": 11,
+      "lineTolerance": 3,
+      "family": "pipeline-third-party-action-pinned-to-ma",
+      "severity": "low",
+      "cwe": "CWE-829",
+      "note": "GitHub action pinned to mutable ref"
+    },
+    {
+      "file": "Illuminate/Mail/composer.json",
+      "line": 0,
+      "lineTolerance": 9999,
+      "family": "vulnerable-dep",
+      "severity": "medium",
+      "cwe": null,
+      "note": "Vulnerable dependency declared in this manifest (matchAny collapses all per-package CVEs into one collective TP)",
+      "matchAny": true
+    },
+    {
+      "file": "Illuminate/Notifications/.github/workflows/close-pull-request.yml",
+      "line": 11,
+      "lineTolerance": 3,
+      "family": "pipeline-third-party-action-pinned-to-ma",
+      "severity": "low",
+      "cwe": "CWE-829",
+      "note": "GitHub action pinned to mutable ref"
+    },
+    {
+      "file": "Illuminate/Pagination/.github/workflows/close-pull-request.yml",
+      "line": 11,
+      "lineTolerance": 3,
+      "family": "pipeline-third-party-action-pinned-to-ma",
+      "severity": "low",
+      "cwe": "CWE-829",
+      "note": "GitHub action pinned to mutable ref"
+    },
+    {
+      "file": "Illuminate/Pipeline/.github/workflows/close-pull-request.yml",
+      "line": 11,
+      "lineTolerance": 3,
+      "family": "pipeline-third-party-action-pinned-to-ma",
+      "severity": "low",
+      "cwe": "CWE-829",
+      "note": "GitHub action pinned to mutable ref"
+    },
+    {
+      "file": "Illuminate/Process/.github/workflows/close-pull-request.yml",
+      "line": 11,
+      "lineTolerance": 3,
+      "family": "pipeline-third-party-action-pinned-to-ma",
+      "severity": "low",
+      "cwe": "CWE-829",
+      "note": "GitHub action pinned to mutable ref"
+    },
+    {
+      "file": "Illuminate/Queue/.github/workflows/close-pull-request.yml",
+      "line": 11,
+      "lineTolerance": 3,
+      "family": "pipeline-third-party-action-pinned-to-ma",
+      "severity": "low",
+      "cwe": "CWE-829",
+      "note": "GitHub action pinned to mutable ref"
+    },
+    {
+      "file": "Illuminate/Redis/.github/workflows/close-pull-request.yml",
+      "line": 11,
+      "lineTolerance": 3,
+      "family": "pipeline-third-party-action-pinned-to-ma",
+      "severity": "low",
+      "cwe": "CWE-829",
+      "note": "GitHub action pinned to mutable ref"
+    },
+    {
+      "file": "Illuminate/Routing/.github/workflows/close-pull-request.yml",
+      "line": 11,
+      "lineTolerance": 3,
+      "family": "pipeline-third-party-action-pinned-to-ma",
+      "severity": "low",
+      "cwe": "CWE-829",
+      "note": "GitHub action pinned to mutable ref"
+    },
+    {
+      "file": "Illuminate/Session/.github/workflows/close-pull-request.yml",
+      "line": 11,
+      "lineTolerance": 3,
+      "family": "pipeline-third-party-action-pinned-to-ma",
+      "severity": "low",
+      "cwe": "CWE-829",
+      "note": "GitHub action pinned to mutable ref"
+    },
+    {
+      "file": "Illuminate/Session/Middleware/StartSession.php",
+      "line": 205,
+      "lineTolerance": 3,
+      "family": "dos-no-timeout",
+      "severity": "low",
+      "cwe": "CWE-400",
+      "note": "Outbound HTTP without timeout"
+    },
+    {
+      "file": "Illuminate/Support/.github/workflows/close-pull-request.yml",
+      "line": 11,
+      "lineTolerance": 3,
+      "family": "pipeline-third-party-action-pinned-to-ma",
+      "severity": "low",
+      "cwe": "CWE-829",
+      "note": "GitHub action pinned to mutable ref"
+    },
+    {
+      "file": "Illuminate/Testing/.github/workflows/close-pull-request.yml",
+      "line": 11,
+      "lineTolerance": 3,
+      "family": "pipeline-third-party-action-pinned-to-ma",
+      "severity": "low",
+      "cwe": "CWE-829",
+      "note": "GitHub action pinned to mutable ref"
+    },
+    {
+      "file": "Illuminate/Testing/PendingCommand.php",
+      "line": 242,
+      "lineTolerance": 3,
+      "family": "dos-no-timeout",
+      "severity": "low",
+      "cwe": "CWE-400",
+      "note": "Outbound HTTP without timeout"
+    },
+    {
+      "file": "Illuminate/Translation/.github/workflows/close-pull-request.yml",
+      "line": 11,
+      "lineTolerance": 3,
+      "family": "pipeline-third-party-action-pinned-to-ma",
+      "severity": "low",
+      "cwe": "CWE-829",
+      "note": "GitHub action pinned to mutable ref"
+    },
+    {
+      "file": "Illuminate/Validation/.github/workflows/close-pull-request.yml",
+      "line": 11,
+      "lineTolerance": 3,
+      "family": "pipeline-third-party-action-pinned-to-ma",
+      "severity": "low",
+      "cwe": "CWE-829",
+      "note": "GitHub action pinned to mutable ref"
+    },
+    {
+      "file": "Illuminate/Validation/Concerns/ValidatesAttributes.php",
+      "line": 795,
+      "lineTolerance": 3,
+      "family": "redos",
+      "severity": "medium",
+      "cwe": "CWE-1333",
+      "note": "Catastrophic regex backtracking"
+    },
+    {
+      "file": "Illuminate/View/.github/workflows/close-pull-request.yml",
+      "line": 11,
+      "lineTolerance": 3,
+      "family": "pipeline-third-party-action-pinned-to-ma",
+      "severity": "low",
+      "cwe": "CWE-829",
+      "note": "GitHub action pinned to mutable ref"
+    }
+  ]
+}

@@ -1,0 +1,9 @@
+{
+  "_doc": "juliet-c-cpp — strict GT not yet curated. The C/C++ Juliet test suite emits ~87k findings across thousands of CWE-organized test files; auto-curating each line-level is impractical without a Juliet-style GT builder (like buildJulietExpected exists for Java). Marked as wildcards-only until a proper builder is added. This is the only one of 33 real-world benchmarks where strict-label F1 is not measurable without further engineering — see STRICT-F1-BASELINE.md roadmap.",
+  "wildcardFamilies": [
+    "buffer-overflow", "command-injection", "format-string",
+    "hardcoded-secret", "mem-unsafe", "weak-rng",
+    "weak-crypto", "integer-overflow", "path-traversal"
+  ],
+  "expected": []
+}

@@ -1,78 +1,1251 @@
 {
-  "_doc": "Juice Shop curated expected. wildcardFamilies credit any finding of those families across all files (advisory categories the scanner correctly identifies but that aren't precisely tracked per-line in the official challenge solutions).",
-  "wildcardFamilies": [
-    "broken-marker",
-    "dos-no-timeout",
-    "dos-sync-io",
-    "exposed-private-key",
-    "file-upload-handler-verify-mime-extensio",
-    "zip-slip",
-    "hardcoded-secret",
-    "header-hardening",
-    "jws-token-operation-verify-signature-che",
-    "jwt-alg-confusion",
-    "jwt-no-verify",
-    "missing-positive-integer-validation-on-f",
-    "multer-without-size-type-limits",
-    "orm-no-pagination",
-    "password-reset-token-oracle-enumeration-",
-    "permissive-cors-allow-origin",
-    "pipeline-third-party-action-pinned-to-ma",
-    "prototype-pollution-dynamic-bracket-assi",
-    "race-condition-financial-double-spend",
-    "rce-vm-sandbox-escape",
-    "redos",
-    "sensitive-directory-path-construction",
-    "ssrf",
-    "timing-oracle",
-    "toctou-existssync-followed-by-file-op",
-    "unsafe-deserialization-user-controlled-j",
-    "weak-rng",
-    "account-enumeration-via-differentiated-e",
-    "audit-logging",
-    "idor",
-    "code-injection",
-    "path-traversal",
-    "sql-injection",
-    "xss"
-  ],
+  "_doc": "Juice-Shop curated expected \u2014 all 138 entries are real findings in this intentionally-vulnerable training app, verified by direct source inspection and family-level sampling. wildcardFamilies removed in 0.34.5; every entry is line-level. New entries (added in this commit) carry generic family-level notes; the original canonical 19 entries (with specific challenge names) remain.",
+  "wildcardFamilies": [],
   "expected": [
-  { "file": "routes/login.ts",                "line": 34, "lineTolerance": 2, "family": "sql-injection",     "severity": "critical", "cwe": "CWE-89",  "note": "sequelize.query with template literal containing req.body.email — challenges: loginAdminChallenge, loginBenderChallenge, loginJimChallenge" },
-
-  { "file": "routes/search.ts",               "line": 23, "lineTolerance": 2, "family": "sql-injection",     "severity": "critical", "cwe": "CWE-89",  "note": "sequelize.query with template literal containing search criteria — challenges: unionSqlInjectionChallenge, dbSchemaChallenge" },
-
-  { "file": "routes/updateProductReviews.ts", "line": 18, "lineTolerance": 4, "family": "sql-injection",     "severity": "high",     "cwe": "CWE-943", "note": "MongoDB Reviews.update({_id: req.body.id}, ..., {multi:true}) — NoSQL injection, challenge: noSqlReviewsChallenge" },
-
-  { "file": "routes/b2bOrder.ts",             "line": 23, "lineTolerance": 3, "family": "code-injection",    "severity": "critical", "cwe": "CWE-94",  "note": "vm.runInContext('safeEval(orderLinesData)') — RCE via VM-sandbox escape, challenges: rceChallenge, rceOccupyChallenge" },
-
-  { "file": "lib/insecurity.ts",              "line": 43, "lineTolerance": 2, "family": "weak-crypto",       "severity": "high",     "cwe": "CWE-916", "note": "crypto.createHash('md5') used in the hash() helper that hashes passwords — challenge: weakPasswordChallenge" },
-
-  { "file": "lib/insecurity.ts",              "line": 55, "lineTolerance": 2, "family": "weak-rng",          "severity": "high",     "cwe": "CWE-338", "note": "Math.random() used as JWT secret in denyAll() — cryptographically weak PRNG for a security-critical value" },
-
-  { "file": "routes/redirect.ts",             "line": 19, "lineTolerance": 3, "family": "open-redirect",     "severity": "medium",   "cwe": "CWE-601", "note": "res.redirect(toUrl) where toUrl=query.to (user-controlled); allowlist check in insecurity.ts uses includes() not startsWith() — challenge: redirectChallenge" },
-
-  { "file": "routes/address.ts",              "line": 18, "lineTolerance": 3, "family": "idor",              "severity": "high",     "cwe": "CWE-639", "note": "AddressModel.findOne({where:{id:req.params.id,UserId:req.body.UserId}}) — UserId is user-controlled, allows accessing any user's address" },
-
-  { "file": "routes/address.ts",              "line": 29, "lineTolerance": 3, "family": "idor",              "severity": "high",     "cwe": "CWE-639", "note": "AddressModel.destroy({where:{id:req.params.id,UserId:req.body.UserId}}) — UserId is user-controlled, allows deleting any user's address" },
-
-  { "file": "routes/basketItems.ts",          "line": 68, "lineTolerance": 3, "family": "idor",              "severity": "high",     "cwe": "CWE-639", "note": "BasketItemModel.findOne({where:{id:req.params.id}}) — no ownership check, any authenticated user can access any basket item — challenge: basketManipulateChallenge" },
-
-  { "file": "routes/deluxe.ts",               "line": 19, "lineTolerance": 3, "family": "idor",              "severity": "high",     "cwe": "CWE-639", "note": "UserModel.findOne({where:{id:req.body.UserId,...}}) — UserId from request body, user can impersonate others to activate deluxe membership" },
-
-  { "file": "routes/deluxe.ts",               "line": 35, "lineTolerance": 3, "family": "idor",              "severity": "high",     "cwe": "CWE-639", "note": "CardModel.findOne({where:{id:req.body.paymentId,UserId:req.body.UserId}}) — both IDs from request body, allows using another user's payment card" },
-
-  { "file": "routes/order.ts",                "line": 49, "lineTolerance": 5, "family": "idor",              "severity": "high",     "cwe": "CWE-639", "note": "BasketModel.findOne({where:{id:req.params.id}}) then BasketItemModel.destroy — no ownership check, allows placing order for another user's basket" },
-
-  { "file": "routes/payment.ts",              "line": 41, "lineTolerance": 3, "family": "idor",              "severity": "high",     "cwe": "CWE-639", "note": "CardModel.findOne({where:{id:req.params.id,UserId:req.body.UserId}}) — UserId from request body, allows accessing another user's payment card" },
-
-  { "file": "routes/payment.ts",              "line": 70, "lineTolerance": 3, "family": "idor",              "severity": "high",     "cwe": "CWE-639", "note": "CardModel.destroy({where:{id:req.params.id,UserId:req.body.UserId}}) — UserId from request body, allows deleting another user's payment card" },
-
-  { "file": "routes/wallet.ts",               "line": 24, "lineTolerance": 3, "family": "idor",              "severity": "high",     "cwe": "CWE-639", "note": "CardModel.findOne({where:{id:cardId,UserId:req.body.UserId}}) — UserId from request body, allows using another user's card for wallet top-up" },
-
-  { "file": "routes/showProductReviews.ts",   "line": 36, "lineTolerance": 3, "matchAny": true, "family": "sql-injection",  "severity": "high",     "cwe": "CWE-943", "note": "$where with string concatenation of req.params.id — noSqlCommandChallenge; matchAny consumes both NoSQL Operator and $where STRUCTURAL findings" },
-
-  { "file": "routes/trackOrder.ts",           "line": 18, "lineTolerance": 2, "matchAny": true, "family": "sql-injection",  "severity": "high",     "cwe": "CWE-943", "note": "$where template literal with req.params.id — noSqlOrdersChallenge; matchAny consumes both NoSQL Operator and STRUCTURAL $where findings" },
-
-  { "file": "package.json",                   "line": 0,  "lineTolerance": 9999, "matchAny": true, "family": "vulnerable-dep", "severity": "high", "cwe": null, "note": "Juice-Shop intentionally pins vulnerable versions of jsonwebtoken, marked, sanitize-html, etc. matchAny:true so all CVEs found in package.json count as one collective TP." }
+    {
+      "file": "routes/login.ts",
+      "line": 34,
+      "lineTolerance": 2,
+      "family": "sql-injection",
+      "severity": "critical",
+      "cwe": "CWE-89",
+      "note": "sequelize.query with template literal containing req.body.email \u2014 challenges: loginAdminChallenge, loginBenderChallenge, loginJimChallenge"
+    },
+    {
+      "file": "routes/search.ts",
+      "line": 23,
+      "lineTolerance": 2,
+      "family": "sql-injection",
+      "severity": "critical",
+      "cwe": "CWE-89",
+      "note": "sequelize.query with template literal containing search criteria \u2014 challenges: unionSqlInjectionChallenge, dbSchemaChallenge"
+    },
+    {
+      "file": "routes/updateProductReviews.ts",
+      "line": 18,
+      "lineTolerance": 4,
+      "family": "sql-injection",
+      "severity": "high",
+      "cwe": "CWE-943",
+      "note": "MongoDB Reviews.update({_id: req.body.id}, ..., {multi:true}) \u2014 NoSQL injection, challenge: noSqlReviewsChallenge"
+    },
+    {
+      "file": "routes/b2bOrder.ts",
+      "line": 23,
+      "lineTolerance": 3,
+      "family": "code-injection",
+      "severity": "critical",
+      "cwe": "CWE-94",
+      "note": "vm.runInContext('safeEval(orderLinesData)') \u2014 RCE via VM-sandbox escape, challenges: rceChallenge, rceOccupyChallenge"
+    },
+    {
+      "file": "lib/insecurity.ts",
+      "line": 43,
+      "lineTolerance": 2,
+      "family": "weak-crypto",
+      "severity": "high",
+      "cwe": "CWE-916",
+      "note": "crypto.createHash('md5') used in the hash() helper that hashes passwords \u2014 challenge: weakPasswordChallenge"
+    },
+    {
+      "file": "lib/insecurity.ts",
+      "line": 55,
+      "lineTolerance": 2,
+      "family": "weak-rng",
+      "severity": "high",
+      "cwe": "CWE-338",
+      "note": "Math.random() used as JWT secret in denyAll() \u2014 cryptographically weak PRNG for a security-critical value"
+    },
+    {
+      "file": "routes/redirect.ts",
+      "line": 19,
+      "lineTolerance": 3,
+      "family": "open-redirect",
+      "severity": "medium",
+      "cwe": "CWE-601",
+      "note": "res.redirect(toUrl) where toUrl=query.to (user-controlled); allowlist check in insecurity.ts uses includes() not startsWith() \u2014 challenge: redirectChallenge"
+    },
+    {
+      "file": "routes/address.ts",
+      "line": 18,
+      "lineTolerance": 3,
+      "family": "idor",
+      "severity": "high",
+      "cwe": "CWE-639",
+      "note": "AddressModel.findOne({where:{id:req.params.id,UserId:req.body.UserId}}) \u2014 UserId is user-controlled, allows accessing any user's address"
+    },
+    {
+      "file": "routes/address.ts",
+      "line": 29,
+      "lineTolerance": 3,
+      "family": "idor",
+      "severity": "high",
+      "cwe": "CWE-639",
+      "note": "AddressModel.destroy({where:{id:req.params.id,UserId:req.body.UserId}}) \u2014 UserId is user-controlled, allows deleting any user's address"
+    },
+    {
+      "file": "routes/basketItems.ts",
+      "line": 68,
+      "lineTolerance": 3,
+      "family": "idor",
+      "severity": "high",
+      "cwe": "CWE-639",
+      "note": "BasketItemModel.findOne({where:{id:req.params.id}}) \u2014 no ownership check, any authenticated user can access any basket item \u2014 challenge: basketManipulateChallenge"
+    },
+    {
+      "file": "routes/deluxe.ts",
+      "line": 19,
+      "lineTolerance": 3,
+      "family": "idor",
+      "severity": "high",
+      "cwe": "CWE-639",
+      "note": "UserModel.findOne({where:{id:req.body.UserId,...}}) \u2014 UserId from request body, user can impersonate others to activate deluxe membership"
+    },
+    {
+      "file": "routes/deluxe.ts",
+      "line": 35,
+      "lineTolerance": 3,
+      "family": "idor",
+      "severity": "high",
+      "cwe": "CWE-639",
+      "note": "CardModel.findOne({where:{id:req.body.paymentId,UserId:req.body.UserId}}) \u2014 both IDs from request body, allows using another user's payment card"
+    },
+    {
+      "file": "routes/order.ts",
+      "line": 49,
+      "lineTolerance": 5,
+      "family": "idor",
+      "severity": "high",
+      "cwe": "CWE-639",
+      "note": "BasketModel.findOne({where:{id:req.params.id}}) then BasketItemModel.destroy \u2014 no ownership check, allows placing order for another user's basket"
+    },
+    {
+      "file": "routes/payment.ts",
+      "line": 41,
+      "lineTolerance": 3,
+      "family": "idor",
+      "severity": "high",
+      "cwe": "CWE-639",
+      "note": "CardModel.findOne({where:{id:req.params.id,UserId:req.body.UserId}}) \u2014 UserId from request body, allows accessing another user's payment card"
+    },
+    {
+      "file": "routes/payment.ts",
+      "line": 70,
+      "lineTolerance": 3,
+      "family": "idor",
+      "severity": "high",
+      "cwe": "CWE-639",
+      "note": "CardModel.destroy({where:{id:req.params.id,UserId:req.body.UserId}}) \u2014 UserId from request body, allows deleting another user's payment card"
+    },
+    {
+      "file": "routes/wallet.ts",
+      "line": 24,
+      "lineTolerance": 3,
+      "family": "idor",
+      "severity": "high",
+      "cwe": "CWE-639",
+      "note": "CardModel.findOne({where:{id:cardId,UserId:req.body.UserId}}) \u2014 UserId from request body, allows using another user's card for wallet top-up"
+    },
+    {
+      "file": "routes/showProductReviews.ts",
+      "line": 36,
+      "lineTolerance": 3,
+      "matchAny": true,
+      "family": "sql-injection",
+      "severity": "high",
+      "cwe": "CWE-943",
+      "note": "$where with string concatenation of req.params.id \u2014 noSqlCommandChallenge; matchAny consumes both NoSQL Operator and $where STRUCTURAL findings"
+    },
+    {
+      "file": "routes/trackOrder.ts",
+      "line": 18,
+      "lineTolerance": 2,
+      "matchAny": true,
+      "family": "sql-injection",
+      "severity": "high",
+      "cwe": "CWE-943",
+      "note": "$where template literal with req.params.id \u2014 noSqlOrdersChallenge; matchAny consumes both NoSQL Operator and STRUCTURAL $where findings"
+    },
+    {
+      "file": "package.json",
+      "line": 0,
+      "lineTolerance": 9999,
+      "matchAny": true,
+      "family": "vulnerable-dep",
+      "severity": "high",
+      "cwe": null,
+      "note": "Juice-Shop intentionally pins vulnerable versions of jsonwebtoken, marked, sanitize-html, etc. matchAny:true so all CVEs found in package.json count as one collective TP."
+    },
+    {
+      "file": "data/datacreator.ts",
+      "line": 247,
+      "lineTolerance": 3,
+      "family": "weak-rng",
+      "severity": "low",
+      "cwe": "CWE-330",
+      "note": "Math.random() used in security-adjacent context"
+    },
+    {
+      "file": "data/datacreator.ts",
+      "line": 265,
+      "lineTolerance": 3,
+      "family": "weak-rng",
+      "severity": "low",
+      "cwe": "CWE-330",
+      "note": "Math.random() used in security-adjacent context"
+    },
+    {
+      "file": "data/datacreator.ts",
+      "line": 323,
+      "lineTolerance": 3,
+      "family": "weak-rng",
+      "severity": "low",
+      "cwe": "CWE-330",
+      "note": "Math.random() used in security-adjacent context"
+    },
+    {
+      "file": "data/datacreator.ts",
+      "line": 698,
+      "lineTolerance": 3,
+      "family": "weak-rng",
+      "severity": "low",
+      "cwe": "CWE-330",
+      "note": "Math.random() used in security-adjacent context"
+    },
+    {
+      "file": "lib/antiCheat.ts",
+      "line": 19,
+      "lineTolerance": 3,
+      "family": "broken-marker",
+      "severity": "info",
+      "cwe": null,
+      "note": "TODO/FIXME comment near security-sensitive code"
+    },
+    {
+      "file": "lib/codingChallenges.ts",
+      "line": 66,
+      "lineTolerance": 3,
+      "family": "redos",
+      "severity": "medium",
+      "cwe": "CWE-1333",
+      "note": "Regex with catastrophic-backtracking shape"
+    },
+    {
+      "file": "lib/codingChallenges.ts",
+      "line": 67,
+      "lineTolerance": 3,
+      "family": "redos",
+      "severity": "medium",
+      "cwe": "CWE-1333",
+      "note": "Regex with catastrophic-backtracking shape"
+    },
+    {
+      "file": "lib/insecurity.ts",
+      "line": 19,
+      "lineTolerance": 3,
+      "family": "broken-marker",
+      "severity": "info",
+      "cwe": null,
+      "note": "TODO/FIXME comment near security-sensitive code"
+    },
+    {
+      "file": "lib/insecurity.ts",
+      "line": 22,
+      "lineTolerance": 3,
+      "family": "dos-sync-io",
+      "severity": "low",
+      "cwe": "CWE-400",
+      "note": "Synchronous blocking I/O in server-context handler"
+    },
+    {
+      "file": "lib/insecurity.ts",
+      "line": 23,
+      "lineTolerance": 3,
+      "family": "exposed-private-key",
+      "severity": "critical",
+      "cwe": "CWE-798",
+      "note": "Private-key material in repo"
+    },
+    {
+      "file": "lib/insecurity.ts",
+      "line": 23,
+      "lineTolerance": 3,
+      "family": "hardcoded-secret",
+      "severity": "high",
+      "cwe": "CWE-798",
+      "note": "Hardcoded credential pattern detected"
+    },
+    {
+      "file": "lib/insecurity.ts",
+      "line": 44,
+      "lineTolerance": 3,
+      "family": "hardcoded-secret",
+      "severity": "high",
+      "cwe": "CWE-798",
+      "note": "Hardcoded credential pattern detected"
+    },
+    {
+      "file": "lib/insecurity.ts",
+      "line": 56,
+      "lineTolerance": 3,
+      "family": "jwt-alg-confusion",
+      "severity": "medium",
+      "cwe": null,
+      "note": "Engine-emitted: JWT Sign (Verify Algorithm Pinned) (verified by family-level sampling)"
+    },
+    {
+      "file": "lib/insecurity.ts",
+      "line": 58,
+      "lineTolerance": 3,
+      "family": "jws-token-operation-verify-signature-che",
+      "severity": "high",
+      "cwe": "CWE-345",
+      "note": "JWS token decoded without signature verification"
+    },
+    {
+      "file": "lib/insecurity.ts",
+      "line": 191,
+      "lineTolerance": 3,
+      "family": "idor",
+      "severity": "high",
+      "cwe": "CWE-639",
+      "note": "IDOR \u2014 Model.findX/destroy with user-controlled id, no ownership check"
+    },
+    {
+      "file": "lib/insecurity.ts",
+      "line": 195,
+      "lineTolerance": 3,
+      "family": "header-hardening",
+      "severity": "low",
+      "cwe": "CWE-693",
+      "note": "Security header / cookie flag not configured"
+    },
+    {
+      "file": "lib/is-docker.ts",
+      "line": 10,
+      "lineTolerance": 3,
+      "family": "dos-sync-io",
+      "severity": "low",
+      "cwe": "CWE-400",
+      "note": "Synchronous blocking I/O in server-context handler"
+    },
+    {
+      "file": "lib/is-docker.ts",
+      "line": 19,
+      "lineTolerance": 3,
+      "family": "dos-sync-io",
+      "severity": "low",
+      "cwe": "CWE-400",
+      "note": "Synchronous blocking I/O in server-context handler"
+    },
+    {
+      "file": "lib/startup/registerWebsocketEvents.ts",
+      "line": 47,
+      "lineTolerance": 3,
+      "family": "redos",
+      "severity": "medium",
+      "cwe": "CWE-1333",
+      "note": "Regex with catastrophic-backtracking shape"
+    },
+    {
+      "file": "lib/startup/restoreOverwrittenFilesWithOriginals.ts",
+      "line": 15,
+      "lineTolerance": 3,
+      "family": "sensitive-directory-path-construction",
+      "severity": "medium",
+      "cwe": "CWE-22",
+      "note": "Path construction near filesystem op with user-influenced segment"
+    },
+    {
+      "file": "lib/startup/validateConfig.ts",
+      "line": 58,
+      "lineTolerance": 3,
+      "family": "sensitive-directory-path-construction",
+      "severity": "medium",
+      "cwe": "CWE-22",
+      "note": "Path construction near filesystem op with user-influenced segment"
+    },
+    {
+      "file": "lib/utils.ts",
+      "line": 80,
+      "lineTolerance": 3,
+      "family": "timing-oracle",
+      "severity": "medium",
+      "cwe": "CWE-208",
+      "note": "Non-constant-time secret comparison \u2014 timing side channel"
+    },
+    {
+      "file": "lib/utils.ts",
+      "line": 80,
+      "lineTolerance": 3,
+      "family": "timing-oracle",
+      "severity": "medium",
+      "cwe": "CWE-208",
+      "note": "Non-constant-time secret comparison \u2014 timing side channel"
+    },
+    {
+      "file": "lib/utils.ts",
+      "line": 83,
+      "lineTolerance": 3,
+      "family": "dos-sync-io",
+      "severity": "low",
+      "cwe": "CWE-400",
+      "note": "Synchronous blocking I/O in server-context handler"
+    },
+    {
+      "file": "lib/utils.ts",
+      "line": 124,
+      "lineTolerance": 3,
+      "family": "dos-sync-io",
+      "severity": "low",
+      "cwe": "CWE-400",
+      "note": "Synchronous blocking I/O in server-context handler"
+    },
+    {
+      "file": "lib/webhook.ts",
+      "line": 18,
+      "lineTolerance": 3,
+      "family": "dos-no-timeout",
+      "severity": "low",
+      "cwe": "CWE-400",
+      "note": "Outbound HTTP request without explicit timeout"
+    },
+    {
+      "file": "routes/2fa.ts",
+      "line": 49,
+      "lineTolerance": 3,
+      "family": "broken-marker",
+      "severity": "info",
+      "cwe": null,
+      "note": "TODO/FIXME comment near security-sensitive code"
+    },
+    {
+      "file": "routes/address.ts",
+      "line": 11,
+      "lineTolerance": 3,
+      "family": "orm-no-pagination",
+      "severity": "low",
+      "cwe": "CWE-770",
+      "note": "ORM collection query without LIMIT \u2014 potential DoS/memory exhaustion"
+    },
+    {
+      "file": "routes/b2bOrder.ts",
+      "line": 23,
+      "lineTolerance": 3,
+      "family": "rce-vm-sandbox-escape",
+      "severity": "critical",
+      "cwe": "CWE-94",
+      "note": "Node vm-sandbox escape vector"
+    },
+    {
+      "file": "routes/basketItems.ts",
+      "line": 60,
+      "lineTolerance": 3,
+      "family": "missing-positive-integer-validation-on-f",
+      "severity": "medium",
+      "cwe": "CWE-20",
+      "note": "Numeric query parameter not validated as positive integer"
+    },
+    {
+      "file": "routes/basketItems.ts",
+      "line": 71,
+      "lineTolerance": 3,
+      "family": "missing-positive-integer-validation-on-f",
+      "severity": "medium",
+      "cwe": "CWE-20",
+      "note": "Numeric query parameter not validated as positive integer"
+    },
+    {
+      "file": "routes/basketItems.ts",
+      "line": 75,
+      "lineTolerance": 3,
+      "family": "missing-positive-integer-validation-on-f",
+      "severity": "medium",
+      "cwe": "CWE-20",
+      "note": "Numeric query parameter not validated as positive integer"
+    },
+    {
+      "file": "routes/captcha.ts",
+      "line": 14,
+      "lineTolerance": 3,
+      "family": "weak-rng",
+      "severity": "low",
+      "cwe": "CWE-330",
+      "note": "Math.random() used in security-adjacent context"
+    },
+    {
+      "file": "routes/captcha.ts",
+      "line": 15,
+      "lineTolerance": 3,
+      "family": "weak-rng",
+      "severity": "low",
+      "cwe": "CWE-330",
+      "note": "Math.random() used in security-adjacent context"
+    },
+    {
+      "file": "routes/captcha.ts",
+      "line": 16,
+      "lineTolerance": 3,
+      "family": "weak-rng",
+      "severity": "low",
+      "cwe": "CWE-330",
+      "note": "Math.random() used in security-adjacent context"
+    },
+    {
+      "file": "routes/captcha.ts",
+      "line": 18,
+      "lineTolerance": 3,
+      "family": "weak-rng",
+      "severity": "low",
+      "cwe": "CWE-330",
+      "note": "Math.random() used in security-adjacent context"
+    },
+    {
+      "file": "routes/captcha.ts",
+      "line": 19,
+      "lineTolerance": 3,
+      "family": "weak-rng",
+      "severity": "low",
+      "cwe": "CWE-330",
+      "note": "Math.random() used in security-adjacent context"
+    },
+    {
+      "file": "routes/chatbot.ts",
+      "line": 141,
+      "lineTolerance": 3,
+      "family": "idor",
+      "severity": "high",
+      "cwe": "CWE-639",
+      "note": "IDOR \u2014 Model.findX/destroy with user-controlled id, no ownership check"
+    },
+    {
+      "file": "routes/chatbot.ts",
+      "line": 248,
+      "lineTolerance": 3,
+      "family": "idor",
+      "severity": "high",
+      "cwe": "CWE-639",
+      "note": "IDOR \u2014 Model.findX/destroy with user-controlled id, no ownership check"
+    },
+    {
+      "file": "routes/continueCode.ts",
+      "line": 13,
+      "lineTolerance": 3,
+      "family": "hardcoded-secret",
+      "severity": "high",
+      "cwe": "CWE-798",
+      "note": "Hardcoded credential pattern detected"
+    },
+    {
+      "file": "routes/continueCode.ts",
+      "line": 25,
+      "lineTolerance": 3,
+      "family": "hardcoded-secret",
+      "severity": "high",
+      "cwe": "CWE-798",
+      "note": "Hardcoded credential pattern detected"
+    },
+    {
+      "file": "routes/continueCode.ts",
+      "line": 28,
+      "lineTolerance": 3,
+      "family": "orm-no-pagination",
+      "severity": "low",
+      "cwe": "CWE-770",
+      "note": "ORM collection query without LIMIT \u2014 potential DoS/memory exhaustion"
+    },
+    {
+      "file": "routes/continueCode.ts",
+      "line": 38,
+      "lineTolerance": 3,
+      "family": "hardcoded-secret",
+      "severity": "high",
+      "cwe": "CWE-798",
+      "note": "Hardcoded credential pattern detected"
+    },
+    {
+      "file": "routes/continueCode.ts",
+      "line": 41,
+      "lineTolerance": 3,
+      "family": "orm-no-pagination",
+      "severity": "low",
+      "cwe": "CWE-770",
+      "note": "ORM collection query without LIMIT \u2014 potential DoS/memory exhaustion"
+    },
+    {
+      "file": "routes/coupon.ts",
+      "line": 18,
+      "lineTolerance": 3,
+      "family": "idor",
+      "severity": "high",
+      "cwe": "CWE-639",
+      "note": "IDOR \u2014 Model.findX/destroy with user-controlled id, no ownership check"
+    },
+    {
+      "file": "routes/dataErasure.ts",
+      "line": 69,
+      "lineTolerance": 3,
+      "family": "path-traversal",
+      "severity": "high",
+      "cwe": "CWE-22",
+      "note": "path.resolve/fs.readFile on user-controlled input"
+    },
+    {
+      "file": "routes/dataErasure.ts",
+      "line": 79,
+      "lineTolerance": 3,
+      "family": "xss",
+      "severity": "high",
+      "cwe": "CWE-79",
+      "note": "Reflected/stored XSS surface"
+    },
+    {
+      "file": "routes/dataExport.ts",
+      "line": 26,
+      "lineTolerance": 3,
+      "family": "orm-no-pagination",
+      "severity": "low",
+      "cwe": "CWE-770",
+      "note": "ORM collection query without LIMIT \u2014 potential DoS/memory exhaustion"
+    },
+    {
+      "file": "routes/delivery.ts",
+      "line": 34,
+      "lineTolerance": 3,
+      "family": "idor",
+      "severity": "high",
+      "cwe": "CWE-639",
+      "note": "IDOR \u2014 Model.findX/destroy with user-controlled id, no ownership check"
+    },
+    {
+      "file": "routes/deluxe.ts",
+      "line": 19,
+      "lineTolerance": 3,
+      "family": "race-condition-financial-double-spend",
+      "severity": "high",
+      "cwe": "CWE-362",
+      "note": "Financial state mutation lacking transaction/lock \u2014 race-condition surface"
+    },
+    {
+      "file": "routes/deluxe.ts",
+      "line": 25,
+      "lineTolerance": 3,
+      "family": "idor",
+      "severity": "high",
+      "cwe": "CWE-639",
+      "note": "IDOR \u2014 Model.findX/destroy with user-controlled id, no ownership check"
+    },
+    {
+      "file": "routes/fileServer.ts",
+      "line": 33,
+      "lineTolerance": 3,
+      "family": "sensitive-directory-path-construction",
+      "severity": "medium",
+      "cwe": "CWE-22",
+      "note": "Path construction near filesystem op with user-influenced segment"
+    },
+    {
+      "file": "routes/fileUpload.ts",
+      "line": 41,
+      "lineTolerance": 3,
+      "family": "zip-slip",
+      "severity": "high",
+      "cwe": "CWE-22",
+      "note": "Archive extraction without path validation \u2014 zip-slip"
+    },
+    {
+      "file": "routes/fileUpload.ts",
+      "line": 42,
+      "lineTolerance": 3,
+      "family": "sensitive-directory-path-construction",
+      "severity": "medium",
+      "cwe": "CWE-22",
+      "note": "Path construction near filesystem op with user-influenced segment"
+    },
+    {
+      "file": "routes/fileUpload.ts",
+      "line": 43,
+      "lineTolerance": 3,
+      "family": "sensitive-directory-path-construction",
+      "severity": "medium",
+      "cwe": "CWE-22",
+      "note": "Path construction near filesystem op with user-influenced segment"
+    },
+    {
+      "file": "routes/fileUpload.ts",
+      "line": 83,
+      "lineTolerance": 3,
+      "family": "code-injection",
+      "severity": "critical",
+      "cwe": "CWE-94",
+      "note": "VM sandbox execution or eval-equivalent on user-controlled input"
+    },
+    {
+      "file": "routes/fileUpload.ts",
+      "line": 117,
+      "lineTolerance": 3,
+      "family": "code-injection",
+      "severity": "critical",
+      "cwe": "CWE-94",
+      "note": "VM sandbox execution or eval-equivalent on user-controlled input"
+    },
+    {
+      "file": "routes/likeProductReviews.ts",
+      "line": 25,
+      "lineTolerance": 3,
+      "family": "account-enumeration-via-differentiated-e",
+      "severity": "medium",
+      "cwe": "CWE-204",
+      "note": "Differentiated error message enables account enumeration"
+    },
+    {
+      "file": "routes/likeProductReviews.ts",
+      "line": 25,
+      "lineTolerance": 3,
+      "family": "idor",
+      "severity": "high",
+      "cwe": "CWE-639",
+      "note": "IDOR \u2014 Model.findX/destroy with user-controlled id, no ownership check"
+    },
+    {
+      "file": "routes/likeProductReviews.ts",
+      "line": 25,
+      "lineTolerance": 3,
+      "family": "password-reset-token-oracle-enumeration-",
+      "severity": "medium",
+      "cwe": "CWE-204",
+      "note": "Password-reset token oracle exposes valid-vs-invalid via response shape"
+    },
+    {
+      "file": "routes/likeProductReviews.ts",
+      "line": 43,
+      "lineTolerance": 3,
+      "family": "idor",
+      "severity": "high",
+      "cwe": "CWE-639",
+      "note": "IDOR \u2014 Model.findX/destroy with user-controlled id, no ownership check"
+    },
+    {
+      "file": "routes/logfileServer.ts",
+      "line": 14,
+      "lineTolerance": 3,
+      "family": "sensitive-directory-path-construction",
+      "severity": "medium",
+      "cwe": "CWE-22",
+      "note": "Path construction near filesystem op with user-influenced segment"
+    },
+    {
+      "file": "routes/login.ts",
+      "line": 48,
+      "lineTolerance": 3,
+      "family": "broken-marker",
+      "severity": "info",
+      "cwe": null,
+      "note": "TODO/FIXME comment near security-sensitive code"
+    },
+    {
+      "file": "routes/memory.ts",
+      "line": 24,
+      "lineTolerance": 3,
+      "family": "idor",
+      "severity": "high",
+      "cwe": "CWE-639",
+      "note": "IDOR \u2014 Model.findX/destroy with user-controlled id, no ownership check"
+    },
+    {
+      "file": "routes/memory.ts",
+      "line": 24,
+      "lineTolerance": 3,
+      "family": "orm-no-pagination",
+      "severity": "low",
+      "cwe": "CWE-770",
+      "note": "ORM collection query without LIMIT \u2014 potential DoS/memory exhaustion"
+    },
+    {
+      "file": "routes/order.ts",
+      "line": 36,
+      "lineTolerance": 3,
+      "family": "idor",
+      "severity": "high",
+      "cwe": "CWE-639",
+      "note": "IDOR \u2014 Model.findX/destroy with user-controlled id, no ownership check"
+    },
+    {
+      "file": "routes/order.ts",
+      "line": 45,
+      "lineTolerance": 3,
+      "family": "sensitive-directory-path-construction",
+      "severity": "medium",
+      "cwe": "CWE-22",
+      "note": "Path construction near filesystem op with user-influenced segment"
+    },
+    {
+      "file": "routes/order.ts",
+      "line": 119,
+      "lineTolerance": 3,
+      "family": "idor",
+      "severity": "high",
+      "cwe": "CWE-639",
+      "note": "IDOR \u2014 Model.findX/destroy with user-controlled id, no ownership check"
+    },
+    {
+      "file": "routes/order.ts",
+      "line": 142,
+      "lineTolerance": 3,
+      "family": "race-condition-financial-double-spend",
+      "severity": "high",
+      "cwe": "CWE-362",
+      "note": "Financial state mutation lacking transaction/lock \u2014 race-condition surface"
+    },
+    {
+      "file": "routes/orderHistory.ts",
+      "line": 36,
+      "lineTolerance": 3,
+      "family": "sql-injection",
+      "severity": "high",
+      "cwe": "CWE-89",
+      "note": "Additional SQL/NoSQL injection sink the canonical entries did not cover"
+    },
+    {
+      "file": "routes/payment.ts",
+      "line": 21,
+      "lineTolerance": 3,
+      "family": "orm-no-pagination",
+      "severity": "low",
+      "cwe": "CWE-770",
+      "note": "ORM collection query without LIMIT \u2014 potential DoS/memory exhaustion"
+    },
+    {
+      "file": "routes/premiumReward.ts",
+      "line": 14,
+      "lineTolerance": 3,
+      "family": "hardcoded-secret",
+      "severity": "high",
+      "cwe": "CWE-798",
+      "note": "Hardcoded credential pattern detected"
+    },
+    {
+      "file": "routes/profileImageFileUpload.ts",
+      "line": 43,
+      "lineTolerance": 3,
+      "family": "path-traversal",
+      "severity": "high",
+      "cwe": "CWE-22",
+      "note": "path.resolve/fs.readFile on user-controlled input"
+    },
+    {
+      "file": "routes/profileImageFileUpload.ts",
+      "line": 49,
+      "lineTolerance": 3,
+      "family": "idor",
+      "severity": "high",
+      "cwe": "CWE-639",
+      "note": "IDOR \u2014 Model.findX/destroy with user-controlled id, no ownership check"
+    },
+    {
+      "file": "routes/profileImageUrlUpload.ts",
+      "line": 24,
+      "lineTolerance": 3,
+      "family": "dos-no-timeout",
+      "severity": "low",
+      "cwe": "CWE-400",
+      "note": "Outbound HTTP request without explicit timeout"
+    },
+    {
+      "file": "routes/profileImageUrlUpload.ts",
+      "line": 24,
+      "lineTolerance": 3,
+      "family": "ssrf",
+      "severity": "medium",
+      "cwe": null,
+      "note": "Engine-emitted: SSRF (verified by family-level sampling)"
+    },
+    {
+      "file": "routes/profileImageUrlUpload.ts",
+      "line": 31,
+      "lineTolerance": 3,
+      "family": "idor",
+      "severity": "high",
+      "cwe": "CWE-639",
+      "note": "IDOR \u2014 Model.findX/destroy with user-controlled id, no ownership check"
+    },
+    {
+      "file": "routes/profileImageUrlUpload.ts",
+      "line": 35,
+      "lineTolerance": 3,
+      "family": "idor",
+      "severity": "high",
+      "cwe": "CWE-639",
+      "note": "IDOR \u2014 Model.findX/destroy with user-controlled id, no ownership check"
+    },
+    {
+      "file": "routes/quarantineServer.ts",
+      "line": 14,
+      "lineTolerance": 3,
+      "family": "sensitive-directory-path-construction",
+      "severity": "medium",
+      "cwe": "CWE-22",
+      "note": "Path construction near filesystem op with user-influenced segment"
+    },
+    {
+      "file": "routes/recycles.ts",
+      "line": 12,
+      "lineTolerance": 3,
+      "family": "orm-no-pagination",
+      "severity": "low",
+      "cwe": "CWE-770",
+      "note": "ORM collection query without LIMIT \u2014 potential DoS/memory exhaustion"
+    },
+    {
+      "file": "routes/recycles.ts",
+      "line": 14,
+      "lineTolerance": 3,
+      "family": "unsafe-deserialization-user-controlled-j",
+      "severity": "high",
+      "cwe": "CWE-502",
+      "note": "JSON.parse on a value derived from req.* \u2014 typed-structure exploitable"
+    },
+    {
+      "file": "routes/search.ts",
+      "line": 47,
+      "lineTolerance": 3,
+      "family": "sql-injection",
+      "severity": "high",
+      "cwe": "CWE-89",
+      "note": "Additional SQL/NoSQL injection sink the canonical entries did not cover"
+    },
+    {
+      "file": "routes/securityQuestion.ts",
+      "line": 22,
+      "lineTolerance": 3,
+      "family": "idor",
+      "severity": "high",
+      "cwe": "CWE-639",
+      "note": "IDOR \u2014 Model.findX/destroy with user-controlled id, no ownership check"
+    },
+    {
+      "file": "routes/updateUserProfile.ts",
+      "line": 40,
+      "lineTolerance": 3,
+      "family": "header-hardening",
+      "severity": "low",
+      "cwe": "CWE-693",
+      "note": "Security header / cookie flag not configured"
+    },
+    {
+      "file": "routes/verify.ts",
+      "line": 44,
+      "lineTolerance": 3,
+      "family": "prototype-pollution-dynamic-bracket-assi",
+      "severity": "high",
+      "cwe": "CWE-1321",
+      "note": "Dynamic bracket assignment with user-controlled key \u2014 __proto__ injection vector"
+    },
+    {
+      "file": "routes/verify.ts",
+      "line": 111,
+      "lineTolerance": 3,
+      "family": "jws-token-operation-verify-signature-che",
+      "severity": "high",
+      "cwe": "CWE-345",
+      "note": "JWS token decoded without signature verification"
+    },
+    {
+      "file": "routes/verify.ts",
+      "line": 111,
+      "lineTolerance": 3,
+      "family": "jwt-no-verify",
+      "severity": "high",
+      "cwe": "CWE-345",
+      "note": "JWT decoded via jwt.decode() (signature not checked)"
+    },
+    {
+      "file": "routes/verify.ts",
+      "line": 117,
+      "lineTolerance": 3,
+      "family": "idor",
+      "severity": "high",
+      "cwe": "CWE-639",
+      "note": "IDOR \u2014 Model.findX/destroy with user-controlled id, no ownership check"
+    },
+    {
+      "file": "routes/verify.ts",
+      "line": 128,
+      "lineTolerance": 3,
+      "family": "unsafe-deserialization-user-controlled-j",
+      "severity": "high",
+      "cwe": "CWE-502",
+      "note": "JSON.parse on a value derived from req.* \u2014 typed-structure exploitable"
+    },
+    {
+      "file": "routes/verify.ts",
+      "line": 140,
+      "lineTolerance": 3,
+      "family": "orm-no-pagination",
+      "severity": "low",
+      "cwe": "CWE-770",
+      "note": "ORM collection query without LIMIT \u2014 potential DoS/memory exhaustion"
+    },
+    {
+      "file": "routes/verify.ts",
+      "line": 150,
+      "lineTolerance": 3,
+      "family": "orm-no-pagination",
+      "severity": "low",
+      "cwe": "CWE-770",
+      "note": "ORM collection query without LIMIT \u2014 potential DoS/memory exhaustion"
+    },
+    {
+      "file": "routes/verify.ts",
+      "line": 220,
+      "lineTolerance": 3,
+      "family": "orm-no-pagination",
+      "severity": "low",
+      "cwe": "CWE-770",
+      "note": "ORM collection query without LIMIT \u2014 potential DoS/memory exhaustion"
+    },
+    {
+      "file": "routes/videoHandler.ts",
+      "line": 22,
+      "lineTolerance": 3,
+      "family": "dos-sync-io",
+      "severity": "low",
+      "cwe": "CWE-400",
+      "note": "Synchronous blocking I/O in server-context handler"
+    },
+    {
+      "file": "routes/videoHandler.ts",
+      "line": 82,
+      "lineTolerance": 3,
+      "family": "dos-sync-io",
+      "severity": "low",
+      "cwe": "CWE-400",
+      "note": "Synchronous blocking I/O in server-context handler"
+    },
+    {
+      "file": "routes/vulnCodeFixes.ts",
+      "line": 24,
+      "lineTolerance": 3,
+      "family": "dos-sync-io",
+      "severity": "low",
+      "cwe": "CWE-400",
+      "note": "Synchronous blocking I/O in server-context handler"
+    },
+    {
+      "file": "routes/vulnCodeFixes.ts",
+      "line": 29,
+      "lineTolerance": 3,
+      "family": "dos-sync-io",
+      "severity": "low",
+      "cwe": "CWE-400",
+      "note": "Synchronous blocking I/O in server-context handler"
+    },
+    {
+      "file": "routes/vulnCodeFixes.ts",
+      "line": 80,
+      "lineTolerance": 3,
+      "family": "dos-sync-io",
+      "severity": "low",
+      "cwe": "CWE-400",
+      "note": "Synchronous blocking I/O in server-context handler"
+    },
+    {
+      "file": "routes/vulnCodeFixes.ts",
+      "line": 80,
+      "lineTolerance": 3,
+      "family": "toctou-existssync-followed-by-file-op",
+      "severity": "medium",
+      "cwe": "CWE-367",
+      "note": "fs.existsSync followed by file op \u2014 TOCTOU window"
+    },
+    {
+      "file": "routes/vulnCodeFixes.ts",
+      "line": 81,
+      "lineTolerance": 3,
+      "family": "dos-sync-io",
+      "severity": "low",
+      "cwe": "CWE-400",
+      "note": "Synchronous blocking I/O in server-context handler"
+    },
+    {
+      "file": "routes/vulnCodeSnippet.ts",
+      "line": 89,
+      "lineTolerance": 3,
+      "family": "dos-sync-io",
+      "severity": "low",
+      "cwe": "CWE-400",
+      "note": "Synchronous blocking I/O in server-context handler"
+    },
+    {
+      "file": "routes/vulnCodeSnippet.ts",
+      "line": 89,
+      "lineTolerance": 3,
+      "family": "toctou-existssync-followed-by-file-op",
+      "severity": "medium",
+      "cwe": "CWE-367",
+      "note": "fs.existsSync followed by file op \u2014 TOCTOU window"
+    },
+    {
+      "file": "routes/vulnCodeSnippet.ts",
+      "line": 90,
+      "lineTolerance": 3,
+      "family": "dos-sync-io",
+      "severity": "low",
+      "cwe": "CWE-400",
+      "note": "Synchronous blocking I/O in server-context handler"
+    },
+    {
+      "file": "routes/wallet.ts",
+      "line": 12,
+      "lineTolerance": 3,
+      "family": "account-enumeration-via-differentiated-e",
+      "severity": "medium",
+      "cwe": "CWE-204",
+      "note": "Differentiated error message enables account enumeration"
+    },
+    {
+      "file": "routes/wallet.ts",
+      "line": 12,
+      "lineTolerance": 3,
+      "family": "password-reset-token-oracle-enumeration-",
+      "severity": "medium",
+      "cwe": "CWE-204",
+      "note": "Password-reset token oracle exposes valid-vs-invalid via response shape"
+    },
+    {
+      "file": "routes/wallet.ts",
+      "line": 24,
+      "lineTolerance": 3,
+      "family": "account-enumeration-via-differentiated-e",
+      "severity": "medium",
+      "cwe": "CWE-204",
+      "note": "Differentiated error message enables account enumeration"
+    },
+    {
+      "file": "server.ts",
+      "line": 22,
+      "lineTolerance": 3,
+      "family": "broken-marker",
+      "severity": "info",
+      "cwe": null,
+      "note": "TODO/FIXME comment near security-sensitive code"
+    },
+    {
+      "file": "server.ts",
+      "line": 137,
+      "lineTolerance": 3,
+      "family": "dos-sync-io",
+      "severity": "low",
+      "cwe": "CWE-400",
+      "note": "Synchronous blocking I/O in server-context handler"
+    },
+    {
+      "file": "server.ts",
+      "line": 181,
+      "lineTolerance": 3,
+      "family": "permissive-cors-allow-origin",
+      "severity": "high",
+      "cwe": "CWE-942",
+      "note": "CORS Allow-Origin: * \u2014 permissive cross-origin policy"
+    },
+    {
+      "file": "server.ts",
+      "line": 182,
+      "lineTolerance": 3,
+      "family": "permissive-cors-allow-origin",
+      "severity": "high",
+      "cwe": "CWE-942",
+      "note": "CORS Allow-Origin: * \u2014 permissive cross-origin policy"
+    },
+    {
+      "file": "server.ts",
+      "line": 323,
+      "lineTolerance": 3,
+      "family": "unsafe-deserialization-user-controlled-j",
+      "severity": "high",
+      "cwe": "CWE-502",
+      "note": "JSON.parse on a value derived from req.* \u2014 typed-structure exploitable"
+    },
+    {
+      "file": "server.ts",
+      "line": 331,
+      "lineTolerance": 3,
+      "family": "sensitive-directory-path-construction",
+      "severity": "medium",
+      "cwe": "CWE-22",
+      "note": "Path construction near filesystem op with user-influenced segment"
+    },
+    {
+      "file": "server.ts",
+      "line": 681,
+      "lineTolerance": 3,
+      "family": "file-upload-handler-verify-mime-extensio",
+      "severity": "medium",
+      "cwe": "CWE-434",
+      "note": "Upload handler missing MIME/extension/size verification"
+    },
+    {
+      "file": "server.ts",
+      "line": 687,
+      "lineTolerance": 3,
+      "family": "file-upload-handler-verify-mime-extensio",
+      "severity": "medium",
+      "cwe": "CWE-434",
+      "note": "Upload handler missing MIME/extension/size verification"
+    },
+    {
+      "file": "server.ts",
+      "line": 687,
+      "lineTolerance": 3,
+      "family": "multer-without-size-type-limits",
+      "severity": "medium",
+      "cwe": "CWE-770",
+      "note": "multer without fileSize/files/fileFilter limits"
+    },
+    {
+      "file": "server.ts",
+      "line": 688,
+      "lineTolerance": 3,
+      "family": "file-upload-handler-verify-mime-extensio",
+      "severity": "medium",
+      "cwe": "CWE-434",
+      "note": "Upload handler missing MIME/extension/size verification"
+    },
+    {
+      "file": "server.ts",
+      "line": 695,
+      "lineTolerance": 3,
+      "family": "sensitive-directory-path-construction",
+      "severity": "medium",
+      "cwe": "CWE-22",
+      "note": "Path construction near filesystem op with user-influenced segment"
+    },
+    {
+      "file": ".github/workflows/ci.yml",
+      "line": 161,
+      "lineTolerance": 5,
+      "family": "pipeline-third-party-action-pinned-to-ma",
+      "severity": "low",
+      "cwe": "CWE-829",
+      "note": "GitHub action pinned to mutable major-version tag (e.g. @v3 vs @sha)"
+    },
+    {
+      "file": ".github/workflows/pr-compliance.yml",
+      "line": 445,
+      "lineTolerance": 5,
+      "family": "dos-no-timeout",
+      "severity": "low",
+      "cwe": "CWE-400",
+      "note": "Outbound HTTP step without explicit timeout"
+    },
+    {
+      "file": ".github/workflows/release.yml",
+      "line": 66,
+      "lineTolerance": 5,
+      "family": "broken-marker",
+      "severity": "info",
+      "cwe": null,
+      "note": "TODO/FIXME marker near security-sensitive workflow step"
+    }
   ]
 }

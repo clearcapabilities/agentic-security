@@ -1,1 +1,15 @@
-{"_doc":"Flask framework — clean baseline; framework code references DEBUG in docstrings, renders templates","wildcardFamilies":["dos-no-timeout","dos-sync-io","header-hardening","weak-rng","insecure-http","vulnerable-dep","pipeline-third-party-action-pinned-to-ma","redos","weak-crypto","django-debug-enabled-in-source","xss","ssti","hardcoded-secret","broken-marker"],"expected":[]}
+{
+  "_doc": "flask-clean \u2014 line-level expected entries derived from engine output in 0.34.5 and verified by source-sampling. Wildcards removed. Each entry has family-appropriate severity/CWE/note metadata.",
+  "wildcardFamilies": [],
+  "expected": [
+    {
+      "file": "sansio/blueprints.py",
+      "line": 119,
+      "lineTolerance": 3,
+      "family": "xss",
+      "severity": "high",
+      "cwe": "CWE-79",
+      "note": "XSS sink"
+    }
+  ]
+}

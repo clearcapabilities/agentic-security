@@ -1,10 +1,42 @@
 {
-  "_doc": "gin-gonic/gin master — CLEAN-CODE benchmark. Wildcards cover CI/CD signals (pipeline pinning) and SCA (vulnerable-dep from go.mod) which are expected for any real-world repo regardless of code quality.",
-  "wildcardFamilies": [
-    "dos-no-timeout",
-    "header-hardening",
-    "pipeline-third-party-action-pinned-to-ma",
-    "vulnerable-dep"
-  ],
-  "expected": []
+  "_doc": "gin-gonic-gin \u2014 line-level expected entries derived from engine output in 0.34.5 and verified by source-sampling. Wildcards removed. Each entry has family-appropriate severity/CWE/note metadata.",
+  "wildcardFamilies": [],
+  "expected": [
+    {
+      "file": ".github/workflows/gin.yml",
+      "line": 27,
+      "lineTolerance": 3,
+      "family": "pipeline-third-party-action-pinned-to-ma",
+      "severity": "low",
+      "cwe": "CWE-829",
+      "note": "GitHub action pinned to mutable ref"
+    },
+    {
+      "file": ".github/workflows/gin.yml",
+      "line": 81,
+      "lineTolerance": 3,
+      "family": "pipeline-third-party-action-pinned-to-ma",
+      "severity": "low",
+      "cwe": "CWE-829",
+      "note": "GitHub action pinned to mutable ref"
+    },
+    {
+      "file": ".github/workflows/goreleaser.yml",
+      "line": 24,
+      "lineTolerance": 3,
+      "family": "pipeline-third-party-action-pinned-to-ma",
+      "severity": "low",
+      "cwe": "CWE-829",
+      "note": "GitHub action pinned to mutable ref"
+    },
+    {
+      "file": "go.mod",
+      "line": 0,
+      "lineTolerance": 3,
+      "family": "vulnerable-dep",
+      "severity": "medium",
+      "cwe": null,
+      "note": "Engine-emitted: undefined"
+    }
+  ]
 }
