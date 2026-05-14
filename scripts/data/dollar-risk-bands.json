@@ -1,0 +1,172 @@
+{
+  "_meta": {
+    "description": "Per-CWE $ exposure estimates for vibe-coder triage. Ranges are conservative lower-bound estimates drawn from public incident data, not legal advice. Use for prioritisation only.",
+    "schema": {
+      "best_case_usd": "If exploited at small scale and noticed quickly",
+      "likely_case_usd": "Median outcome for a small SaaS / startup",
+      "worst_case_usd": "If exploited at scale before detection",
+      "scenario": "One-line plain-English description of the financial mechanism",
+      "regulatory": "Specific law / framework that triggers fines"
+    }
+  },
+  "CWE-89": {
+    "name": "SQL Injection",
+    "best_case_usd": 5000,
+    "likely_case_usd": 75000,
+    "worst_case_usd": 5000000,
+    "scenario": "Full database read = every customer's data exfiltrated. PII leak → mandatory notification + regulator inquiry + potential class action.",
+    "regulatory": "GDPR Art. 33 (72h notification), CCPA ($100-750 per CA resident), HIPAA ($50k-$1.5M per breach if health data)"
+  },
+  "CWE-78": {
+    "name": "OS Command Injection",
+    "best_case_usd": 10000,
+    "likely_case_usd": 150000,
+    "worst_case_usd": 10000000,
+    "scenario": "Direct RCE — attacker pivots to your AWS metadata service, mints IAM creds, spins up crypto-mining fleet, exfiltrates DB, encrypts your S3.",
+    "regulatory": "Same as CWE-89 plus potential SEC disclosure for publicly-traded customers"
+  },
+  "CWE-22": {
+    "name": "Path Traversal",
+    "best_case_usd": 2000,
+    "likely_case_usd": 40000,
+    "worst_case_usd": 1000000,
+    "scenario": "Arbitrary file read leaks .env (= all your API keys = unlimited credential cost). Write variant lets attacker drop a webshell.",
+    "regulatory": "GDPR Art. 33 if user files exposed"
+  },
+  "CWE-918": {
+    "name": "SSRF (Server-Side Request Forgery)",
+    "best_case_usd": 1000,
+    "likely_case_usd": 60000,
+    "worst_case_usd": 50000000,
+    "scenario": "SSRF to cloud metadata = stolen IAM credentials = uncapped cloud spend. Capital One: $190M settlement (2019 SSRF → metadata → 100M records).",
+    "regulatory": "GLBA if financial data, GDPR/CCPA for PII"
+  },
+  "CWE-79": {
+    "name": "Cross-Site Scripting (XSS)",
+    "best_case_usd": 1000,
+    "likely_case_usd": 25000,
+    "worst_case_usd": 500000,
+    "scenario": "Session token theft for any user who loads the page. Persistent XSS = worm-style spread. Compounds with weak CSRF protection.",
+    "regulatory": "GDPR/CCPA for the session-data exposure"
+  },
+  "CWE-639": {
+    "name": "IDOR (Insecure Direct Object Reference)",
+    "best_case_usd": 5000,
+    "likely_case_usd": 100000,
+    "worst_case_usd": 2000000,
+    "scenario": "Enumerable IDs = mass PII exfil. T-Mobile API IDOR (2023) = 37M records exposed = ~$350M legal/cleanup costs.",
+    "regulatory": "GDPR (max 4% global revenue), CCPA"
+  },
+  "CWE-352": {
+    "name": "CSRF",
+    "best_case_usd": 500,
+    "likely_case_usd": 15000,
+    "worst_case_usd": 500000,
+    "scenario": "Action-on-behalf-of-victim for any state change. On payment endpoints = money movement. On email-change endpoints = account takeover gateway.",
+    "regulatory": "GDPR Art. 32 (failure to implement appropriate technical measures)"
+  },
+  "CWE-915": {
+    "name": "Mass Assignment",
+    "best_case_usd": 2000,
+    "likely_case_usd": 50000,
+    "worst_case_usd": 1000000,
+    "scenario": "Self-promotion to admin in one POST. Payment bypass via `{total: 0, status: 'paid'}`. Internal-flag injection (kyc_passed, email_verified).",
+    "regulatory": "PCI-DSS violation ($5k-$100k/month) if payment flow affected"
+  },
+  "CWE-287": {
+    "name": "Authentication Bypass",
+    "best_case_usd": 10000,
+    "likely_case_usd": 200000,
+    "worst_case_usd": 10000000,
+    "scenario": "Forge JWT alg:none = impersonate any user including admin. Full account-takeover surface. Most enterprise contracts auto-cancel on this class of breach.",
+    "regulatory": "GDPR Art. 32, contract termination clauses, SOC 2 incident"
+  },
+  "CWE-345": {
+    "name": "Missing signature verification (webhooks, JWTs, redirects)",
+    "best_case_usd": 1000,
+    "likely_case_usd": 30000,
+    "worst_case_usd": 2000000,
+    "scenario": "Unsigned webhooks = attackers fake Stripe / GitHub / Clerk events to your endpoint = upgrade plans, mint tokens, trigger refunds.",
+    "regulatory": "PCI-DSS for Stripe webhooks, SOC 2 CC6.1"
+  },
+  "CWE-502": {
+    "name": "Insecure Deserialization",
+    "best_case_usd": 20000,
+    "likely_case_usd": 250000,
+    "worst_case_usd": 20000000,
+    "scenario": "RCE in the deserializer's process — same blast radius as CWE-78 plus often easier to exploit reliably (ysoserial / picklepwn / etc.).",
+    "regulatory": "Same as CWE-78"
+  },
+  "CWE-1321": {
+    "name": "Prototype Pollution",
+    "best_case_usd": 500,
+    "likely_case_usd": 20000,
+    "worst_case_usd": 1000000,
+    "scenario": "JS-only — DoS at min, RCE/auth-bypass in many real apps (Express, Mongoose, lodash gadgets).",
+    "regulatory": "Varies by what's polluted"
+  },
+  "CWE-798": {
+    "name": "Hardcoded Credential",
+    "best_case_usd": 5000,
+    "likely_case_usd": 80000,
+    "worst_case_usd": 5000000,
+    "scenario": "API key in repo → scraped by bots within minutes. OpenAI/Anthropic keys: $40k overnight is common. AWS keys: crypto-mining costs $200k+ in hours.",
+    "regulatory": "GDPR Art. 32; vendor T&C breaches voids your liability cap"
+  },
+  "CWE-601": {
+    "name": "Open Redirect",
+    "best_case_usd": 500,
+    "likely_case_usd": 15000,
+    "worst_case_usd": 500000,
+    "scenario": "Phishing vector → credential theft. On OAuth callback = full token theft. Cache-poisoning amplifies the blast.",
+    "regulatory": "GDPR if user creds are stolen"
+  },
+  "CWE-611": {
+    "name": "XXE (XML External Entity)",
+    "best_case_usd": 2000,
+    "likely_case_usd": 50000,
+    "worst_case_usd": 2000000,
+    "scenario": "Arbitrary file read via XML parsing — .env, /etc/passwd, AWS metadata. SSRF via XML to internal services.",
+    "regulatory": "Same as CWE-22"
+  },
+  "CWE-862": {
+    "name": "Missing Authorization",
+    "best_case_usd": 5000,
+    "likely_case_usd": 100000,
+    "worst_case_usd": 5000000,
+    "scenario": "Endpoint accepts any caller — typical chain with IDOR for pre-auth account takeover. Optus (2022) class action settlement: $140M for missing-authz API.",
+    "regulatory": "GDPR (max 4% revenue), CCPA, SOC 2 critical finding"
+  },
+  "LLM01": {
+    "name": "Prompt Injection",
+    "best_case_usd": 500,
+    "likely_case_usd": 40000,
+    "worst_case_usd": 5000000,
+    "scenario": "Indirect injection via user-submitted doc → agent exfils secrets, calls expensive tools. No max_tokens cap + injection = unlimited LLM-API charges in hours.",
+    "regulatory": "Emerging — NIST AI 600-1, EU AI Act, state AI laws (CO, CA)"
+  },
+  "LLM02": {
+    "name": "Insecure LLM Output Handling",
+    "best_case_usd": 1000,
+    "likely_case_usd": 50000,
+    "worst_case_usd": 3000000,
+    "scenario": "LLM output → SQL / exec / browser → injection. Worse than user input because users trust the LLM.",
+    "regulatory": "Same as direct injection class (CWE-89/79/78)"
+  },
+  "LLM10": {
+    "name": "Unbounded LLM Consumption (no max_tokens, no rate limit)",
+    "best_case_usd": 200,
+    "likely_case_usd": 5000,
+    "worst_case_usd": 100000,
+    "scenario": "Prompt-injection attack on an uncapped endpoint = single bad day costs $20k-$100k in OpenAI/Anthropic bills. Air Canada chatbot incident: court ordered refunds.",
+    "regulatory": "Provider T&C limits, EU AI Act"
+  },
+  "DEFAULT": {
+    "name": "Generic finding",
+    "best_case_usd": 500,
+    "likely_case_usd": 10000,
+    "worst_case_usd": 200000,
+    "scenario": "Re-run with a recognised CWE for tailored exposure.",
+    "regulatory": "Depends on the data class exposed"
+  }
+}
