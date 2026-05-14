@@ -20,6 +20,11 @@ on:
       - '.github/workflows/bench.yml'
   push:
     branches: [main]
+    paths:
+      - 'scanner/src/**'
+      - 'scanner/test/**'
+      - 'scanner/package.json'
+      - '.github/workflows/bench.yml'
   workflow_dispatch:
 
 jobs:

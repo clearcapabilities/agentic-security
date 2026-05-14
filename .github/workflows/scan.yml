@@ -8,7 +8,7 @@ name: agentic-security scan
 #         contents: read         # required: checkout
 #         security-events: write # required: SARIF upload to Security tab
 #         pull-requests: write   # required: PR comment
-#       uses: clearcapabilities/agentic-security/.github/workflows/scan.yml@main
+#       uses: Clear-Capabilities/agentic-security/.github/workflows/scan.yml@main
 #       with:
 #         fail-on: critical
 #         baseline: main
@@ -66,7 +66,7 @@ jobs:
       - name: Download bundled scanner
         run: |
           curl -sSL -o /tmp/agentic-security.mjs \
-            https://raw.githubusercontent.com/clearcapabilities/agentic-security/main/scanner/dist/agentic-security.mjs
+            https://raw.githubusercontent.com/Clear-Capabilities/agentic-security/main/scanner/dist/agentic-security.mjs
           chmod +x /tmp/agentic-security.mjs
 
       - name: Apply paths-ignore to rules

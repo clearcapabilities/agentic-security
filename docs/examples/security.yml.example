@@ -1,0 +1,37 @@
+# ─────────────────────────────────────────────────────────────────────────────
+# EXAMPLE WORKFLOW — copy this file into YOUR repo at
+#   .github/workflows/security.yml
+# (rename from .example → .yml when copying)
+#
+# This file is documentation, NOT an active workflow inside the plugin repo
+# itself. If you're seeing it run, you've copied it incorrectly.
+# ─────────────────────────────────────────────────────────────────────────────
+
+name: Security scan
+
+on:
+  pull_request: {}
+  push:
+    branches: [main]
+
+jobs:
+  security:
+    # Reusable workflows can only USE permissions the calling job has granted.
+    # The scan workflow needs:
+    #   contents: read         (to checkout code)
+    #   security-events: write (to upload the SARIF report to the Security tab)
+    #   pull-requests: write   (to post the findings comment on PRs)
+    permissions:
+      contents: read
+      security-events: write
+      pull-requests: write
+    uses: Clear-Capabilities/agentic-security/.github/workflows/scan.yml@main
+    with:
+      fail-on: critical
+      baseline: ${{ github.event.pull_request.base.sha || 'HEAD~1' }}
+      output-sarif: 'true'
+      paths-ignore: |
+        # Add globs you want the scanner to ignore, e.g.:
+        # node_modules/**
+        # vendor/**
+        # test/fixtures/**
