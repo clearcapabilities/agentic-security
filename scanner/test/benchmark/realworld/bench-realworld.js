@@ -33,9 +33,12 @@ const APP = value('--app');
 const JSON_OUT = flag('--json');
 const REFRESH = flag('--refresh-cache');
 const VERBOSE = flag('--verbose') || flag('-v');
+// --no-wildcards: ignore the wildcardFamilies relaxation. Produces the
+// strict-label F1 that an external auditor would expect "F1 100%" to mean.
+const NO_WILDCARDS = flag('--no-wildcards');
 
 if (!ALL && !APP) {
-  console.error('Usage: bench-realworld.js [--all | --app <name>] [--refresh-cache] [--json] [--verbose]');
+  console.error('Usage: bench-realworld.js [--all | --app <name>] [--refresh-cache] [--json] [--verbose] [--no-wildcards]');
   process.exit(2);
 }
 
@@ -276,6 +279,8 @@ async function runOne(name, app, vulnFamilyMap) {
     if (Array.isArray(curated)) { expected = curated; }
     else { expected = curated.expected || []; wildcardFamilies = curated.wildcardFamilies || []; }
   }
+  // --no-wildcards: strip the relaxation and report strict-label F1.
+  if (NO_WILDCARDS) wildcardFamilies = [];
 
   console.error(`  scanning ${scanRoot} (expected: ${expected.length} TPs)`);
   const t0 = Date.now();

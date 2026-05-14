@@ -7,7 +7,7 @@ NAME
        integrations for the security stack you already run.
 
 VERSION
-       0.34.3
+       0.34.4
 
 SYNOPSIS
        agentic-security [--profile pro] COMMAND [ARGS] [OPTIONS]
@@ -1598,13 +1598,42 @@ npm run bench:llm-goats
 ```
 
 Current scores:
-- Local fixture suite: **F1 100.0%** (122 TP, 0 FP, 0 FN)
-- Real-world benchmarks: **F1 100%** on 33/33 apps
+
+| Mode                       | Local fixture suite | Real-world benchmarks                               |
+|----------------------------|---------------------|-----------------------------------------------------|
+| Wildcard-relaxed (default) | F1 100.0%           | F1 100% on 33/33 apps (family-level coverage)       |
+| Strict line-level (`--no-wildcards`) | F1 100.0%  | See per-app breakdown below                          |
+
+Strict-line breakdown on real-world benchmarks (line-level GT only):
+
+```
+owasp-benchmark    F1 80.0%   (1321 TP / 452 FP / 210 FN, upstream CSV GT)
+snyk-goof          F1 86.8%   (curated GT, 21 "FPs" are real out-of-scope advisories)
+nodegoat           F1 81.7%   (curated GT, same shape)
+juice-shop         F1 48.5%   (curated GT covers a slice — engine finds more)
+sard-juliet-java   F1 24.9%   (Juliet GT-coverage gap + low recall on some CWEs)
+juliet-c-cpp       n/a        (no line-level GT in repo)
+27 other apps      n/a        (wildcard-only, no line-level GT — strict scoring undefined)
+```
+
+See `scanner/test/benchmark/STRICT-F1-BASELINE.md` for the full methodology
+notes, why each gap exists, and the engineering roadmap to raise it.
+
+Run the strict mode yourself:
+
+```bash
+cd scanner
+node test/benchmark/realworld/bench-realworld.js --all --no-wildcards
+node test/benchmark/realworld/bench-realworld.js --app owasp-benchmark --no-wildcards
+```
 
 F1 safety rules for new rules:
 1. Gate on at least 2 signals before firing (never single-regex)
 2. Include `_NONPROD_RE` to exclude test/fixture/spec paths
 3. New `vuln` strings must either (a) not fire on benchmark apps or (b)
    be added to the relevant app's `wildcardFamilies` in expected JSON
-4. Verify with `npm run bench` after adding any new rule
+   (with a `_doc` field explaining why family-level scoring is appropriate)
+4. Verify with `npm run bench` AND `--no-wildcards` after adding any rule
+5. If strict-F1 regresses on any app, either fix the rule or add line-level
+   expected entries documenting the new finding
 

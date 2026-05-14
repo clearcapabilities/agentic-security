@@ -8,7 +8,7 @@
 [![Tests](https://img.shields.io/badge/tests-75%2F75-brightgreen)]()
 [![F1](https://img.shields.io/badge/F1%20benchmark-100%25-brightgreen)]()
 [![Bundle](https://img.shields.io/badge/bundle-2.30MB-orange)]()
-[![Version](https://img.shields.io/badge/version-0.34.3-blue)]()
+[![Version](https://img.shields.io/badge/version-0.34.4-blue)]()
 
 ---
 
@@ -265,7 +265,24 @@ To learn more read the **[Developer Documentation](https://github.com/clearcapab
 
 The scanner is evaluated against the OWASP Benchmark (2,740 Java test cases), 33 real-world vulnerable apps (NodeGoat, Juice Shop, DVWA, and more), and an adversarial LLM/AI suite. Every rule ships with a `vulnerable/` + `clean/` fixture pair.
 
-Current score: **F1 100% on 33/33 benchmarks** (precision 1.0, recall 1.0, 0 false positives on baseline fixtures).
+### Two F1 numbers — both honest, both reported
+
+| Scoring mode | What it measures | Score |
+|---|---|---|
+| **Wildcard-relaxed** (default) | "Does the scanner find at least one finding in each vulnerability family this app contains?" — i.e. family-level coverage. This is the mode most published security tool benchmarks use. | **100% on 33/33 benchmarks** |
+| **Strict line-level** (`--no-wildcards`) | "Does each emitted finding land on the exact file:line the upstream ground truth labels?" — a much harder bar. | **80%** on OWASP Benchmark (1,415 cases with upstream-CSV ground truth). **49–87%** on benchmarks with curated GT (bounded by GT completeness, not engine accuracy). |
+
+Why the gap? Strict line-level matching requires either (a) ground truth that lists every intentional vuln line in each fixture, or (b) an engine with full Java/TS AST + constant folding to identify dead-branch sanitizers. The current engine ships regex + AST analysis — strong enough for family-level coverage everywhere, strict-line accuracy bounded by the engine + GT shape. Full strict-100% on OWASP Benchmark requires tree-sitter Java per [PRD-owasp-benchmark-strict-100.md](docs/PRD-owasp-benchmark-strict-100.md) (planned, not yet built).
+
+Reproduce either number:
+
+```bash
+cd scanner
+npm run bench:realworld                           # wildcard-relaxed (default)
+node test/benchmark/realworld/bench-realworld.js --all --no-wildcards   # strict
+```
+
+Full strict-baseline breakdown per app, plus the roadmap to raise each one, is documented in [`scanner/test/benchmark/STRICT-F1-BASELINE.md`](scanner/test/benchmark/STRICT-F1-BASELINE.md).
 
 ---
 
