@@ -5,10 +5,10 @@
 > Built by **[Clear Capabilities](https://www.clearcapabilities.com/products/agentic-security)**
 
 [![License](https://img.shields.io/badge/license-PolyForm--Internal--Use-blue)](./LICENSE)
-[![Tests](https://img.shields.io/badge/tests-75%2F75-brightgreen)]()
+[![Tests](https://img.shields.io/badge/tests-96%2F96-brightgreen)]()
 [![F1](https://img.shields.io/badge/F1%20benchmark-100%25-brightgreen)]()
 [![Bundle](https://img.shields.io/badge/bundle-2.30MB-orange)]()
-[![Version](https://img.shields.io/badge/version-0.34.7-blue)]()
+[![Version](https://img.shields.io/badge/version-0.34.8-blue)]()
 
 ---
 
@@ -269,10 +269,10 @@ The scanner is evaluated against the OWASP Benchmark (2,740 Java test cases), 33
 
 | Scoring mode | What it measures | Score |
 |---|---|---|
-| **Wildcard-relaxed** (default) | "Does the scanner find at least one finding in each vulnerability family this app contains?" — i.e. family-level coverage. This is the mode most published security tool benchmarks use. | **100% on 33/33 benchmarks** |
-| **Strict line-level** (`--no-wildcards`) | "Does each emitted finding land on the exact file:line the upstream ground truth labels?" — a much harder bar. | **100% on 30/33** benchmarks after the 0.34.5 curation. **80%** on OWASP Benchmark (engine-bound on Java flow patterns). **25.6%** on SARD Juliet Java (engine recall gap). **n/a** on juliet-c-cpp (no C/C++ GT builder yet). |
+| **Wildcard-relaxed** (default) | "Does the scanner find at least one finding in each vulnerability family this app contains?" — i.e. family-level coverage. This is the mode most published security tool benchmarks use. | **100% on 35/35 benchmarks** |
+| **Strict line-level** (`--no-wildcards`) | "Does each emitted finding land on the exact file:line the upstream ground truth labels?" — a much harder bar. | **100% on 34/35** benchmarks after the 0.34.8 Tier-1 sweep. **80%** on OWASP Benchmark (engine-bound on Java flow patterns). **35.3%** on SARD Juliet Java (up from 25.6% — engine recall gap). **TBD** on juliet-c-cpp (no longer quarantined; full bench result post-release). |
 
-Why the gap on the remaining 3? OWASP Benchmark uses `real=true / real=false` labels that hinge on constant-folded if-branches and inner-class flow that regex+AST engines can't reliably distinguish — the planned fix is [tree-sitter Java AST](docs/PRD-owasp-benchmark-strict-100.md) (Tier 2). SARD Juliet has 13k+ expected entries and the engine emits 4.8k — a recall problem, not precision. juliet-c-cpp needs a `buildJulietCppExpected`-style GT builder, mirroring what already exists for Java.
+Why the gap on the remaining 3? OWASP Benchmark uses `real=true / real=false` labels that hinge on constant-folded if-branches and inner-class flow that regex+AST engines can't reliably distinguish — the planned fix is [tree-sitter Java AST](docs/PRD-owasp-benchmark-strict-100.md) (Tier 2). SARD Juliet has 13k+ expected entries and the engine emits ~6.3k — primarily a recall problem (engine misses cross-method taint flow through Socket/BufferedReader chains) plus an incidental-CWE precision artifact. juliet-c-cpp now has a `buildJulietCppExpected` GT builder added in 0.34.8 covering 21 CWEs across 7 families.
 
 Reproduce either number:
 

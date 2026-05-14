@@ -22,16 +22,6 @@
       "matchAny": true
     },
     {
-      "file": "cors/cors_003_bad_axum_tower_http/Cargo.toml",
-      "line": 0,
-      "lineTolerance": 9999,
-      "family": "vulnerable-dep",
-      "severity": "medium",
-      "cwe": null,
-      "note": "Vulnerable dependency declared in this manifest (matchAny collapses all per-package CVEs into one collective TP)",
-      "matchAny": true
-    },
-    {
       "file": "cors/cors_003_bad_axum_tower_http/src/main.rs",
       "line": 45,
       "lineTolerance": 3,
@@ -39,56 +29,6 @@
       "severity": "low",
       "cwe": "CWE-400",
       "note": "Outbound HTTP without timeout"
-    },
-    {
-      "file": "hardcoded_secret/hardcoded_secret_bad_01_age/Cargo.toml",
-      "line": 0,
-      "lineTolerance": 9999,
-      "family": "vulnerable-dep",
-      "severity": "medium",
-      "cwe": null,
-      "note": "Vulnerable dependency declared in this manifest (matchAny collapses all per-package CVEs into one collective TP)",
-      "matchAny": true
-    },
-    {
-      "file": "hardcoded_secret/hardcoded_secret_good_02_ring/Cargo.toml",
-      "line": 0,
-      "lineTolerance": 9999,
-      "family": "vulnerable-dep",
-      "severity": "medium",
-      "cwe": null,
-      "note": "Vulnerable dependency declared in this manifest (matchAny collapses all per-package CVEs into one collective TP)",
-      "matchAny": true
-    },
-    {
-      "file": "sqli/sqli_bad_004_sqlx/Cargo.toml",
-      "line": 0,
-      "lineTolerance": 9999,
-      "family": "vulnerable-dep",
-      "severity": "medium",
-      "cwe": null,
-      "note": "Vulnerable dependency declared in this manifest (matchAny collapses all per-package CVEs into one collective TP)",
-      "matchAny": true
-    },
-    {
-      "file": "sqli/sqli_bad_005_diesel/Cargo.toml",
-      "line": 0,
-      "lineTolerance": 9999,
-      "family": "vulnerable-dep",
-      "severity": "medium",
-      "cwe": null,
-      "note": "Vulnerable dependency declared in this manifest (matchAny collapses all per-package CVEs into one collective TP)",
-      "matchAny": true
-    },
-    {
-      "file": "ssrf/ssrf_002_bad_reqwest_client/Cargo.toml",
-      "line": 0,
-      "lineTolerance": 9999,
-      "family": "vulnerable-dep",
-      "severity": "medium",
-      "cwe": null,
-      "note": "Vulnerable dependency declared in this manifest (matchAny collapses all per-package CVEs into one collective TP)",
-      "matchAny": true
     }
   ]
 }

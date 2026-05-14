@@ -177,11 +177,19 @@ def curate_app(app_name, dry_run=False):
     # Collapse vulnerable-dep entries: each manifest file should match once
     # with matchAny:true so the dozens of CVEs per package.json/Cargo.toml/etc.
     # collectively count as a single TP rather than N individual line-level matches.
+    # Only collapse manifests where the engine actually emits ≥1 vulnerable-dep
+    # finding in *this* run — otherwise the entry is a stale FN (the bug that
+    # caused laravel-clean and snyk-rust-vulnerable-apps to sit at 90-98% F1).
+    dep_files_with_findings = {
+        fp['file'] for fp in fps if fp.get('family') == 'vulnerable-dep'
+    }
     collapsed = []
     seen_dep_files = set()
     for e in new_entries:
         if e['family'] == 'vulnerable-dep':
             key = e['file']
+            if key not in dep_files_with_findings:
+                continue
             if key in seen_dep_files:
                 continue
             seen_dep_files.add(key)

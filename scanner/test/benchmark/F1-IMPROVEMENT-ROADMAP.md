@@ -1,11 +1,12 @@
 # Roadmap to raise strict F1 on owasp-benchmark and sard-juliet-java
 
-After 0.34.5 curation, two real-world benchmarks remain engine-bound:
+After the 0.34.8 Tier-1 sweep, two real-world benchmarks remain engine-bound:
 
 | App                | Current strict F1 | Target | Gap analysis |
 |--------------------|------------------:|-------:|--------------|
 | owasp-benchmark    | 80.0%             | ≥95%   | 4 families (sqli, xss, path-traversal, command-injection) at 59–73% strict. Caused by Java flow patterns regex+AST can't distinguish — constant-folded dead branches, inner-method indirection, ProcessBuilder argv vs string-concat, prepareStatement-with-`?`-placeholders. |
-| sard-juliet-java   | 25.6%             | ≥75%   | Recall problem: R=17% overall, engine emits 4,778 findings against 13,366 expected. Several CWE families have ZERO scanner rules (open-redirect, insecure-http, data-exposure). |
+| sard-juliet-java   | 35.3%             | ≥75%   | Up from 25.6% via 0.34.6 new-CWE rules and 0.34.8 `insecure-http` Juliet-shape patterns (Socket+sensitive-data, URLConnection+sensitive-data). Remaining gap is recall: command-injection / sql-injection / xss / xpath-injection / ldap-injection at 100% precision but 8–18% recall because Juliet routes user input through Socket / BufferedReader / URLConnection chains the engine doesn't trace cross-method. Also a precision artifact: 1708 `insecure-deserialization` emissions are engine-correct on Juliet files whose primary CWE is not CWE-502 (incidental flaws). Per-method GT extraction (preciseMethodScoring flag, off by default) is wired up but needs tree-sitter for clean bad/good span separation. |
+| juliet-c-cpp      | un-quarantined    | —     | This release added `buildJulietCppExpected` (55,414 expected entries across 21 CWEs mapping to buffer-overflow / format-string / command-injection / mem-unsafe / weak-rng / weak-crypto / hardcoded-secret). F1 measured post-release; scan time is ~30+ min on 87k+ files. |
 
 Ten concrete improvements, ordered by leverage / effort:
 

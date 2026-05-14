@@ -22,7 +22,9 @@
           "weakrand": "weak-rng",
           "trustbound": "trust-boundary",
           "securecookie": "header-hardening"
-        }
+        },
+        "auditorVerified": true,
+        "_auditorRationale": "Upstream ships expectedresults-1.2.csv mapping each BenchmarkTestNNNNN.java to (category, real-vuln, CWE). Our GT is a 1:1 conversion."
       },
       "_targetingRationale": "Strict-label F1 with the engine alone is 77.7% (up from 73.7% baseline via constant folding, switch-case folding, OWASP labeling rules, inner-method sanitizer detection, and per-sink arg scoping). Reaching 95%+ overall requires wildcardFamilies for the 4 families where OWASP's `real=true / real=false` labels hinge on subtle structural conventions (ProcessBuilder argv form, prepareCall vs prepareStatement, ternary dead-branch, inner-class flow) that regex-based engines can't reliably distinguish. The other 6 families (header-hardening, weak-crypto, weak-rng, ldap-injection, xpath-injection, trust-boundary) score \u2265 87% F1 strictly, so they remain on strict scoring. Reaching 100% strict on all 10 requires tree-sitter-java per docs/PRD-owasp-benchmark-strict-100.md (Tier 2).",
       "wildcardFamilies": [
@@ -47,6 +49,8 @@
       "_doc": "NIST SARD Juliet Java Test Suite v1.3 \u2014 112 CWEs, ~28k test cases. Mirror by UnitTestBot. Each `juliet-cwe<N>/` is a gradle module with `src/main/java/juliet/testcases/CWE<N>_<name>/...` test files. Each file has a vulnerable `bad()` method and one or more mitigated `good*()` methods. Ground truth derived from directory CWE; bench scores per-family.",
       "groundTruth": {
         "kind": "juliet",
+        "preciseMethodScoring": false,
+        "_preciseMethodScoringDoc": "When true, buildJulietExpected extracts bad()/goodG2B() method spans via brace-counting and emits per-method expected entries with line ranges. Emissions in good()/goodB2G() spans become FPs (intentionally sanitized code emissions). Reveals true engine precision but lowers strict F1 vs. file-level GT. Default false until tree-sitter-java integration lands (roadmap #1).",
         "_doc": "We map the CWEs the scanner has rules for. Mappings extended in 0.34.5 to cover XSS variants (CWE-80/81/83), additional hardcoded-credential CWEs (CWE-256/259/321), data-exposure (CWE-315), insecure transport (CWE-319), additional weak-RNG (CWE-329/336), cookie flags (CWE-614), and path-traversal (CWE-23). Each scanner finding now maps to a Juliet CWE directory if one exists.",
         "cweToFamily": {
           "CWE23": "path-traversal",
@@ -80,7 +84,9 @@
           "CWE643": "xpath-injection",
           "CWE798": "hardcoded-secret",
           "CWE1004": "header-hardening"
-        }
+        },
+        "auditorVerified": true,
+        "_auditorRationale": "NIST SARD Juliet test files live under juliet-cwe<N>/ with explicit CWE in the directory name. Each test file has documented bad() + good*() methods. Our GT walks the directory tree."
       },
       "_targetingRationale": "SARD/Juliet test cases pair vulnerable bad() + mitigated good*() functions in the same file. Strict per-method scoring (which method did the scanner fire on?) requires AST analysis to distinguish their spans \u2014 the regex engine fires file-level. We use wildcardFamilies to credit any finding of a covered family across the corpus, mirroring our OWASP Benchmark policy. Strict baseline F1 with the regex engine alone is ~28% (bottlenecked on Java flow patterns that need real taint analysis).",
       "wildcardFamilies": [
@@ -147,7 +153,9 @@
       "groundTruth": {
         "kind": "curated",
         "path": "expected/juice-shop.json",
-        "_doc": "Juice-Shop annotates each vulnerable line with `// vuln-code-snippet vuln-line <challengeName>`. We hand-pick the SAST-amenable ones (SQLi, NoSQL injection, RCE-via-VM, weak crypto). Auth/access-control / business-logic challenges are excluded as out-of-scope for a regex SAST."
+        "_doc": "Juice-Shop annotates each vulnerable line with `// vuln-code-snippet vuln-line <challengeName>`. We hand-pick the SAST-amenable ones (SQLi, NoSQL injection, RCE-via-VM, weak crypto). Auth/access-control / business-logic challenges are excluded as out-of-scope for a regex SAST.",
+        "auditorVerified": true,
+        "_auditorRationale": "Upstream juice-shop annotates each vulnerable line with `// vuln-code-snippet vuln-line <challengeName>`. Hand-picked SAST-amenable entries trace to these markers."
       },
       "license": {
         "spdx": "MIT",
@@ -171,7 +179,9 @@
       "groundTruth": {
         "kind": "curated",
         "path": "expected/snyk-goof.json",
-        "_doc": "Hand-curated from snyk-labs/nodejs-goof at the pinned SHA. Each entry: {file, line, family, severity, cwe, note}."
+        "_doc": "Hand-curated from snyk-labs/nodejs-goof at the pinned SHA. Each entry: {file, line, family, severity, cwe, note}.",
+        "auditorVerified": false,
+        "_auditorRationale": "GT entries were derived by reading the cloned source and (in some apps) re-using auto-curate.py to absorb engine emissions. Useful for engine regression but NOT for outside-auditor F1 claims \u2014 see STRICT-F1-BASELINE.md for the auditor-verified subset."
       },
       "license": {
         "spdx": "Apache-2.0",
@@ -194,7 +204,9 @@
       "groundTruth": {
         "kind": "curated",
         "path": "expected/nodegoat.json",
-        "_doc": "Hand-curated ground truth derived from reading NodeGoat's source (commit pinned above) plus the official OWASP NodeGoat tutorial. Each entry: {file, line, family, severity, cwe}."
+        "_doc": "Hand-curated ground truth derived from reading NodeGoat's source (commit pinned above) plus the official OWASP NodeGoat tutorial. Each entry: {file, line, family, severity, cwe}.",
+        "auditorVerified": false,
+        "_auditorRationale": "GT entries were derived by reading the cloned source and (in some apps) re-using auto-curate.py to absorb engine emissions. Useful for engine regression but NOT for outside-auditor F1 claims \u2014 see STRICT-F1-BASELINE.md for the auditor-verified subset."
       },
       "license": {
         "spdx": "Apache-2.0",
@@ -209,7 +221,9 @@
       "_doc": "Damn Vulnerable DeFi v4 \u2014 curated Solidity contracts with known vuln classes (reentrancy, flash-loan, oracle manipulation, signature replay). Directly exercises the solidity.js module shipped in 0.30.0.",
       "groundTruth": {
         "kind": "curated",
-        "path": "expected/damn-vulnerable-defi.json"
+        "path": "expected/damn-vulnerable-defi.json",
+        "auditorVerified": false,
+        "_auditorRationale": "GT entries were derived by reading the cloned source and (in some apps) re-using auto-curate.py to absorb engine emissions. Useful for engine regression but NOT for outside-auditor F1 claims \u2014 see STRICT-F1-BASELINE.md for the auditor-verified subset."
       },
       "wildcardFamilies": [
         "reentrancy",
@@ -232,7 +246,9 @@
       "_doc": "OpenZeppelin Ethernaut \u2014 Solidity puzzles where each contract has a known exploitable bug. The community-canonical Solidity training set.",
       "groundTruth": {
         "kind": "curated",
-        "path": "expected/ethernaut.json"
+        "path": "expected/ethernaut.json",
+        "auditorVerified": false,
+        "_auditorRationale": "GT entries were derived by reading the cloned source and (in some apps) re-using auto-curate.py to absorb engine emissions. Useful for engine regression but NOT for outside-auditor F1 claims \u2014 see STRICT-F1-BASELINE.md for the auditor-verified subset."
       },
       "wildcardFamilies": [
         "reentrancy",
@@ -257,7 +273,9 @@
       "_doc": "Industry-standard hardened Solidity library. Used as a CLEAN-CODE benchmark: the scanner should fire ~zero findings. Any finding here is an FP signal.",
       "groundTruth": {
         "kind": "curated",
-        "path": "expected/openzeppelin-contracts.json"
+        "path": "expected/openzeppelin-contracts.json",
+        "auditorVerified": false,
+        "_auditorRationale": "GT entries were derived by reading the cloned source and (in some apps) re-using auto-curate.py to absorb engine emissions. Useful for engine regression but NOT for outside-auditor F1 claims \u2014 see STRICT-F1-BASELINE.md for the auditor-verified subset."
       },
       "license": {
         "spdx": "MIT",
@@ -278,7 +296,9 @@
       ],
       "groundTruth": {
         "kind": "curated",
-        "path": "expected/expressjs-express.json"
+        "path": "expected/expressjs-express.json",
+        "auditorVerified": false,
+        "_auditorRationale": "GT entries were derived by reading the cloned source and (in some apps) re-using auto-curate.py to absorb engine emissions. Useful for engine regression but NOT for outside-auditor F1 claims \u2014 see STRICT-F1-BASELINE.md for the auditor-verified subset."
       },
       "license": {
         "spdx": "MIT",
@@ -300,7 +320,9 @@
       ],
       "groundTruth": {
         "kind": "curated",
-        "path": "expected/gin-gonic-gin.json"
+        "path": "expected/gin-gonic-gin.json",
+        "auditorVerified": false,
+        "_auditorRationale": "GT entries were derived by reading the cloned source and (in some apps) re-using auto-curate.py to absorb engine emissions. Useful for engine regression but NOT for outside-auditor F1 claims \u2014 see STRICT-F1-BASELINE.md for the auditor-verified subset."
       },
       "license": {
         "spdx": "MIT",
@@ -315,7 +337,9 @@
       "_doc": "Snyk rust-vulnerable-apps \u2014 benchmark for Rust security rules. Covers CORS misconfiguration, hardcoded secrets, SQL injection, SSRF, XSS. Real-world Rust SAST ground truth replacing the rustsec-advisories markdown corpus (which wasn't scannable).",
       "groundTruth": {
         "kind": "curated",
-        "path": "expected/snyk-rust-vulnerable-apps.json"
+        "path": "expected/snyk-rust-vulnerable-apps.json",
+        "auditorVerified": false,
+        "_auditorRationale": "GT entries were derived by reading the cloned source and (in some apps) re-using auto-curate.py to absorb engine emissions. Useful for engine regression but NOT for outside-auditor F1 claims \u2014 see STRICT-F1-BASELINE.md for the auditor-verified subset."
       },
       "wildcardFamilies": [
         "sql-injection",
@@ -355,7 +379,9 @@
       "_doc": "IssueBlot.NET \u2014 purposely vulnerable C# corpus spanning Core MVC, .NET MVC, WCF, WebForms. Built for SAST tool benchmarking. Real-world ground truth for the csharp.js rule set.",
       "groundTruth": {
         "kind": "curated",
-        "path": "expected/issueblot-dotnet.json"
+        "path": "expected/issueblot-dotnet.json",
+        "auditorVerified": false,
+        "_auditorRationale": "GT entries were derived by reading the cloned source and (in some apps) re-using auto-curate.py to absorb engine emissions. Useful for engine regression but NOT for outside-auditor F1 claims \u2014 see STRICT-F1-BASELINE.md for the auditor-verified subset."
       },
       "wildcardFamilies": [
         "sql-injection",
@@ -390,7 +416,9 @@
       "_doc": "fancycoconut/owasp.net \u2014 ASP.NET Core OWASP Top 10 demo. Smaller corpus than IssueBlot.NET; complementary coverage.",
       "groundTruth": {
         "kind": "curated",
-        "path": "expected/owasp-dotnet.json"
+        "path": "expected/owasp-dotnet.json",
+        "auditorVerified": false,
+        "_auditorRationale": "GT entries were derived by reading the cloned source and (in some apps) re-using auto-curate.py to absorb engine emissions. Useful for engine regression but NOT for outside-auditor F1 claims \u2014 see STRICT-F1-BASELINE.md for the auditor-verified subset."
       },
       "wildcardFamilies": [
         "sql-injection",
@@ -420,10 +448,11 @@
       "repo": "https://github.com/arichardson/juliet-test-suite-c.git",
       "sha": "master",
       "scanRoot": "testcases",
-      "_doc": "NIST SARD Juliet C/C++ Test Suite v1.3 \u2014 118 CWEs, 87k+ test cases. Directly exercises cpp.js (banned-API rules) at scale. Heavy clone (~500MB) and ~4min scan time but produces strict per-CWE F1 measurement. Quarantined in 0.34.5: strict-label F1 requires a C/C++ GT builder (analogous to buildJulietExpected for Java); generic wildcards are used until that lands.",
+      "_doc": "NIST SARD Juliet C/C++ Test Suite v1.3 \u2014 118 CWEs, 87k+ test cases. Directly exercises cpp.js (banned-API rules) at scale. Un-quarantined in this release: buildJulietCppExpected walks testcases/CWE<N>_*/  and emits one expected entry per .c/.cpp file for the CWEs the scanner has rules for.",
       "groundTruth": {
-        "kind": "juliet",
+        "kind": "juliet-c-cpp",
         "cweToFamily": {
+          "CWE78": "command-injection",
           "CWE120": "buffer-overflow",
           "CWE121": "buffer-overflow",
           "CWE122": "buffer-overflow",
@@ -431,15 +460,23 @@
           "CWE126": "buffer-overflow",
           "CWE127": "buffer-overflow",
           "CWE134": "format-string",
-          "CWE78": "command-injection",
-          "CWE190": "integer-overflow",
-          "CWE191": "integer-overflow",
-          "CWE787": "mem-unsafe",
+          "CWE242": "buffer-overflow",
+          "CWE259": "hardcoded-secret",
+          "CWE321": "hardcoded-secret",
+          "CWE327": "weak-crypto",
+          "CWE328": "weak-crypto",
+          "CWE330": "weak-rng",
+          "CWE338": "weak-rng",
           "CWE415": "mem-unsafe",
           "CWE416": "mem-unsafe",
-          "CWE338": "weak-rng",
-          "CWE330": "weak-rng"
-        }
+          "CWE590": "mem-unsafe",
+          "CWE676": "buffer-overflow",
+          "CWE761": "mem-unsafe",
+          "CWE762": "mem-unsafe"
+        },
+        "_doc": "Only CWEs the scanner cpp.js module has rules for. Buffer-overflow family pulled from strcpy/strcat/gets/sprintf rules; format-string from printf-fmt; command-injection from system/popen; mem-unsafe from memcpy-usersz/alloca; weak-rng from rand/srand-time. CWE242 (gets/strcpy is the dangerous fn) maps to buffer-overflow because that's how cpp.js families it.",
+        "auditorVerified": true,
+        "_auditorRationale": "NIST SARD Juliet C/C++ test files live under testcases/CWE<N>_*/ with explicit CWE in the directory name. Our GT walks the directory tree."
       },
       "wildcardFamilies": [
         "buffer-overflow",
@@ -447,14 +484,13 @@
         "command-injection",
         "mem-unsafe",
         "weak-rng",
-        "integer-overflow",
-        "hardcoded-secret"
+        "hardcoded-secret",
+        "weak-crypto"
       ],
       "license": {
         "spdx": "public-domain",
         "_doc": "NIST SARD content is US Govt work, public domain. Mirror license varies \u2014 fetched on demand only."
-      },
-      "_quarantined": true
+      }
     },
     "ossf-cve-benchmark": {
       "language": "polyglot",
@@ -464,7 +500,9 @@
       "_doc": "OpenSSF CVE Benchmark \u2014 200+ real CVEs with vulnerable-commit + fix-commit pairs and machine-readable ground truth. The data/ tree holds per-CVE checked-out source snapshots. Replaces the planned cve-bench-top50; this is real, community-maintained CVE corpus.",
       "groundTruth": {
         "kind": "curated",
-        "path": "expected/ossf-cve-benchmark.json"
+        "path": "expected/ossf-cve-benchmark.json",
+        "auditorVerified": true,
+        "_auditorRationale": "OSSF CVE-Benchmark ships per-CVE checked-out source snapshots paired with vulnerable-commit + fix-commit + CWE. GT entries trace to the CVE-fix-commit pair."
       },
       "wildcardFamilies": [
         "sql-injection",
@@ -509,7 +547,9 @@
       "_doc": "jphall663/gai_risk_management \u2014 community-maintained GenAI risk reference aligned with NIST AI 600-1 (Generative AI Profile). Documents + sample code mapping the 12 NIST GAI risk categories. Informational: scanner LLM rules pick up some patterns but the corpus is documentation-heavy.",
       "groundTruth": {
         "kind": "curated",
-        "path": "expected/gai-risk-management.json"
+        "path": "expected/gai-risk-management.json",
+        "auditorVerified": false,
+        "_auditorRationale": "GT entries were derived by reading the cloned source and (in some apps) re-using auto-curate.py to absorb engine emissions. Useful for engine regression but NOT for outside-auditor F1 claims \u2014 see STRICT-F1-BASELINE.md for the auditor-verified subset."
       },
       "wildcardFamilies": [
         "hardcoded-secret",
@@ -535,7 +575,9 @@
       "_doc": "OWASP PyGoat \u2014 Django app demonstrating OWASP Top 10 in Python. The introduction/ dir holds the deliberate vulnerable views.",
       "groundTruth": {
         "kind": "curated",
-        "path": "expected/pygoat.json"
+        "path": "expected/pygoat.json",
+        "auditorVerified": false,
+        "_auditorRationale": "GT entries were derived by reading the cloned source and (in some apps) re-using auto-curate.py to absorb engine emissions. Useful for engine regression but NOT for outside-auditor F1 claims \u2014 see STRICT-F1-BASELINE.md for the auditor-verified subset."
       },
       "wildcardFamilies": [
         "sql-injection",
@@ -563,7 +605,9 @@
       "_doc": "Bandit ships ~150 vuln fixtures under examples/, each named for the CWE/check it demonstrates. Wildcard-credited per family.",
       "groundTruth": {
         "kind": "curated",
-        "path": "expected/bandit-test.json"
+        "path": "expected/bandit-test.json",
+        "auditorVerified": false,
+        "_auditorRationale": "GT entries were derived by reading the cloned source and (in some apps) re-using auto-curate.py to absorb engine emissions. Useful for engine regression but NOT for outside-auditor F1 claims \u2014 see STRICT-F1-BASELINE.md for the auditor-verified subset."
       },
       "wildcardFamilies": [
         "sql-injection",
@@ -587,6 +631,52 @@
         "_doc": "Apache-2.0 \u2014 fetched on demand."
       }
     },
+    "lodash-clean": {
+      "language": "javascript",
+      "repo": "https://github.com/lodash/lodash.git",
+      "sha": "main",
+      "scanRoot": "src",
+      "mode": "clean",
+      "excludePaths": [
+        "test/**",
+        "fp/**",
+        "perf/**",
+        "node_modules/**"
+      ],
+      "_doc": "Lodash core \u2014 NEGATIVE-CORPUS fixture. One of the most downloaded utility libraries; any engine emission is a precision failure independent of curated GT. expected[] is intentionally empty.",
+      "groundTruth": {
+        "kind": "curated",
+        "path": "expected/lodash-clean.json",
+        "auditorVerified": true,
+        "_auditorRationale": "Negative-corpus fixture: trusted upstream library with no security-relevant entries. Any emission is auditor-verifiable as a precision regression."
+      },
+      "license": {
+        "spdx": "MIT",
+        "_doc": "MIT \u2014 fetched on demand."
+      }
+    },
+    "requests-clean": {
+      "language": "python",
+      "repo": "https://github.com/psf/requests.git",
+      "sha": "main",
+      "scanRoot": "src/requests",
+      "mode": "clean",
+      "excludePaths": [
+        "tests/**",
+        "docs/**"
+      ],
+      "_doc": "python-requests core \u2014 NEGATIVE-CORPUS fixture. Canonical Python HTTP library, audited and used in millions of projects. Any engine emission is a precision failure independent of curated GT.",
+      "groundTruth": {
+        "kind": "curated",
+        "path": "expected/requests-clean.json",
+        "auditorVerified": true,
+        "_auditorRationale": "Negative-corpus fixture: trusted upstream library with no security-relevant entries. Any emission is auditor-verifiable as a precision regression."
+      },
+      "license": {
+        "spdx": "Apache-2.0",
+        "_doc": "Apache-2.0 \u2014 fetched on demand."
+      }
+    },
     "django-clean": {
       "language": "python",
       "repo": "https://github.com/django/django.git",
@@ -601,7 +691,9 @@
       "_doc": "Django framework core \u2014 CLEAN-CODE benchmark for the Python rule set. Should produce ~zero findings.",
       "groundTruth": {
         "kind": "curated",
-        "path": "expected/django-clean.json"
+        "path": "expected/django-clean.json",
+        "auditorVerified": false,
+        "_auditorRationale": "GT entries were derived by reading the cloned source and (in some apps) re-using auto-curate.py to absorb engine emissions. Useful for engine regression but NOT for outside-auditor F1 claims \u2014 see STRICT-F1-BASELINE.md for the auditor-verified subset."
       },
       "license": {
         "spdx": "BSD-3-Clause",
@@ -620,7 +712,9 @@
       "_doc": "Flask framework \u2014 CLEAN-CODE benchmark, small mature Python codebase.",
       "groundTruth": {
         "kind": "curated",
-        "path": "expected/flask-clean.json"
+        "path": "expected/flask-clean.json",
+        "auditorVerified": false,
+        "_auditorRationale": "GT entries were derived by reading the cloned source and (in some apps) re-using auto-curate.py to absorb engine emissions. Useful for engine regression but NOT for outside-auditor F1 claims \u2014 see STRICT-F1-BASELINE.md for the auditor-verified subset."
       },
       "license": {
         "spdx": "BSD-3-Clause",
@@ -635,7 +729,9 @@
       "_doc": "Damn Vulnerable Web Application \u2014 canonical PHP teaching tool. Wildcard-credited per family.",
       "groundTruth": {
         "kind": "curated",
-        "path": "expected/dvwa.json"
+        "path": "expected/dvwa.json",
+        "auditorVerified": false,
+        "_auditorRationale": "GT entries were derived by reading the cloned source and (in some apps) re-using auto-curate.py to absorb engine emissions. Useful for engine regression but NOT for outside-auditor F1 claims \u2014 see STRICT-F1-BASELINE.md for the auditor-verified subset."
       },
       "wildcardFamilies": [
         "sql-injection",
@@ -666,7 +762,9 @@
       "_doc": "Laravel framework \u2014 CLEAN-CODE benchmark for PHP rule set.",
       "groundTruth": {
         "kind": "curated",
-        "path": "expected/laravel-clean.json"
+        "path": "expected/laravel-clean.json",
+        "auditorVerified": false,
+        "_auditorRationale": "GT entries were derived by reading the cloned source and (in some apps) re-using auto-curate.py to absorb engine emissions. Useful for engine regression but NOT for outside-auditor F1 claims \u2014 see STRICT-F1-BASELINE.md for the auditor-verified subset."
       },
       "license": {
         "spdx": "MIT",
@@ -681,7 +779,9 @@
       "_doc": "OWASP Railsgoat \u2014 Rails app demonstrating OWASP Top 10. Wildcard-credited per family.",
       "groundTruth": {
         "kind": "curated",
-        "path": "expected/railsgoat.json"
+        "path": "expected/railsgoat.json",
+        "auditorVerified": false,
+        "_auditorRationale": "GT entries were derived by reading the cloned source and (in some apps) re-using auto-curate.py to absorb engine emissions. Useful for engine regression but NOT for outside-auditor F1 claims \u2014 see STRICT-F1-BASELINE.md for the auditor-verified subset."
       },
       "wildcardFamilies": [
         "sql-injection",
@@ -716,7 +816,9 @@
       "_doc": "Rails framework actionpack/ \u2014 CLEAN-CODE benchmark for Ruby rule set on the most security-relevant Rails subsystem.",
       "groundTruth": {
         "kind": "curated",
-        "path": "expected/rails-clean.json"
+        "path": "expected/rails-clean.json",
+        "auditorVerified": false,
+        "_auditorRationale": "GT entries were derived by reading the cloned source and (in some apps) re-using auto-curate.py to absorb engine emissions. Useful for engine regression but NOT for outside-auditor F1 claims \u2014 see STRICT-F1-BASELINE.md for the auditor-verified subset."
       },
       "license": {
         "spdx": "MIT",
@@ -731,7 +833,9 @@
       "_doc": "TruffleHog detector test fixtures \u2014 high-entropy secrets corpus across ~700 detector types. Wildcards on hardcoded-secret families.",
       "groundTruth": {
         "kind": "curated",
-        "path": "expected/trufflehog-fixtures.json"
+        "path": "expected/trufflehog-fixtures.json",
+        "auditorVerified": true,
+        "_auditorRationale": "Upstream trufflehog ships fixtures explicitly designed to exercise its detectors. Every match is intentional by upstream design."
       },
       "wildcardFamilies": [
         "hardcoded-secret"
@@ -749,7 +853,9 @@
       "_doc": "Gitleaks test fixtures \u2014 secret-pattern ground truth corpus.",
       "groundTruth": {
         "kind": "curated",
-        "path": "expected/gitleaks-fixtures.json"
+        "path": "expected/gitleaks-fixtures.json",
+        "auditorVerified": true,
+        "_auditorRationale": "Upstream gitleaks ships fixtures explicitly designed to exercise its detectors. Every match is intentional by upstream design."
       },
       "wildcardFamilies": [
         "hardcoded-secret"
@@ -767,7 +873,9 @@
       "_doc": "Bridgecrew Terragoat \u2014 intentionally-vulnerable Terraform. Validates scanIaC against canonical ground truth.",
       "groundTruth": {
         "kind": "curated",
-        "path": "expected/terragoat.json"
+        "path": "expected/terragoat.json",
+        "auditorVerified": false,
+        "_auditorRationale": "GT entries were derived by reading the cloned source and (in some apps) re-using auto-curate.py to absorb engine emissions. Useful for engine regression but NOT for outside-auditor F1 claims \u2014 see STRICT-F1-BASELINE.md for the auditor-verified subset."
       },
       "wildcardFamilies": [
         "iac-public-bucket",
@@ -789,7 +897,9 @@
       "_doc": "Bridgecrew Cfngoat \u2014 intentionally-vulnerable CloudFormation.",
       "groundTruth": {
         "kind": "curated",
-        "path": "expected/cfngoat.json"
+        "path": "expected/cfngoat.json",
+        "auditorVerified": false,
+        "_auditorRationale": "GT entries were derived by reading the cloned source and (in some apps) re-using auto-curate.py to absorb engine emissions. Useful for engine regression but NOT for outside-auditor F1 claims \u2014 see STRICT-F1-BASELINE.md for the auditor-verified subset."
       },
       "wildcardFamilies": [
         "iac-public-bucket",
@@ -818,7 +928,9 @@
       "_doc": "Gitea services/ dir \u2014 production Go code in a polyglot project (Go + JS + Vue + Go templates). Validates per-language rule isolation under load.",
       "groundTruth": {
         "kind": "curated",
-        "path": "expected/gitea-polyglot.json"
+        "path": "expected/gitea-polyglot.json",
+        "auditorVerified": false,
+        "_auditorRationale": "GT entries were derived by reading the cloned source and (in some apps) re-using auto-curate.py to absorb engine emissions. Useful for engine regression but NOT for outside-auditor F1 claims \u2014 see STRICT-F1-BASELINE.md for the auditor-verified subset."
       },
       "license": {
         "spdx": "MIT",
@@ -833,7 +945,9 @@
       "_doc": "Hadolint test fixtures \u2014 Dockerfile linting ground truth.",
       "groundTruth": {
         "kind": "curated",
-        "path": "expected/hadolint-fixtures.json"
+        "path": "expected/hadolint-fixtures.json",
+        "auditorVerified": true,
+        "_auditorRationale": "Upstream hadolint ships Dockerfile fixtures designed to exercise its rules. Every match is intentional by upstream design."
       },
       "wildcardFamilies": [
         "container-base-image",
@@ -855,7 +969,9 @@
       "_quarantined": true,
       "groundTruth": {
         "kind": "curated",
-        "path": "expected/linux-kernel-perf.json"
+        "path": "expected/linux-kernel-perf.json",
+        "auditorVerified": false,
+        "_auditorRationale": "GT entries were derived by reading the cloned source and (in some apps) re-using auto-curate.py to absorb engine emissions. Useful for engine regression but NOT for outside-auditor F1 claims \u2014 see STRICT-F1-BASELINE.md for the auditor-verified subset."
       },
       "license": {
         "spdx": "GPL-2.0",
@@ -872,7 +988,9 @@
       "_quarantined": true,
       "groundTruth": {
         "kind": "curated",
-        "path": "expected/igoat-swift.json"
+        "path": "expected/igoat-swift.json",
+        "auditorVerified": false,
+        "_auditorRationale": "GT entries were derived by reading the cloned source and (in some apps) re-using auto-curate.py to absorb engine emissions. Useful for engine regression but NOT for outside-auditor F1 claims \u2014 see STRICT-F1-BASELINE.md for the auditor-verified subset."
       },
       "wildcardFamilies": [
         "hardcoded-secret",
@@ -897,7 +1015,9 @@
       "_quarantined": true,
       "groundTruth": {
         "kind": "curated",
-        "path": "expected/owasp-mastg-mobile.json"
+        "path": "expected/owasp-mastg-mobile.json",
+        "auditorVerified": false,
+        "_auditorRationale": "GT entries were derived by reading the cloned source and (in some apps) re-using auto-curate.py to absorb engine emissions. Useful for engine regression but NOT for outside-auditor F1 claims \u2014 see STRICT-F1-BASELINE.md for the auditor-verified subset."
       },
       "wildcardFamilies": [
         "hardcoded-secret",

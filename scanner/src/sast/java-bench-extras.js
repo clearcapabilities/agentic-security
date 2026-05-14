@@ -56,11 +56,32 @@ const SETX_RE = /\.\s*set(?:String|Int|Long|Object|Date|Timestamp|Boolean|Float|
 // CWE-601: response.sendRedirect(<tainted-or-non-literal>)
 const SEND_REDIRECT_RE = /\b(?:response|resp|res)\s*\.\s*sendRedirect\s*\(\s*([^)]+)\)/g;
 
-// CWE-319: insecure HTTP — only fire when URL is built via concat OR contains
-//          a user-input hint. Plain `new URL("http://example.com")` is NOT a
-//          violation by itself — many test fixtures and apps legitimately
-//          construct a hardcoded HTTP URL for non-security reasons.
-const INSECURE_URL_RE = /\bnew\s+URL\s*\(\s*"http:\/\/[^"]*"\s*\+\s*\w/g;
+// CWE-319: cleartext transmission of sensitive information.
+//
+// Three patterns, each gated on sensitive-data context to keep precision high:
+//
+//   A. `new URL("http://...")` — only fire when the same file has
+//      sensitive-data identifiers (password|secret|token|cred|jwt|apikey|...).
+//      Plain HTTP URLs without sensitive context (e.g. fetching a public RSS
+//      feed) are intentionally NOT flagged.
+//
+//   B. `new URL("http://...") + concat` — always fire (concatenating a tainted
+//      value into an HTTP URL is the canonical OWASP pattern).
+//
+//   C. `new Socket(host, port)` — outbound cleartext socket. Fire only when
+//      the same file reads from the socket *and* contains sensitive
+//      identifiers. Matches Juliet's CWE-319 connect_tcp_* / listen_tcp_*
+//      and send_* variants.
+const INSECURE_URL_LITERAL_RE = /\bnew\s+URL\s*\(\s*"http:\/\/[^"]*"\s*\)/g;
+const INSECURE_URL_CONCAT_RE = /\bnew\s+URL\s*\(\s*"http:\/\/[^"]*"\s*\+\s*\w/g;
+const RAW_SOCKET_RE = /\bnew\s+Socket\s*\(\s*[^)]+\)/g;
+
+// "Sensitive-data context" — file contains any of these identifiers.
+// Variable names like `password`, `passwd`, `secret`, `token`, `cred`, etc.
+const SENSITIVE_DATA_CONTEXT_RE = /\b(?:password|passwd|pwd|secret|token|jwt|credential|cred|apikey|api_key|kerberos|sessionId|session_id|privateKey|private_key)\b/i;
+
+// Reading from a Socket via getInputStream() — confirms cleartext data flow.
+const SOCKET_READ_RE = /\.getInputStream\s*\(\s*\)|\.getOutputStream\s*\(\s*\)/;
 
 // CWE-315: Cookie creation with sensitive value, no setSecure(true) seen on the same object.
 //          new Cookie("session"|"token"|"auth"|..., value). The setSecure check is best-effort.
@@ -215,18 +236,49 @@ export function scanJavaBenchExtras(file, raw) {
     });
   }
 
-  // CWE-319 — insecure HTTP URL construction
-  INSECURE_URL_RE.lastIndex = 0;
-  while ((m = INSECURE_URL_RE.exec(content))) {
+  // CWE-319 — cleartext transmission of sensitive information.
+  // We only fire ONCE per file (file-level signal). Juliet GT is file-level
+  // for this family; clean apps won't have sensitive-data context to match.
+  const fileHasSensitiveContext = SENSITIVE_DATA_CONTEXT_RE.test(content);
+  const fileHasSocketRead = SOCKET_READ_RE.test(content);
+  const cweTakenLines = new Set();
+  function emitCwe319(line, idx, why) {
+    if (cweTakenLines.has(line)) return;
+    cweTakenLines.add(line);
     findings.push({
-      id: id('java-extras:insecure-http', lineOf(m.index), m.index),
+      id: id('java-extras:insecure-http', line, idx),
       kind: 'sast',
       severity: 'medium',
-      vuln: 'Cleartext HTTP transmission (new URL with http://)',
+      vuln: `Cleartext HTTP transmission (${why})`,
       cwe: 'CWE-319', stride: 'Information Disclosure',
-      file, line: lineOf(m.index),
-      snippet: content.substring(content.lastIndexOf('\n', m.index)+1, content.indexOf('\n', m.index)).trim().slice(0, 200),
+      file, line,
+      snippet: content.substring(content.lastIndexOf('\n', idx)+1, content.indexOf('\n', idx)).trim().slice(0, 200),
     });
+  }
+
+  // Pattern B: HTTP URL with concatenation — always fire (tainted concat is
+  // an unambiguous bad pattern even outside a sensitive-data file).
+  INSECURE_URL_CONCAT_RE.lastIndex = 0;
+  while ((m = INSECURE_URL_CONCAT_RE.exec(content))) {
+    emitCwe319(lineOf(m.index), m.index, 'tainted concat into http:// URL');
+  }
+
+  // Pattern A: literal `new URL("http://...")` — only fire when the file has
+  // sensitive-data context. Matches Juliet's URLConnection_* CWE-319 variants.
+  if (fileHasSensitiveContext) {
+    INSECURE_URL_LITERAL_RE.lastIndex = 0;
+    while ((m = INSECURE_URL_LITERAL_RE.exec(content))) {
+      emitCwe319(lineOf(m.index), m.index, 'http:// URL with sensitive-data context');
+    }
+  }
+
+  // Pattern C: raw outbound Socket reading sensitive data. Matches Juliet's
+  // connect_tcp_* / listen_tcp_* / send_* CWE-319 variants.
+  if (fileHasSensitiveContext && fileHasSocketRead) {
+    RAW_SOCKET_RE.lastIndex = 0;
+    while ((m = RAW_SOCKET_RE.exec(content))) {
+      emitCwe319(lineOf(m.index), m.index, 'cleartext Socket with sensitive-data context');
+    }
   }
 
   // CWE-315 — sensitive Cookie without secure flag

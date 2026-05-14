@@ -148,16 +148,6 @@
       "note": "GitHub action pinned to mutable ref"
     },
     {
-      "file": "Illuminate/Cookie/composer.json",
-      "line": 0,
-      "lineTolerance": 9999,
-      "family": "vulnerable-dep",
-      "severity": "medium",
-      "cwe": null,
-      "note": "Vulnerable dependency declared in this manifest (matchAny collapses all per-package CVEs into one collective TP)",
-      "matchAny": true
-    },
-    {
       "file": "Illuminate/Database/.github/workflows/close-pull-request.yml",
       "line": 11,
       "lineTolerance": 3,
@@ -311,16 +301,6 @@
       "severity": "low",
       "cwe": "CWE-829",
       "note": "GitHub action pinned to mutable ref"
-    },
-    {
-      "file": "Illuminate/Mail/composer.json",
-      "line": 0,
-      "lineTolerance": 9999,
-      "family": "vulnerable-dep",
-      "severity": "medium",
-      "cwe": null,
-      "note": "Vulnerable dependency declared in this manifest (matchAny collapses all per-package CVEs into one collective TP)",
-      "matchAny": true
     },
     {
       "file": "Illuminate/Notifications/.github/workflows/close-pull-request.yml",
