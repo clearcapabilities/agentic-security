@@ -6,7 +6,7 @@
 
 [![License](https://img.shields.io/badge/license-PolyForm--Internal--Use-blue)](./LICENSE)
 [![Bundle](https://img.shields.io/badge/bundle-2.30MB-orange)]()
-[![Version](https://img.shields.io/badge/version-0.36.0-blue)]()
+[![Version](https://img.shields.io/badge/version-0.37.0-blue)]()
 
 ---
 
@@ -166,19 +166,40 @@ Other scanners give you `[CRITICAL] CWE-89 SQL Injection at api/users.ts:42`. Yo
 We give you this:
 
 ```
-[critical] SQL Injection on api/users.ts:42
-   Could leak PII for ~5,000 users.
-   Estimated cost if exploited: $125k–$1.3M
-   (breach response, regulatory fines, customer churn)
+[critical] SQL Injection on api/users.ts:42 (CWE-89)
+   Could expose PII for ~5,000 users.
+   Context: tech / GDPR + CCPA + PCI-DSS · controls: monitoring, mfa
 
+   Estimated cost if exploited:
+     Best   :   $85,000   (contained <24h, internal disclosure)
+     Likely :  $620,000   (typical SMB outcome — NetDiligence median)
+     Worst  :   $5.2M     (full exfil + class action + max regulatory)
+
+   Component breakdown (likely):
+     incident response   :   $50,000
+     legal counsel       :  $112,500  (multi-jurisdiction)
+     notification        :   $25,000  ($5/user × 5,000)
+     credit monitoring   :   $37,500  (PII, 1yr, 30% take-up)
+     regulatory fines    :   $87,500  (GDPR + CCPA + PCI bands)
+     direct damage       :  $112,000  (per-record × industry mult)
+     class action        :   $75,000  (US PII exposure)
+     lost business       :  $120,000  (IBM 39% rule)
+
+   Comparable: Equifax 2017 SQLi → $1.4B settlement ($9.50/record)
    Fix:  use a parameterized query
          db.query('SELECT * FROM users WHERE id = ?', [id])
 ```
 
-Every finding gets:
-- **Stakes** — what data is at risk, how many users, in plain English
-- **Cost** — a dollar band based on your actual stack (Stripe present? You're in fraud-loss range)
-- **Fix** — the literal line of code to write, in the language of YOUR codebase
+**Every finding gets a 4-part framing:**
+
+- **Stakes** — what data, how many users, what industry, what jurisdictions
+- **3-point cost** — best (P5) / likely (P50) / worst (P95), not a meaningless range
+- **Component breakdown** — IR + legal + notification + credit monitoring + regulatory + damage + class action + churn, each computed separately
+- **Comparable incident** — a real public settlement to calibrate against (Equifax, T-Mobile, Capital One, Anthem, etc.)
+
+The numbers are grounded in **public data sources**: IBM Cost of a Data Breach 2024 (per-industry, per-record costs), NetDiligence Cyber Claims Study 2024 (SMB distributions), HHS OCR HIPAA enforcement records, GDPR Enforcement Tracker medians, and 25+ public settlement records.
+
+Detected automatically per project: **industry** (14 verticals with IBM 2024 cost multipliers), **jurisdiction exposure** (GDPR, CCPA, HIPAA, PCI-DSS, COPPA, FERPA, NIS2, LGPD, and 8 more), **existing controls** (WAF, MFA, SIEM, encryption, IR plan, bug-bounty, SOC2/ISO27001) that discount the estimate.
 
 This is automatic, on by default. Disable with `--no-blast-radius` if you really want.
 

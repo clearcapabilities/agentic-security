@@ -20,7 +20,7 @@ NAME
        integrations for the security stack you already run.
 
 VERSION
-       0.36.0
+       0.37.0
 
 SYNOPSIS
        agentic-security [--profile pro] COMMAND [ARGS] [OPTIONS]
@@ -673,17 +673,31 @@ Custom rules ship findings exactly like built-ins, with the prefix
               and a one-tier severity bump (medium→high→critical) so
               they sort to the top. Disable with --no-epss.
 
-       (auto-on) Blast-radius / cost framing
+       (auto-on) Blast-radius / cost framing — world-class model (v0.37+)
               Every finding stamped with a blastRadius object:
                 scope: 'paying-users'|'all-users'|'admin-only'|'public'
-                dataAtRisk: ['PII','payment','auth-tokens',...]
-                userCount: <estimated>
-                dollarLow / dollarHigh: cost band (severity-multiplied)
-                narrative: plain-English one-liner for vibecoders /
-                           exec reporting
-              Heuristic-driven from project signals (Stripe usage, auth
-              library, user/PII schema, .env present). No LLM call, no
-              network. Disable with --no-blast-radius.
+                dataAtRisk: ['pii','payment','phi','rce','credentials',...]
+                userCount: <estimated from project signals>
+                industry: <14 verticals classified from deps + schema>
+                jurisdictions: ['GDPR','CCPA','HIPAA','PCI-DSS',...]
+                controlsApplied: ['waf','mfa','monitoring',...]
+                dollarBest / dollarLikely / dollarWorst: three-point
+                           estimate (P5 / P50 / P95)
+                dollarLow / dollarHigh: backward-compat aliases
+                components: { incidentResponse, legal, crisisPR,
+                              notification, creditMonitoring,
+                              regulatoryFines, directDamage, classAction,
+                              lostBusiness } — each a {low, likely, high}
+                dominantDriver: <largest-contributing component>
+                comparable: <real public incident citation>
+                confidence: 'high' | 'medium' | 'low'
+                narrative: plain-English one-liner with citation
+              Empirical sources cited inline: IBM Cost of a Data Breach
+              2024, NetDiligence Cyber Claims Study 2024, HHS OCR HIPAA
+              enforcement records, GDPR Enforcement Tracker, public
+              settlements (Equifax $1.4B, Capital One $190M, T-Mobile
+              $350M, Anthem $115M, etc.). No LLM call, no network.
+              Disable with --no-blast-radius.
 ```
 
 ### Real-time bodyguards
