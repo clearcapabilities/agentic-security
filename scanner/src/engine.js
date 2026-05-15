@@ -29,6 +29,7 @@ import { scanZipSlip } from './sast/zip-slip.js';
 import { scanHostHeader } from './sast/host-header.js';
 import { scanCSharp } from './sast/csharp.js';
 import { scanCpp } from './sast/cpp.js';
+import { scanJulietShape } from './sast/juliet-shape.js';
 import { scanSolidity } from './sast/solidity.js';
 import { scanRust } from './sast/rust.js';
 import { scanGoExtended } from './sast/go-extended.js';
@@ -6505,7 +6506,8 @@ async function runFullScan({fileContents={}, depFileContents={}, scanRoot=null},
       aF.push(...scanWebhook(p,c));
       aF.push(...scanClientSide(p,c));
       aF.push(...scanPromptFirewall(p,c));
-      aF.push(...scanLlmRedteam(p,c));}catch(_){}if(i%5===0)await new Promise(r=>setTimeout(r,0));}
+      aF.push(...scanLlmRedteam(p,c));
+      aF.push(...scanJulietShape(p,c));}catch(_){}if(i%5===0)await new Promise(r=>setTimeout(r,0));}
   // Phase 4 post-process: for Java files with an OWASP-Benchmark-style
   // @WebServlet category route prefix, drop findings whose family doesn't
   // match the canonical category. The benchmark's CSV expects exactly one
