@@ -560,9 +560,10 @@ function printResult(r) {
   }
   if (VERBOSE) {
     if (r.fns.length) {
-      console.log(`  false negatives (first 20):`);
-      for (const f of r.fns.slice(0,20)) console.log(`    ${f.file}:${f.line}  ${f.family}`);
-      if (r.fns.length > 20) console.log(`    … and ${r.fns.length - 20} more`);
+      const fnLimit = parseInt(process.env.FN_LIMIT || '20');
+      console.log(`  false negatives (first ${fnLimit}):`);
+      for (const f of r.fns.slice(0,fnLimit)) console.log(`    ${f.file}:${f.line}  ${f.family}`);
+      if (r.fns.length > fnLimit) console.log(`    … and ${r.fns.length - fnLimit} more`);
     }
     if (r.fps.length) {
       const fpLimit = parseInt(process.env.FP_LIMIT || '20');

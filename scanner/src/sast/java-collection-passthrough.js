@@ -72,6 +72,20 @@ const _ARRAY_EXTRACT_RE = /\b([A-Za-z_]\w*)\s*\[\s*[^\]]+\s*\]/g;
 // variants 72-82 route taint through cross-file collection params).
 const _COLLECTION_PARAM_RE = /\b(?:Vector|ArrayList|LinkedList|List|Set|HashSet|TreeSet|LinkedHashSet|Map|HashMap|TreeMap|LinkedHashMap|ConcurrentHashMap|Hashtable|Properties|Stack|Queue|Deque|ArrayDeque|PriorityQueue|Collection|Iterable|Optional)\s*<[^>]*>\s+([A-Za-z_]\w*)\s*[,)]/g;
 
+// Direct-source assignments to collection-typed variables. When a variable
+// is assigned the result of a request method that returns a collection
+// (getParameterMap → Map, getParameterValues → String[], getCookies →
+// Cookie[], getHeaders → Enumeration), the variable IS tainted (caught by
+// _JAVA_SOURCE_BINDS in the engine), but it also needs to be in
+// taintedCollections so subsequent .get(K)/[N]/.nextElement() extractions
+// taint their LHS via the engine's Pass-2 propagation.
+//
+// This was the missing piece for OWASP Benchmark tests like 00030:
+//   Map map = request.getParameterMap();    // ← map in tainted (existing)
+//   String[] values = map.get("BenchmarkTest00030");  // ← values needs taint
+//   if (values != null) param = values[0];            // ← param needs taint
+const _DIRECT_COLLECTION_SOURCE_RE = /\b([A-Za-z_]\w*)\s*=\s*[^;]*\b(?:request|req)\s*\.\s*(?:getParameterMap|getParameterValues|getParameterNames|getHeaders|getHeaderNames|getCookies)\s*\(/g;
+
 // Build the set of collection variables that hold tainted data.
 //   cleaned: file content with comments/strings blanked
 //   tainted: current set of tainted variable names
@@ -87,6 +101,13 @@ export function findTaintedCollections(cleaned, tainted, opts = {}) {
     while ((pm = _COLLECTION_PARAM_RE.exec(cleaned)) !== null) {
       if (pm[1]) taintedColls.add(pm[1]);
     }
+  }
+  // Always: any var directly assigned from a collection-returning request
+  // source becomes a tainted collection. Safe in any context — not gated.
+  _DIRECT_COLLECTION_SOURCE_RE.lastIndex = 0;
+  let dm;
+  while ((dm = _DIRECT_COLLECTION_SOURCE_RE.exec(cleaned)) !== null) {
+    if (dm[1]) taintedColls.add(dm[1]);
   }
   if (!tainted || tainted.size === 0) return taintedColls;
 
