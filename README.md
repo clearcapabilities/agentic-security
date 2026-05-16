@@ -1,8 +1,11 @@
+<img src="docs/brand/patch-hero.svg" align="right" width="180" alt="Patch — the agentic-security mascot, a strawberry poison dart frog with a smirk">
+
 # agentic-security
 
 ### The Claude Code plugin that catches what your AI assistant misses.
 
-> Built by **[Clear Capabilities](https://www.clearcapabilities.com/)**
+> Built by **[Clear Capabilities](https://www.clearcapabilities.com/)**.
+> Watched over by [**Patch**](docs/brand/patch-mascot.html) — tiny, bright, watching.
 
 [![License](https://img.shields.io/badge/license-PolyForm--Internal--Use-blue)](./LICENSE)
 [![Bundle](https://img.shields.io/badge/bundle-2.30MB-orange)]()
@@ -50,6 +53,8 @@ Same engine. No accounts. No telemetry. Works offline after first run.
 
 ## What 30 seconds gets you
 
+<img src="docs/brand/patch-alert.svg" align="right" width="120" alt="Patch · ALERT — finding detected">
+
 ```
 ─────────────────────────────────────────────────────────────────
   ❌  Not safe to deploy  ·  api-billing
@@ -79,6 +84,14 @@ Same engine. No accounts. No telemetry. Works offline after first run.
 ```
 
 That's the default. No CVE numbers. No CWE jargon. The stakes, the cost, the fix.
+
+When the verdict flips green, you get the **approve** face. When it doesn't, you get **alert**. The mascot ([Patch](docs/brand/patch-mascot.html)) reacts to whatever your scan actually said.
+
+<p align="center">
+  <img src="docs/brand/patch-alert.svg" width="120" alt="Patch · ALERT">
+  &nbsp;&nbsp;&nbsp;
+  <img src="docs/brand/patch-approve.svg" width="120" alt="Patch · APPROVE">
+</p>
 
 ---
 
@@ -462,4 +475,8 @@ Full legal terms in [LICENSE](./LICENSE). The short version: don't resell, don't
 
 ---
 
-> Built with care by **[Clear Capabilities](https://www.clearcapabilities.com/)**. Found a bug, have a feature idea, want to talk? [ross@clearcapabilities.com](mailto:ross@clearcapabilities.com)
+<p align="center">
+  <img src="docs/brand/patch-monogram.svg" width="48" alt="Patch monogram">
+</p>
+
+> Built with care by **[Clear Capabilities](https://www.clearcapabilities.com/)**. Mascot brand canon: [`docs/brand/patch-mascot.html`](docs/brand/patch-mascot.html). Found a bug, have a feature idea, want to talk? [ross@clearcapabilities.com](mailto:ross@clearcapabilities.com)

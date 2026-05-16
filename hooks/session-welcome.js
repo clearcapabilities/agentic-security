@@ -7,6 +7,7 @@
 'use strict';
 const fs = require('fs');
 const path = require('path');
+const { lockup } = require('./mascot.js');
 
 const cwd = process.env.CLAUDE_PROJECT_DIR || process.cwd();
 const stateDir = path.join(cwd, '.agentic-security');
@@ -34,16 +35,13 @@ const isFirstTime = !fs.existsSync(marker);
 
 if (isFirstTime) {
   const lines = [
-    '',
-    '🛡  agentic-security is active in this project.',
-    '   Created by ClearCapabilities.Com — https://clearcapabilities.com',
-    '',
+    lockup(),
     '   Building an app?            → /scan-all',
     '   AppSec / security work?     → /security-scan-all',
     '   Not sure which you are?     → /security-onboard',
     '',
-    '  Hooks: every Edit/Write scans the changed file in <5s.',
-    '  This welcome shows once per project.',
+    '   Hooks: every Edit/Write scans the changed file in <5s.',
+    '   This welcome shows once per project.',
     '',
   ];
   try {

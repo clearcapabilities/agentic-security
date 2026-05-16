@@ -1,0 +1,1008 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<title>Patch — Mascot for agentic-security · Clear Capabilities</title>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Geist:wght@300;400;500;600;700&family=Geist+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+<style>
+  :root {
+    --frog: #FF6B2C;
+    --frog-deep: #C93414;
+    --frog-shadow: #8B1E0A;
+    --frog-belly: #FFA56B;
+    --bg: #15181B;
+    --bg-2: #1E2327;
+    --bg-3: #262C31;
+    --line: #2E363C;
+    --cream: #F4EFE6;
+    --cream-dim: #B6B0A4;
+    --cream-mute: #6F6A60;
+    --signal: #FFD166;
+    --leaf: #4E7A3A;
+    --sans: "Geist", -apple-system, sans-serif;
+    --mono: "Geist Mono", ui-monospace, monospace;
+    --serif: "Instrument Serif", "Times New Roman", serif;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; background: var(--bg); color: var(--cream); font-family: var(--sans); -webkit-font-smoothing: antialiased; }
+  body { font-size: 15px; line-height: 1.55; }
+  a { color: inherit; }
+
+  /* ────────────────────────────────────────────────────────────────── */
+  /* Layout                                                              */
+  /* ────────────────────────────────────────────────────────────────── */
+  .page { max-width: 1240px; margin: 0 auto; padding: 56px 48px 96px; }
+  .row { display: grid; gap: 24px; }
+  .row.cols-2 { grid-template-columns: 1fr 1fr; }
+  .row.cols-3 { grid-template-columns: repeat(3, 1fr); }
+  .row.cols-4 { grid-template-columns: repeat(4, 1fr); }
+  .row.cols-5 { grid-template-columns: repeat(5, 1fr); }
+
+  /* ────────────────────────────────────────────────────────────────── */
+  /* Type                                                                */
+  /* ────────────────────────────────────────────────────────────────── */
+  .display { font-family: var(--serif); font-weight: 400; letter-spacing: -0.02em; line-height: 0.95; }
+  .mono { font-family: var(--mono); font-feature-settings: "ss01" on; }
+  .eyebrow { font-family: var(--mono); font-size: 11px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--cream-mute); }
+  .h-section {
+    display: flex; align-items: baseline; gap: 16px;
+    border-top: 1px solid var(--line);
+    padding-top: 18px; margin-top: 88px; margin-bottom: 28px;
+  }
+  .h-section .ix { font-family: var(--mono); font-size: 12px; color: var(--cream-mute); }
+  .h-section .title { font-family: var(--serif); font-size: 36px; line-height: 1; }
+  .h-section .sub { margin-left: auto; font-family: var(--mono); font-size: 11px; color: var(--cream-mute); letter-spacing: 0.1em; text-transform: uppercase; }
+
+  .lede { font-family: var(--serif); font-size: 22px; line-height: 1.35; color: var(--cream); max-width: 56ch; }
+  .lede em { color: var(--frog); font-style: italic; }
+  .caption { font-family: var(--mono); font-size: 11px; color: var(--cream-mute); letter-spacing: 0.06em; }
+
+  /* ────────────────────────────────────────────────────────────────── */
+  /* Top strip                                                           */
+  /* ────────────────────────────────────────────────────────────────── */
+  .top-strip {
+    display: flex; align-items: center; gap: 16px;
+    padding-bottom: 16px; border-bottom: 1px solid var(--line);
+    font-family: var(--mono); font-size: 11px; color: var(--cream-mute); letter-spacing: 0.08em; text-transform: uppercase;
+  }
+  .top-strip .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--frog); box-shadow: 0 0 12px var(--frog); }
+  .top-strip .spacer { flex: 1; }
+
+  /* ────────────────────────────────────────────────────────────────── */
+  /* Hero                                                                */
+  /* ────────────────────────────────────────────────────────────────── */
+  .hero { display: grid; grid-template-columns: 1.05fr 1fr; gap: 64px; align-items: end; padding: 56px 0 32px; }
+  .hero .name { font-family: var(--serif); font-size: 220px; letter-spacing: -0.04em; line-height: 0.85; }
+  .hero .name em { color: var(--frog); font-style: italic; }
+  .hero .meta { display: grid; grid-template-columns: 1fr 1fr; gap: 4px 24px; margin-top: 24px; font-family: var(--mono); font-size: 12px; color: var(--cream-dim); }
+  .hero .meta dt { color: var(--cream-mute); }
+  .hero .meta dd { margin: 0; color: var(--cream); }
+  .hero-art {
+    position: relative;
+    aspect-ratio: 1 / 1;
+    background:
+      radial-gradient(ellipse 60% 45% at 50% 65%, rgba(255,107,44,0.18), transparent 70%),
+      radial-gradient(circle at 50% 50%, var(--bg-2), var(--bg) 70%);
+    border: 1px solid var(--line);
+    border-radius: 4px;
+    display: grid; place-items: center;
+    overflow: hidden;
+  }
+  .hero-art .grid-bg {
+    position: absolute; inset: 0;
+    background-image:
+      linear-gradient(to right, rgba(255,255,255,0.03) 1px, transparent 1px),
+      linear-gradient(to bottom, rgba(255,255,255,0.03) 1px, transparent 1px);
+    background-size: 40px 40px;
+  }
+  .hero-art svg { position: relative; width: 78%; height: 78%; filter: drop-shadow(0 24px 40px rgba(0,0,0,0.5)); }
+  .hero-art .corner { position: absolute; font-family: var(--mono); font-size: 10px; color: var(--cream-mute); letter-spacing: 0.1em; }
+  .hero-art .corner.tl { top: 12px; left: 14px; }
+  .hero-art .corner.tr { top: 12px; right: 14px; }
+  .hero-art .corner.bl { bottom: 12px; left: 14px; }
+  .hero-art .corner.br { bottom: 12px; right: 14px; }
+  .hero-art .crosshair { position: absolute; width: 14px; height: 14px; pointer-events: none; }
+  .hero-art .crosshair::before, .hero-art .crosshair::after { content: ""; position: absolute; background: var(--frog); }
+  .hero-art .crosshair::before { left: 0; right: 0; top: 50%; height: 1px; }
+  .hero-art .crosshair::after { top: 0; bottom: 0; left: 50%; width: 1px; }
+  .hero-art .crosshair.tl { top: 32px; left: 32px; }
+  .hero-art .crosshair.tr { top: 32px; right: 32px; }
+  .hero-art .crosshair.bl { bottom: 32px; left: 32px; }
+  .hero-art .crosshair.br { bottom: 32px; right: 32px; }
+
+  /* ────────────────────────────────────────────────────────────────── */
+  /* Story card                                                          */
+  /* ────────────────────────────────────────────────────────────────── */
+  .story { display: grid; grid-template-columns: 1fr 1fr; gap: 64px; padding: 32px 0; border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); }
+  .story .tagline { font-family: var(--serif); font-size: 56px; line-height: 1; letter-spacing: -0.02em; }
+  .story .tagline em { color: var(--frog); font-style: italic; }
+  .story .body p { font-size: 15px; line-height: 1.6; color: var(--cream-dim); max-width: 48ch; }
+  .story .body p + p { margin-top: 14px; }
+  .story .body strong { color: var(--cream); font-weight: 500; }
+
+  /* ────────────────────────────────────────────────────────────────── */
+  /* Tile (canvas card)                                                  */
+  /* ────────────────────────────────────────────────────────────────── */
+  .tile {
+    position: relative;
+    background: var(--bg-2);
+    border: 1px solid var(--line);
+    border-radius: 4px;
+    aspect-ratio: 1 / 1;
+    display: grid; place-items: center;
+    overflow: hidden;
+  }
+  .tile.bg-cream { background: var(--cream); }
+  .tile.bg-deep { background: #0F1113; }
+  .tile.bg-frog { background: var(--frog); }
+  .tile svg.frog { width: 70%; height: 70%; }
+  .tile .label {
+    position: absolute; bottom: 10px; left: 12px;
+    font-family: var(--mono); font-size: 10px; color: var(--cream-mute); letter-spacing: 0.1em; text-transform: uppercase;
+  }
+  .tile.bg-cream .label { color: #8B7F6A; }
+  .tile .pose-num {
+    position: absolute; top: 10px; right: 12px;
+    font-family: var(--mono); font-size: 10px; color: var(--cream-mute);
+  }
+  .tile.bg-cream .pose-num { color: #8B7F6A; }
+  .tile .desc {
+    position: absolute; top: 12px; left: 12px; max-width: 60%;
+    font-family: var(--mono); font-size: 10px; color: var(--cream-dim); line-height: 1.5;
+  }
+  .tile.bg-cream .desc { color: #5C5446; }
+
+  /* ────────────────────────────────────────────────────────────────── */
+  /* Anatomy / construction                                              */
+  /* ────────────────────────────────────────────────────────────────── */
+  .anatomy { display: grid; grid-template-columns: 1.2fr 1fr; gap: 48px; align-items: center; }
+  .anatomy-canvas { position: relative; background: var(--bg-2); border: 1px solid var(--line); border-radius: 4px; padding: 32px; aspect-ratio: 1 / 1; display: grid; place-items: center; }
+  .anatomy-canvas svg { width: 100%; height: 100%; overflow: visible; }
+  .anatomy-list { font-family: var(--mono); font-size: 12px; }
+  .anatomy-list dl { display: grid; grid-template-columns: auto 1fr; gap: 10px 18px; margin: 0; }
+  .anatomy-list dt { color: var(--frog); font-weight: 500; }
+  .anatomy-list dd { margin: 0; color: var(--cream-dim); }
+  .anatomy-list h4 { font-family: var(--serif); font-weight: 400; font-size: 26px; margin: 0 0 18px 0; color: var(--cream); letter-spacing: -0.01em; }
+
+  /* ────────────────────────────────────────────────────────────────── */
+  /* Logo lockups                                                        */
+  /* ────────────────────────────────────────────────────────────────── */
+  .lockup { display: flex; align-items: center; gap: 18px; padding: 36px; background: var(--bg-2); border: 1px solid var(--line); border-radius: 4px; min-height: 180px; }
+  .lockup.stacked { flex-direction: column; gap: 14px; text-align: center; }
+  .lockup.light { background: var(--cream); color: var(--bg); }
+  .lockup.light .lk-name { color: var(--bg); }
+  .lockup.light .lk-sub { color: #6F6A60; }
+  .lockup .lk-frog { width: 84px; height: 84px; flex-shrink: 0; }
+  .lockup.stacked .lk-frog { width: 96px; height: 96px; }
+  .lockup .lk-text { display: flex; flex-direction: column; }
+  .lockup .lk-name { font-family: var(--serif); font-size: 36px; letter-spacing: -0.02em; line-height: 1; color: var(--cream); }
+  .lockup .lk-name em { color: var(--frog); font-style: italic; }
+  .lockup .lk-sub { font-family: var(--mono); font-size: 10px; letter-spacing: 0.18em; text-transform: uppercase; color: var(--cream-mute); margin-top: 6px; }
+  /* Logo lockups using the bug-scene mark */
+  .lockup-row { display: grid; grid-template-columns: 1.25fr 1fr 0.95fr; gap: 16px; }
+  .lockup .lk-scene { width: 200px; height: auto; flex-shrink: 0; }
+  .lockup.stacked .lk-scene { width: 240px; }
+  .lockup.compact .lk-scene { width: 150px; }
+
+  /* ────────────────────────────────────────────────────────────────── */
+  /* App icons                                                           */
+  /* ────────────────────────────────────────────────────────────────── */
+  .icon-row { display: flex; align-items: flex-end; gap: 28px; flex-wrap: wrap; }
+  .icon {
+    display: grid; place-items: center;
+    overflow: hidden;
+    box-shadow: 0 16px 40px rgba(0,0,0,0.4);
+  }
+  .icon svg { width: 76%; height: 76%; }
+  .icon.sz-160 { width: 160px; height: 160px; border-radius: 36px; }
+  .icon.sz-96 { width: 96px; height: 96px; border-radius: 22px; }
+  .icon.sz-56 { width: 56px; height: 56px; border-radius: 12px; }
+  .icon.sz-28 { width: 28px; height: 28px; border-radius: 6px; }
+  .icon.bg-dark { background: linear-gradient(160deg, #20262C, #0F1113); }
+  .icon.bg-frog { background: linear-gradient(160deg, #FF8A4F, #C93414); }
+  .icon.bg-cream { background: var(--cream); }
+  .icon-stack { display: flex; flex-direction: column; align-items: center; gap: 10px; }
+  .icon-stack .cap { font-family: var(--mono); font-size: 10px; color: var(--cream-mute); letter-spacing: 0.1em; text-transform: uppercase; }
+
+  /* ────────────────────────────────────────────────────────────────── */
+  /* Palette                                                             */
+  /* ────────────────────────────────────────────────────────────────── */
+  .pal { display: grid; grid-template-columns: repeat(6, 1fr); gap: 12px; }
+  .swatch { aspect-ratio: 3 / 4; border-radius: 4px; padding: 14px; display: flex; flex-direction: column; justify-content: space-between; border: 1px solid var(--line); }
+  .swatch .nm { font-family: var(--serif); font-size: 22px; line-height: 1; }
+  .swatch .hx { font-family: var(--mono); font-size: 11px; }
+  .swatch .role { font-family: var(--mono); font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase; opacity: 0.6; }
+  .swatch.dark { color: var(--cream); }
+  .swatch.dark .role { color: var(--cream-mute); }
+  .swatch.light { color: #15181B; }
+  .swatch.light .role { color: #6F6A60; }
+
+  /* ────────────────────────────────────────────────────────────────── */
+  /* Typography sample                                                   */
+  /* ────────────────────────────────────────────────────────────────── */
+  .type-row { display: grid; grid-template-columns: 1fr 2fr; gap: 24px; padding: 24px 0; border-top: 1px dashed var(--line); }
+  .type-row:first-child { border-top: 1px solid var(--line); }
+  .type-meta { font-family: var(--mono); font-size: 11px; color: var(--cream-mute); letter-spacing: 0.1em; text-transform: uppercase; }
+  .type-meta .name { color: var(--cream); font-size: 13px; letter-spacing: 0.04em; }
+  .type-sample-serif { font-family: var(--serif); font-size: 48px; line-height: 1; letter-spacing: -0.02em; }
+  .type-sample-sans { font-family: var(--sans); font-weight: 500; font-size: 26px; letter-spacing: -0.01em; }
+  .type-sample-mono { font-family: var(--mono); font-size: 14px; line-height: 1.6; color: var(--cream-dim); }
+  .type-sample-mono .k { color: var(--frog); }
+
+  /* ────────────────────────────────────────────────────────────────── */
+  /* Do / Don't                                                          */
+  /* ────────────────────────────────────────────────────────────────── */
+  .rule { background: var(--bg-2); border: 1px solid var(--line); border-radius: 4px; padding: 22px; display: flex; flex-direction: column; gap: 16px; }
+  .rule .badge {
+    display: inline-flex; align-items: center; gap: 8px;
+    font-family: var(--mono); font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase;
+  }
+  .rule .badge .pill { width: 8px; height: 8px; border-radius: 50%; }
+  .rule.do .badge .pill { background: #6FCF74; }
+  .rule.dont .badge .pill { background: #E84118; }
+  .rule .demo { background: var(--bg-3); border-radius: 4px; aspect-ratio: 16 / 10; display: grid; place-items: center; overflow: hidden; position: relative; }
+  .rule .demo svg.frog { width: 60%; height: 80%; }
+  .rule .demo.cream { background: var(--cream); }
+  .rule .demo.purple { background: #5A2F8A; }
+  .rule .demo.stretched svg.frog { width: 90%; height: 50%; transform: scaleX(1.5); }
+  .rule .demo.flipped svg.frog { transform: rotate(180deg); }
+  .rule .demo.tiny svg.frog { width: 16%; }
+  .rule .note { font-size: 13px; color: var(--cream-dim); line-height: 1.5; }
+
+  /* ────────────────────────────────────────────────────────────────── */
+  /* Footer                                                              */
+  /* ────────────────────────────────────────────────────────────────── */
+  .footer { margin-top: 96px; padding-top: 28px; border-top: 1px solid var(--line); display: flex; gap: 24px; align-items: center; font-family: var(--mono); font-size: 11px; color: var(--cream-mute); letter-spacing: 0.06em; }
+  .footer .spacer { flex: 1; }
+  .footer svg { width: 26px; height: 26px; opacity: 0.9; }
+</style>
+</head>
+<body>
+
+<!-- ════════════════════════════════════════════════════════════════════════
+     SVG SYMBOLS — defined once, reused everywhere
+     ════════════════════════════════════════════════════════════════════════ -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+
+    <!-- Base frog body (no eyes, no mouth — those vary per expression) -->
+    <symbol id="frog-base" viewBox="0 0 220 220">
+      <!-- ground shadow -->
+      <ellipse cx="110" cy="200" rx="78" ry="5" fill="#000" opacity="0.22"/>
+      <!-- haunches peeking out behind body -->
+      <ellipse cx="34" cy="142" rx="22" ry="20" fill="#C93414"/>
+      <ellipse cx="186" cy="142" rx="22" ry="20" fill="#C93414"/>
+      <!-- main body -->
+      <ellipse cx="110" cy="138" rx="82" ry="56" fill="#FF6B2C"/>
+      <!-- belly highlight -->
+      <ellipse cx="110" cy="160" rx="62" ry="30" fill="#FFA56B" opacity="0.85"/>
+      <!-- eye bumps -->
+      <circle cx="74" cy="74" r="36" fill="#FF6B2C"/>
+      <circle cx="146" cy="74" r="36" fill="#FF6B2C"/>
+      <!-- subtle crease between bumps -->
+      <ellipse cx="110" cy="92" rx="34" ry="6" fill="#C93414" opacity="0.35"/>
+      <!-- characteristic poison-dart freckles -->
+      <circle cx="80" cy="122" r="3.5" fill="#8B1E0A" opacity="0.65"/>
+      <circle cx="138" cy="118" r="4" fill="#8B1E0A" opacity="0.65"/>
+      <circle cx="108" cy="102" r="3" fill="#8B1E0A" opacity="0.55"/>
+      <circle cx="58" cy="138" r="3.5" fill="#8B1E0A" opacity="0.55"/>
+      <circle cx="162" cy="134" r="3" fill="#8B1E0A" opacity="0.55"/>
+      <circle cx="122" cy="138" r="3" fill="#8B1E0A" opacity="0.45"/>
+      <circle cx="90" cy="148" r="2.5" fill="#8B1E0A" opacity="0.4"/>
+      <!-- front feet -->
+      <ellipse cx="42" cy="174" rx="15" ry="7" fill="#FF6B2C"/>
+      <circle cx="30" cy="180" r="5" fill="#C93414"/>
+      <circle cx="42" cy="182" r="5" fill="#C93414"/>
+      <circle cx="54" cy="180" r="5" fill="#C93414"/>
+      <ellipse cx="178" cy="174" rx="15" ry="7" fill="#FF6B2C"/>
+      <circle cx="166" cy="180" r="5" fill="#C93414"/>
+      <circle cx="178" cy="182" r="5" fill="#C93414"/>
+      <circle cx="190" cy="180" r="5" fill="#C93414"/>
+    </symbol>
+
+    <!-- A simplified silhouette for the monogram lockup -->
+    <symbol id="frog-monogram" viewBox="0 0 100 100">
+      <ellipse cx="50" cy="64" rx="38" ry="26" fill="#FF6B2C"/>
+      <circle cx="33" cy="38" r="17" fill="#FF6B2C"/>
+      <circle cx="67" cy="38" r="17" fill="#FF6B2C"/>
+      <circle cx="33" cy="38" r="9" fill="#15181B"/>
+      <circle cx="67" cy="38" r="9" fill="#15181B"/>
+      <circle cx="30" cy="35" r="3" fill="#F4EFE6"/>
+      <circle cx="64" cy="35" r="3" fill="#F4EFE6"/>
+    </symbol>
+
+    <!-- Hero illustration: Patch side-eyeing a bug on a monitor -->
+    <symbol id="patch-bug-scene" viewBox="0 0 260 240">
+      <!-- monitor screen -->
+      <rect x="12" y="58" width="118" height="86" rx="5" fill="#0F1113" stroke="#262C31" stroke-width="1.5"/>
+      <line x1="12" y1="70" x2="130" y2="70" stroke="#262C31" stroke-width="1"/>
+      <circle cx="19" cy="64" r="1.6" fill="#C93414"/>
+      <circle cx="25" cy="64" r="1.6" fill="#FFD166"/>
+      <circle cx="31" cy="64" r="1.6" fill="#4E7A3A"/>
+      <text x="18" y="82" font-family="Geist Mono" font-size="7" fill="#6F6A60">$ scan .</text>
+      <text x="18" y="92" font-family="Geist Mono" font-size="7" fill="#FFD166">! 1 critical</text>
+      <rect x="54" y="100" width="36" height="34" fill="none" stroke="#FF6B2C" stroke-width="1" stroke-dasharray="3 2"/>
+      <line x1="48" y1="117" x2="54" y2="117" stroke="#FF6B2C" stroke-width="1"/>
+      <line x1="90" y1="117" x2="96" y2="117" stroke="#FF6B2C" stroke-width="1"/>
+      <line x1="72" y1="94" x2="72" y2="100" stroke="#FF6B2C" stroke-width="1"/>
+      <line x1="72" y1="134" x2="72" y2="140" stroke="#FF6B2C" stroke-width="1"/>
+      <!-- the bug itself: geometric beetle, on screen -->
+      <g transform="translate(72, 117)">
+        <ellipse cx="0" cy="1" rx="7" ry="9" fill="#F4EFE6"/>
+        <line x1="0" y1="-8" x2="0" y2="10" stroke="#15181B" stroke-width="0.8"/>
+        <circle cx="0" cy="-8" r="3.5" fill="#F4EFE6"/>
+        <line x1="-1.5" y1="-11" x2="-3.5" y2="-14" stroke="#F4EFE6" stroke-width="1"/>
+        <line x1="1.5" y1="-11" x2="3.5" y2="-14" stroke="#F4EFE6" stroke-width="1"/>
+        <line x1="-7" y1="-2" x2="-11" y2="-4" stroke="#F4EFE6" stroke-width="1"/>
+        <line x1="7" y1="-2" x2="11" y2="-4" stroke="#F4EFE6" stroke-width="1"/>
+        <line x1="-7" y1="2" x2="-11" y2="3" stroke="#F4EFE6" stroke-width="1"/>
+        <line x1="7" y1="2" x2="11" y2="3" stroke="#F4EFE6" stroke-width="1"/>
+        <line x1="-5" y1="7" x2="-9" y2="11" stroke="#F4EFE6" stroke-width="1"/>
+        <line x1="5" y1="7" x2="9" y2="11" stroke="#F4EFE6" stroke-width="1"/>
+      </g>
+      <!-- monitor stand -->
+      <rect x="63" y="144" width="16" height="7" fill="#262C31"/>
+      <polygon points="45,151 97,151 91,160 51,160" fill="#262C31"/>
+      <!-- Patch on right, smirking, side-eyeing the screen -->
+      <g transform="translate(122, 32) scale(0.62)">
+        <use href="#frog-base"/>
+        <circle cx="74" cy="74" r="24" fill="#F4EFE6"/>
+        <circle cx="146" cy="74" r="24" fill="#F4EFE6"/>
+        <circle cx="60" cy="82" r="12" fill="#15181B"/>
+        <circle cx="132" cy="82" r="12" fill="#15181B"/>
+        <circle cx="56" cy="78" r="4.5" fill="#FFFFFF"/>
+        <circle cx="128" cy="78" r="4.5" fill="#FFFFFF"/>
+        <path d="M 44 48 Q 72 56 100 70" stroke="#15181B" stroke-width="6.5" stroke-linecap="round" fill="none"/>
+        <path d="M 176 48 Q 148 56 120 70" stroke="#15181B" stroke-width="6.5" stroke-linecap="round" fill="none"/>
+        <path d="M 86 118 Q 104 126 122 116 Q 132 110 136 100" stroke="#15181B" stroke-width="3" stroke-linecap="round" fill="none"/>
+        <circle cx="132" cy="114" r="1.6" fill="#15181B"/>
+      </g>
+    </symbol>
+
+  </defs>
+</svg>
+
+<div class="page">
+
+  <!-- TOP STRIP ────────────────────────────────────────────────────────── -->
+  <div class="top-strip">
+    <span class="dot"></span>
+    <span>Clear Capabilities · Brand</span>
+    <span class="spacer"></span>
+    <span>Mascot · v1.0</span>
+    <span>·</span>
+    <span>16 May 2026</span>
+    <span>·</span>
+    <span>For agentic-security</span>
+  </div>
+
+  <!-- HERO ────────────────────────────────────────────────────────────── -->
+  <section class="hero">
+    <div>
+      <div class="eyebrow" style="margin-bottom: 28px;">// MASCOT.001 · OOPHAGA PUMILIO</div>
+      <h1 class="name">Meet<br/><em>Patch.</em></h1>
+      <dl class="meta">
+        <dt>SPECIES</dt><dd>Oophaga pumilio (strawberry poison dart frog)</dd>
+        <dt>HABITAT</dt><dd>Your repo's blast radius</dd>
+        <dt>DIET</dt><dd>SQLi, hardcoded keys, &nbsp;floating GH Actions tags</dd>
+        <dt>ROLE</dt><dd>Mascot of agentic-security</dd>
+        <dt>SIZE</dt><dd>~20mm. Smaller than your average critical finding.</dd>
+        <dt>DEFENCE</dt><dd>Warning coloration. Visible across the forest floor.</dd>
+      </dl>
+    </div>
+    <div class="hero-art">
+      <div class="grid-bg"></div>
+      <span class="crosshair tl"></span>
+      <span class="crosshair tr"></span>
+      <span class="crosshair bl"></span>
+      <span class="crosshair br"></span>
+      <span class="corner tl">FIG. 01 · HERO POSE</span>
+      <span class="corner tr">220 × 220</span>
+      <span class="corner bl">FILL: #FF6B2C</span>
+      <span class="corner br">SAFE TO DEPLOY ✓</span>
+      <!-- Hero frog: SMIRK expression -->
+      <svg viewBox="0 0 220 220">
+        <use href="#frog-base"/>
+        <!-- eye whites -->
+        <circle cx="74" cy="74" r="24" fill="#F4EFE6"/>
+        <circle cx="146" cy="74" r="24" fill="#F4EFE6"/>
+        <!-- pupils, sized down so brows can sit heavy on top -->
+        <circle cx="76" cy="82" r="12" fill="#15181B"/>
+        <circle cx="148" cy="82" r="12" fill="#15181B"/>
+        <!-- glints -->
+        <circle cx="80" cy="78" r="4.5" fill="#FFFFFF"/>
+        <circle cx="152" cy="78" r="4.5" fill="#FFFFFF"/>
+        <!-- sly brows: chunky angular curve dropping toward center -->
+        <path d="M 44 48 Q 72 56 100 70" stroke="#15181B" stroke-width="6.5" stroke-linecap="round" fill="none"/>
+        <path d="M 176 48 Q 148 56 120 70" stroke="#15181B" stroke-width="6.5" stroke-linecap="round" fill="none"/>
+        <!-- asymmetric smirk: flat on left, curling up high on right -->
+        <path d="M 86 118 Q 104 126 122 116 Q 132 110 136 100" stroke="#15181B" stroke-width="3" stroke-linecap="round" fill="none"/>
+        <!-- mouth dimple where the curl tucks in -->
+        <circle cx="132" cy="114" r="1.6" fill="#15181B"/>
+      </svg>
+    </div>
+  </section>
+
+  <!-- STORY ───────────────────────────────────────────────────────────── -->
+  <section class="story">
+    <div>
+      <div class="eyebrow" style="margin-bottom: 18px;">// BRAND STORY</div>
+      <div class="tagline">Tiny.<br/><em>Bright.</em><br/>Watching.</div>
+    </div>
+    <div class="body">
+      <p>The strawberry poison dart frog is the size of a thumbnail, but predators learn to leave her alone fast. <strong>The colour is a warning.</strong> Visible from across the forest floor — long before you get close enough to regret it.</p>
+      <p>That's the gig for <span class="mono" style="color:var(--cream)">agentic&#8209;security</span>. Small footprint. Loud signal. Doesn't bite first. But you'd better read the warning before you ship.</p>
+      <p style="color:var(--cream-mute)">Patch lives at the threshold between what your AI just wrote and what reaches your users. She is calm, specific, and impossible to ignore.</p>
+    </div>
+  </section>
+
+  <!-- ───────────────────────────────────────────────────────────────────
+       01 · CONSTRUCTION
+       ─────────────────────────────────────────────────────────────────── -->
+  <div class="h-section">
+    <span class="ix">01</span>
+    <span class="title">Construction.</span>
+    <span class="sub">geometric / circle-based / single weight</span>
+  </div>
+
+  <section class="anatomy">
+    <div class="anatomy-canvas">
+      <svg viewBox="-20 -20 260 260">
+        <!-- guide grid -->
+        <g stroke="#2E363C" stroke-width="0.5" fill="none">
+          <line x1="-20" y1="74" x2="240" y2="74"/>
+          <line x1="-20" y1="138" x2="240" y2="138"/>
+          <line x1="110" y1="-20" x2="110" y2="240"/>
+        </g>
+        <!-- construction circles (outlines only) -->
+        <g fill="none" stroke="#FFD166" stroke-width="0.75" stroke-dasharray="3 3" opacity="0.85">
+          <ellipse cx="110" cy="138" rx="82" ry="56"/>
+          <circle cx="74" cy="74" r="36"/>
+          <circle cx="146" cy="74" r="36"/>
+          <circle cx="74" cy="74" r="24"/>
+          <circle cx="146" cy="74" r="24"/>
+        </g>
+        <!-- mascot underneath the guides -->
+        <g opacity="0.95">
+          <use href="#frog-base"/>
+          <circle cx="74" cy="74" r="24" fill="#F4EFE6"/>
+          <circle cx="146" cy="74" r="24" fill="#F4EFE6"/>
+          <circle cx="76" cy="77" r="14" fill="#15181B"/>
+          <circle cx="148" cy="77" r="14" fill="#15181B"/>
+          <circle cx="70" cy="71" r="5" fill="#FFFFFF"/>
+          <circle cx="142" cy="71" r="5" fill="#FFFFFF"/>
+          <path d="M 96 112 Q 110 120 124 112" stroke="#15181B" stroke-width="2.6" stroke-linecap="round" fill="none"/>
+        </g>
+        <!-- labels -->
+        <g font-family="Geist Mono" font-size="9" fill="#B6B0A4" letter-spacing="0.5">
+          <line x1="146" y1="38" x2="200" y2="20" stroke="#6F6A60" stroke-width="0.5"/>
+          <text x="202" y="22">EYE BUMP · r36</text>
+          <line x1="146" y1="74" x2="220" y2="74" stroke="#6F6A60" stroke-width="0.5"/>
+          <text x="222" y="76">CORNEA · r24</text>
+          <line x1="192" y1="138" x2="230" y2="138" stroke="#6F6A60" stroke-width="0.5"/>
+          <text x="-20" y="142" text-anchor="start">BODY · 164 × 112</text>
+          <line x1="-20" y1="138" x2="28" y2="138" stroke="#6F6A60" stroke-width="0.5"/>
+          <text x="60" y="225">TOE PADS · 3 × r5</text>
+          <line x1="42" y1="186" x2="80" y2="220" stroke="#6F6A60" stroke-width="0.5"/>
+          <text x="142" y="225" text-anchor="start">HAUNCH · ellipse 22 × 20</text>
+          <line x1="186" y1="150" x2="180" y2="218" stroke="#6F6A60" stroke-width="0.5"/>
+        </g>
+      </svg>
+    </div>
+    <div class="anatomy-list">
+      <h4>One body, five circles.</h4>
+      <p style="color:var(--cream-dim); font-family:var(--sans); font-size:14px; max-width:38ch; margin-top:0;">Patch is built entirely from ellipses and circles on a single grid. The two eye bumps share the body's silhouette — no outline, no line weight. Geometry does the work.</p>
+      <dl style="margin-top:24px">
+        <dt>BODY</dt><dd>Ellipse, 164 × 112. Centered.</dd>
+        <dt>BUMPS</dt><dd>Two r=36 circles, ±36 from center, on the top quadrant.</dd>
+        <dt>CORNEAS</dt><dd>Two r=24 circles, concentric with bumps.</dd>
+        <dt>PUPILS</dt><dd>r=14, nudged 2px right & 3px down for life.</dd>
+        <dt>SHINE</dt><dd>r=5 highlight, top-left of each pupil. Optional secondary r=2.</dd>
+        <dt>MOUTH</dt><dd>Single quadratic arc, 2.6 stroke. Never closed.</dd>
+        <dt>FRECKLES</dt><dd>6–8 random circles, r 2.5–4, on the back hemisphere only.</dd>
+        <dt>FEET</dt><dd>Toe-pad clusters: ellipse + three r=5 circles. Three toes only.</dd>
+      </dl>
+    </div>
+  </section>
+
+  <!-- ───────────────────────────────────────────────────────────────────
+       02 · EXPRESSIONS
+       ─────────────────────────────────────────────────────────────────── -->
+  <div class="h-section">
+    <span class="ix">02</span>
+    <span class="title">Expressions.</span>
+    <span class="sub">six emotional states · same body</span>
+  </div>
+
+  <div class="row cols-3">
+
+    <!-- DEFAULT -->
+    <div class="tile">
+      <span class="pose-num">01 / 06</span>
+      <svg class="frog" viewBox="0 0 220 220">
+        <use href="#frog-base"/>
+        <circle cx="74" cy="74" r="24" fill="#F4EFE6"/>
+        <circle cx="146" cy="74" r="24" fill="#F4EFE6"/>
+        <circle cx="76" cy="77" r="14" fill="#15181B"/>
+        <circle cx="148" cy="77" r="14" fill="#15181B"/>
+        <circle cx="70" cy="71" r="5" fill="#FFFFFF"/>
+        <circle cx="142" cy="71" r="5" fill="#FFFFFF"/>
+        <path d="M 96 112 Q 110 120 124 112" stroke="#15181B" stroke-width="2.6" stroke-linecap="round" fill="none"/>
+      </svg>
+      <span class="label">DEFAULT · resting</span>
+    </div>
+
+    <!-- ALERT -->
+    <div class="tile">
+      <span class="pose-num">02 / 06</span>
+      <svg class="frog" viewBox="0 0 220 220">
+        <use href="#frog-base"/>
+        <circle cx="74" cy="74" r="24" fill="#F4EFE6"/>
+        <circle cx="146" cy="74" r="24" fill="#F4EFE6"/>
+        <!-- dilated wide-open pupils -->
+        <circle cx="76" cy="74" r="16" fill="#15181B"/>
+        <circle cx="148" cy="74" r="16" fill="#15181B"/>
+        <circle cx="71" cy="69" r="5" fill="#FFFFFF"/>
+        <circle cx="143" cy="69" r="5" fill="#FFFFFF"/>
+        <!-- raised brows -->
+        <path d="M 50 38 Q 64 30 84 36" stroke="#15181B" stroke-width="3" stroke-linecap="round" fill="none"/>
+        <path d="M 136 36 Q 156 30 170 38" stroke="#15181B" stroke-width="3" stroke-linecap="round" fill="none"/>
+        <!-- small "O" mouth -->
+        <ellipse cx="110" cy="118" rx="5" ry="6" fill="#8B1E0A"/>
+      </svg>
+      <span class="label">ALERT · finding detected</span>
+    </div>
+
+    <!-- STERN / GUARD -->
+    <div class="tile">
+      <span class="pose-num">03 / 06</span>
+      <svg class="frog" viewBox="0 0 220 220">
+        <use href="#frog-base"/>
+        <circle cx="74" cy="74" r="24" fill="#F4EFE6"/>
+        <circle cx="146" cy="74" r="24" fill="#F4EFE6"/>
+        <!-- narrowed eyes via overlapping orange brow -->
+        <path d="M 50 70 Q 74 52 98 70 L 98 60 L 50 60 Z" fill="#FF6B2C"/>
+        <path d="M 122 70 Q 146 52 170 70 L 170 60 L 122 60 Z" fill="#FF6B2C"/>
+        <!-- slit pupils -->
+        <ellipse cx="76" cy="80" rx="11" ry="6" fill="#15181B"/>
+        <ellipse cx="148" cy="80" rx="11" ry="6" fill="#15181B"/>
+        <!-- flat line mouth -->
+        <line x1="98" y1="116" x2="122" y2="116" stroke="#15181B" stroke-width="2.6" stroke-linecap="round"/>
+      </svg>
+      <span class="label">STERN · gate held</span>
+    </div>
+
+    <!-- SMIRK (signature pose) -->
+    <div class="tile">
+      <span class="pose-num">04 / 06</span>
+      <svg class="frog" viewBox="0 0 220 220">
+        <use href="#frog-base"/>
+        <circle cx="74" cy="74" r="24" fill="#F4EFE6"/>
+        <circle cx="146" cy="74" r="24" fill="#F4EFE6"/>
+        <circle cx="76" cy="82" r="12" fill="#15181B"/>
+        <circle cx="148" cy="82" r="12" fill="#15181B"/>
+        <circle cx="80" cy="78" r="4.5" fill="#FFFFFF"/>
+        <circle cx="152" cy="78" r="4.5" fill="#FFFFFF"/>
+        <path d="M 44 48 Q 72 56 100 70" stroke="#15181B" stroke-width="6.5" stroke-linecap="round" fill="none"/>
+        <path d="M 176 48 Q 148 56 120 70" stroke="#15181B" stroke-width="6.5" stroke-linecap="round" fill="none"/>
+        <path d="M 86 118 Q 104 126 122 116 Q 132 110 136 100" stroke="#15181B" stroke-width="3" stroke-linecap="round" fill="none"/>
+        <circle cx="132" cy="114" r="1.6" fill="#15181B"/>
+      </svg>
+      <span class="label">SMIRK · "told you so"</span>
+    </div>
+
+    <!-- APPROVE / HAPPY -->
+    <div class="tile">
+      <span class="pose-num">05 / 06</span>
+      <svg class="frog" viewBox="0 0 220 220">
+        <use href="#frog-base"/>
+        <circle cx="74" cy="74" r="24" fill="#F4EFE6"/>
+        <circle cx="146" cy="74" r="24" fill="#F4EFE6"/>
+        <!-- happy closed (^ ^) eyes -->
+        <path d="M 56 78 Q 74 60 92 78" stroke="#15181B" stroke-width="3" stroke-linecap="round" fill="none"/>
+        <path d="M 128 78 Q 146 60 164 78" stroke="#15181B" stroke-width="3" stroke-linecap="round" fill="none"/>
+        <!-- wide smile -->
+        <path d="M 86 110 Q 110 126 134 110" stroke="#15181B" stroke-width="2.6" stroke-linecap="round" fill="none"/>
+        <!-- cheek blush -->
+        <circle cx="50" cy="105" r="6" fill="#FF6B2C" opacity="0.45"/>
+        <circle cx="170" cy="105" r="6" fill="#FF6B2C" opacity="0.45"/>
+      </svg>
+      <span class="label">APPROVE · safe to deploy</span>
+    </div>
+
+    <!-- SLEEPY / IDLE -->
+    <div class="tile">
+      <span class="pose-num">06 / 06</span>
+      <svg class="frog" viewBox="0 0 220 220">
+        <use href="#frog-base"/>
+        <circle cx="74" cy="74" r="24" fill="#F4EFE6"/>
+        <circle cx="146" cy="74" r="24" fill="#F4EFE6"/>
+        <!-- closed sleepy eyes -->
+        <path d="M 56 80 Q 74 88 92 80" stroke="#15181B" stroke-width="3" stroke-linecap="round" fill="none"/>
+        <path d="M 128 80 Q 146 88 164 80" stroke="#15181B" stroke-width="3" stroke-linecap="round" fill="none"/>
+        <!-- soft mouth -->
+        <path d="M 104 116 Q 110 119 116 116" stroke="#15181B" stroke-width="2.4" stroke-linecap="round" fill="none"/>
+        <!-- Zzz -->
+        <text x="170" y="40" font-family="Geist Mono" font-size="14" fill="#B6B0A4" letter-spacing="2">z</text>
+        <text x="184" y="28" font-family="Geist Mono" font-size="10" fill="#B6B0A4" letter-spacing="2">z</text>
+      </svg>
+      <span class="label">IDLE · between scans</span>
+    </div>
+
+  </div>
+
+  <!-- ───────────────────────────────────────────────────────────────────
+       03 · POSES & ACCESSORIES
+       ─────────────────────────────────────────────────────────────────── -->
+  <div class="h-section">
+    <span class="ix">03</span>
+    <span class="title">Working poses.</span>
+    <span class="sub">contextual variants for product surfaces</span>
+  </div>
+
+  <div class="row cols-4">
+
+    <!-- POSE: SCANNING with magnifier -->
+    <div class="tile bg-cream">
+      <span class="pose-num">A</span>
+      <span class="desc">For empty states &amp; "scanning" loaders.</span>
+      <svg class="frog" viewBox="0 0 240 240">
+        <!-- magnifier behind -->
+        <g transform="translate(-10,10)">
+          <line x1="170" y1="170" x2="210" y2="210" stroke="#15181B" stroke-width="6" stroke-linecap="round"/>
+          <circle cx="160" cy="140" r="32" fill="none" stroke="#15181B" stroke-width="5"/>
+          <circle cx="160" cy="140" r="30" fill="#FFD166" opacity="0.18"/>
+        </g>
+        <g transform="translate(10,10)">
+          <use href="#frog-base"/>
+          <circle cx="74" cy="74" r="24" fill="#F4EFE6"/>
+          <circle cx="146" cy="74" r="24" fill="#F4EFE6"/>
+          <!-- eyes glancing right (toward magnifier) -->
+          <circle cx="82" cy="76" r="13" fill="#15181B"/>
+          <circle cx="154" cy="76" r="13" fill="#15181B"/>
+          <circle cx="78" cy="71" r="4.5" fill="#FFFFFF"/>
+          <circle cx="150" cy="71" r="4.5" fill="#FFFFFF"/>
+          <line x1="100" y1="115" x2="120" y2="115" stroke="#15181B" stroke-width="2.4" stroke-linecap="round"/>
+        </g>
+      </svg>
+      <span class="label">A · SCANNING</span>
+    </div>
+
+    <!-- POSE: GUARD with shield -->
+    <div class="tile">
+      <span class="pose-num">B</span>
+      <span class="desc">For block screens &amp; pre-deploy gates.</span>
+      <svg class="frog" viewBox="0 0 240 240">
+        <!-- shield -->
+        <g transform="translate(120,90)">
+          <path d="M 0 0 L 50 6 L 50 38 Q 50 70 25 84 Q 0 70 0 38 Z" fill="#15181B" stroke="#FF6B2C" stroke-width="2"/>
+          <path d="M 18 38 L 24 44 L 36 28" stroke="#FF6B2C" stroke-width="3" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+        </g>
+        <use href="#frog-base"/>
+        <circle cx="74" cy="74" r="24" fill="#F4EFE6"/>
+        <circle cx="146" cy="74" r="24" fill="#F4EFE6"/>
+        <!-- stern -->
+        <path d="M 50 70 Q 74 52 98 70 L 98 60 L 50 60 Z" fill="#FF6B2C"/>
+        <path d="M 122 70 Q 146 52 170 70 L 170 60 L 122 60 Z" fill="#FF6B2C"/>
+        <ellipse cx="76" cy="80" rx="11" ry="6" fill="#15181B"/>
+        <ellipse cx="148" cy="80" rx="11" ry="6" fill="#15181B"/>
+        <line x1="98" y1="116" x2="122" y2="116" stroke="#15181B" stroke-width="2.6" stroke-linecap="round"/>
+      </svg>
+      <span class="label">B · GUARD</span>
+    </div>
+
+    <!-- POSE: BUG SPOTTED on monitor -->
+    <div class="tile bg-deep">
+      <span class="pose-num">C</span>
+      <span class="desc">Hero illustration: scanner caught something.</span>
+      <svg class="frog" viewBox="0 0 260 240"><use href="#patch-bug-scene"/></svg>
+      <span class="label">C · BUG SPOTTED</span>
+    </div>
+
+    <!-- POSE: ON LEAF (404, empty) -->
+    <div class="tile">
+      <span class="pose-num">D</span>
+      <span class="desc">404, empty inbox, "nothing to fix."</span>
+      <svg class="frog" viewBox="0 0 240 240">
+        <!-- leaf -->
+        <path d="M 20 200 Q 120 130 220 200 Q 120 220 20 200 Z" fill="#4E7A3A"/>
+        <path d="M 20 200 Q 120 195 220 200" stroke="#2F4A22" stroke-width="1.2" fill="none"/>
+        <path d="M 60 195 L 80 180 M 100 192 L 115 175 M 140 192 L 155 175 M 180 195 L 195 182" stroke="#2F4A22" stroke-width="0.8" fill="none"/>
+        <!-- frog on top -->
+        <g transform="translate(10,-10)">
+          <use href="#frog-base"/>
+          <circle cx="74" cy="74" r="24" fill="#F4EFE6"/>
+          <circle cx="146" cy="74" r="24" fill="#F4EFE6"/>
+          <path d="M 56 78 Q 74 60 92 78" stroke="#15181B" stroke-width="3" stroke-linecap="round" fill="none"/>
+          <path d="M 128 78 Q 146 60 164 78" stroke="#15181B" stroke-width="3" stroke-linecap="round" fill="none"/>
+          <path d="M 86 110 Q 110 126 134 110" stroke="#15181B" stroke-width="2.6" stroke-linecap="round" fill="none"/>
+          <circle cx="50" cy="105" r="6" fill="#FF6B2C" opacity="0.45"/>
+          <circle cx="170" cy="105" r="6" fill="#FF6B2C" opacity="0.45"/>
+        </g>
+      </svg>
+      <span class="label">D · PERCHED</span>
+    </div>
+
+  </div>
+
+  <!-- ───────────────────────────────────────────────────────────────────
+       04 · LOGO LOCKUPS
+       ─────────────────────────────────────────────────────────────────── -->
+  <div class="h-section">
+    <span class="ix">04</span>
+    <span class="title">Lockups.</span>
+    <span class="sub">scene mark · three backgrounds</span>
+  </div>
+
+  <div class="lockup-row">
+
+    <!-- 01 · DARK bg · horizontal lockup -->
+    <div class="lockup">
+      <svg class="lk-scene" viewBox="0 0 260 240"><use href="#patch-bug-scene"/></svg>
+      <div class="lk-text">
+        <div class="lk-name"><em>agentic</em>‑security</div>
+        <div class="lk-sub">Built by Clear Capabilities</div>
+      </div>
+    </div>
+
+    <!-- 02 · CREAM bg · stacked lockup -->
+    <div class="lockup stacked light">
+      <svg class="lk-scene" viewBox="0 0 260 240"><use href="#patch-bug-scene"/></svg>
+      <div class="lk-text" style="align-items:center">
+        <div class="lk-name">Patch</div>
+        <div class="lk-sub">Clear Capabilities</div>
+      </div>
+    </div>
+
+    <!-- 03 · ORANGE bg · compact horizontal lockup -->
+    <div class="lockup compact" style="background: var(--frog);">
+      <svg class="lk-scene" viewBox="0 0 260 240"><use href="#patch-bug-scene"/></svg>
+      <div class="lk-text">
+        <div class="lk-name" style="color:#15181B">Patch</div>
+        <div class="lk-sub" style="color:#15181B; opacity:0.65">agentic-security</div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ───────────────────────────────────────────────────────────────────
+       05 · APP ICONS
+       ─────────────────────────────────────────────────────────────────── -->
+  <div class="h-section">
+    <span class="ix">05</span>
+    <span class="title">App icons.</span>
+    <span class="sub">CLI · plugin tile · favicon</span>
+  </div>
+
+  <div class="icon-row">
+
+    <div class="icon-stack">
+      <div class="icon sz-160 bg-dark">
+        <svg viewBox="0 0 100 100"><use href="#frog-monogram"/></svg>
+      </div>
+      <span class="cap">160 · DARK</span>
+    </div>
+
+    <div class="icon-stack">
+      <div class="icon sz-160 bg-frog">
+        <svg viewBox="0 0 100 100">
+          <ellipse cx="50" cy="64" rx="38" ry="26" fill="#15181B"/>
+          <circle cx="33" cy="38" r="17" fill="#15181B"/>
+          <circle cx="67" cy="38" r="17" fill="#15181B"/>
+          <circle cx="33" cy="38" r="9" fill="#F4EFE6"/>
+          <circle cx="67" cy="38" r="9" fill="#F4EFE6"/>
+        </svg>
+      </div>
+      <span class="cap">160 · KNOCKOUT</span>
+    </div>
+
+    <div class="icon-stack">
+      <div class="icon sz-96 bg-dark">
+        <svg viewBox="0 0 100 100"><use href="#frog-monogram"/></svg>
+      </div>
+      <span class="cap">96</span>
+    </div>
+
+    <div class="icon-stack">
+      <div class="icon sz-56 bg-dark">
+        <svg viewBox="0 0 100 100"><use href="#frog-monogram"/></svg>
+      </div>
+      <span class="cap">56</span>
+    </div>
+
+    <div class="icon-stack">
+      <div class="icon sz-28 bg-dark">
+        <svg viewBox="0 0 100 100"><use href="#frog-monogram"/></svg>
+      </div>
+      <span class="cap">28 · FAVICON</span>
+    </div>
+
+  </div>
+
+  <!-- ───────────────────────────────────────────────────────────────────
+       06 · PALETTE
+       ─────────────────────────────────────────────────────────────────── -->
+  <div class="h-section">
+    <span class="ix">06</span>
+    <span class="title">Palette.</span>
+    <span class="sub">primary frog + warm neutrals + one signal</span>
+  </div>
+
+  <div class="pal">
+    <div class="swatch dark" style="background:#FF6B2C">
+      <div class="role">PRIMARY</div>
+      <div>
+        <div class="nm">Pumilio Orange</div>
+        <div class="hx">#FF6B2C</div>
+      </div>
+    </div>
+    <div class="swatch dark" style="background:#C93414">
+      <div class="role">DEEP / SHADOW</div>
+      <div>
+        <div class="nm">Toxin Red</div>
+        <div class="hx">#C93414</div>
+      </div>
+    </div>
+    <div class="swatch light" style="background:#FFA56B">
+      <div class="role">BELLY / HIGHLIGHT</div>
+      <div>
+        <div class="nm">Underglow</div>
+        <div class="hx">#FFA56B</div>
+      </div>
+    </div>
+    <div class="swatch dark" style="background:#15181B">
+      <div class="role">GROUND</div>
+      <div>
+        <div class="nm">Forest Floor</div>
+        <div class="hx">#15181B</div>
+      </div>
+    </div>
+    <div class="swatch light" style="background:#F4EFE6">
+      <div class="role">CREAM / PAPER</div>
+      <div>
+        <div class="nm">Bone</div>
+        <div class="hx">#F4EFE6</div>
+      </div>
+    </div>
+    <div class="swatch light" style="background:#FFD166">
+      <div class="role">SIGNAL · USE SPARINGLY</div>
+      <div>
+        <div class="nm">Warning Yellow</div>
+        <div class="hx">#FFD166</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ───────────────────────────────────────────────────────────────────
+       07 · TYPOGRAPHY
+       ─────────────────────────────────────────────────────────────────── -->
+  <div class="h-section">
+    <span class="ix">07</span>
+    <span class="title">Type pairing.</span>
+    <span class="sub">three roles, never four</span>
+  </div>
+
+  <div>
+    <div class="type-row">
+      <div class="type-meta">
+        <div class="name">Instrument Serif</div>
+        <div>DISPLAY · names &amp; taglines</div>
+      </div>
+      <div class="type-sample-serif">Tiny. <em style="color:var(--frog)">Bright.</em> Watching.</div>
+    </div>
+    <div class="type-row">
+      <div class="type-meta">
+        <div class="name">Geist</div>
+        <div>UI · 400 / 500 / 600</div>
+      </div>
+      <div class="type-sample-sans">Could leak PII for ~5,000 users. Estimated cost if exploited: $125k–$1.3M.</div>
+    </div>
+    <div class="type-row">
+      <div class="type-meta">
+        <div class="name">Geist Mono</div>
+        <div>CODE · labels · CLI output</div>
+      </div>
+      <div class="type-sample-mono">
+        <div><span class="k">$</span> npx @clearcapabilities/agentic-security-scanner secure .</div>
+        <div style="color:#6F6A60">─────────────────────────────────────────────</div>
+        <div><span style="color:#6FCF74">✓</span> 0 critical · <span style="color:#FFD166">3 advisory</span> · safe to deploy</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ───────────────────────────────────────────────────────────────────
+       08 · USAGE
+       ─────────────────────────────────────────────────────────────────── -->
+  <div class="h-section">
+    <span class="ix">08</span>
+    <span class="title">Do &amp; don't.</span>
+    <span class="sub">keep Patch recognizable</span>
+  </div>
+
+  <div class="row cols-4">
+
+    <div class="rule do">
+      <span class="badge"><span class="pill"></span>DO · CALM BG</span>
+      <div class="demo">
+        <svg class="frog" viewBox="0 0 220 220">
+          <use href="#frog-base"/>
+          <circle cx="74" cy="74" r="24" fill="#F4EFE6"/>
+          <circle cx="146" cy="74" r="24" fill="#F4EFE6"/>
+          <circle cx="76" cy="77" r="14" fill="#15181B"/>
+          <circle cx="148" cy="77" r="14" fill="#15181B"/>
+          <circle cx="70" cy="71" r="5" fill="#FFFFFF"/>
+          <circle cx="142" cy="71" r="5" fill="#FFFFFF"/>
+          <path d="M 96 112 Q 110 120 124 112" stroke="#15181B" stroke-width="2.6" stroke-linecap="round" fill="none"/>
+        </svg>
+      </div>
+      <div class="note">Forest Floor or Bone backgrounds let the orange do its job.</div>
+    </div>
+
+    <div class="rule do">
+      <span class="badge"><span class="pill"></span>DO · GIVE HER ROOM</span>
+      <div class="demo">
+        <svg class="frog" viewBox="0 0 220 220" style="width:50%; height:60%">
+          <use href="#frog-base"/>
+          <circle cx="74" cy="74" r="24" fill="#F4EFE6"/>
+          <circle cx="146" cy="74" r="24" fill="#F4EFE6"/>
+          <circle cx="76" cy="77" r="14" fill="#15181B"/>
+          <circle cx="148" cy="77" r="14" fill="#15181B"/>
+          <circle cx="70" cy="71" r="5" fill="#FFFFFF"/>
+          <circle cx="142" cy="71" r="5" fill="#FFFFFF"/>
+          <path d="M 96 112 Q 110 120 124 112" stroke="#15181B" stroke-width="2.6" stroke-linecap="round" fill="none"/>
+        </svg>
+      </div>
+      <div class="note">Minimum clear space = half her body width on every side.</div>
+    </div>
+
+    <div class="rule dont">
+      <span class="badge"><span class="pill"></span>DON'T · CLASH</span>
+      <div class="demo purple">
+        <svg class="frog" viewBox="0 0 220 220">
+          <use href="#frog-base"/>
+          <circle cx="74" cy="74" r="24" fill="#F4EFE6"/>
+          <circle cx="146" cy="74" r="24" fill="#F4EFE6"/>
+          <circle cx="76" cy="77" r="14" fill="#15181B"/>
+          <circle cx="148" cy="77" r="14" fill="#15181B"/>
+          <path d="M 96 112 Q 110 120 124 112" stroke="#15181B" stroke-width="2.6" stroke-linecap="round" fill="none"/>
+        </svg>
+      </div>
+      <div class="note">No high-saturation backgrounds. They cancel the warning signal.</div>
+    </div>
+
+    <div class="rule dont">
+      <span class="badge"><span class="pill"></span>DON'T · DISTORT</span>
+      <div class="demo stretched">
+        <svg class="frog" viewBox="0 0 220 220">
+          <use href="#frog-base"/>
+          <circle cx="74" cy="74" r="24" fill="#F4EFE6"/>
+          <circle cx="146" cy="74" r="24" fill="#F4EFE6"/>
+          <circle cx="76" cy="77" r="14" fill="#15181B"/>
+          <circle cx="148" cy="77" r="14" fill="#15181B"/>
+          <path d="M 96 112 Q 110 120 124 112" stroke="#15181B" stroke-width="2.6" stroke-linecap="round" fill="none"/>
+        </svg>
+      </div>
+      <div class="note">Never stretch, skew or rotate. Patch stays upright. Always.</div>
+    </div>
+
+  </div>
+
+  <!-- FOOTER ──────────────────────────────────────────────────────────── -->
+  <div class="footer">
+    <svg viewBox="0 0 100 100"><use href="#frog-monogram"/></svg>
+    <span>Patch · Mascot v1.0</span>
+    <span>·</span>
+    <span>Clear Capabilities, 2026</span>
+    <span class="spacer"></span>
+    <span>built for agentic-security</span>
+    <span>·</span>
+    <span>tiny / bright / watching</span>
+  </div>
+
+</div>
+
+</body>
+</html>

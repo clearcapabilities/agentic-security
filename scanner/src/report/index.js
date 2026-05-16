@@ -1,6 +1,7 @@
 // Report writers — JSON / Markdown / SARIF.
 import * as crypto from 'node:crypto';
 import { _isCustomSuppressed } from '../engine.js';
+import { alertFace, approveFace } from './mascot.js';
 
 const SEV_RANK = { critical: 0, high: 1, medium: 2, low: 3, info: 4 };
 const SEV_TO_SARIF = { critical: 'error', high: 'error', medium: 'warning', low: 'note', info: 'none' };
@@ -595,6 +596,8 @@ export function toShipVerdict(scan, options = {}) {
 
   const lines = [];
   const bar = '─────────────────────────────────────────';
+  // Patch the mascot reacts to the result — APPROVE if clean, ALERT if findings.
+  lines.push(actionable.length === 0 ? approveFace({ color }) : alertFace({ color }));
   lines.push(bar);
   if (actionable.length === 0) {
     lines.push(c('  ✅  Safe to deploy', SEV_COLOR.low + BOLD));

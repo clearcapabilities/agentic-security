@@ -1,6 +1,10 @@
+<img src="brand/patch-hero.svg" align="right" width="140" alt="Patch — the agentic-security mascot">
+
 # agentic-security — Developer Guide
 
 > The full reference. For the marketing-friendly overview, see [README.md](../README.md). This document assumes you read code, write rules, and own a CI pipeline.
+>
+> Brand canon (mascot, palette, type, lockups): [`docs/brand/patch-mascot.html`](brand/patch-mascot.html).
 
 The 30-second tour for engineers:
 
@@ -1247,6 +1251,9 @@ automatically. Registered via `hooks/hooks.json`:
        SessionStart
               hooks/session-welcome.js
               Prints the welcome banner with last-scan summary.
+              First session per project: full lockup (Patch mascot +
+              "agentic-security" wordmark, see hooks/mascot.js). Returning
+              sessions: one-line streak greeting.
 
        PreToolUse  (matcher: Edit|Write|MultiEdit)
               hooks/pre-edit-bodyguard.js              Scans the proposed content BEFORE write. Exits 2 to deny

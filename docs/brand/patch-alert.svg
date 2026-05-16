@@ -1,0 +1,34 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 220 220" width="220" height="220" role="img" aria-label="Patch in alert state — finding detected">
+  <ellipse cx="110" cy="200" rx="78" ry="5" fill="#000" opacity="0.22"/>
+  <ellipse cx="34" cy="142" rx="22" ry="20" fill="#C93414"/>
+  <ellipse cx="186" cy="142" rx="22" ry="20" fill="#C93414"/>
+  <ellipse cx="110" cy="138" rx="82" ry="56" fill="#FF6B2C"/>
+  <ellipse cx="110" cy="160" rx="62" ry="30" fill="#FFA56B" opacity="0.85"/>
+  <circle cx="74" cy="74" r="36" fill="#FF6B2C"/>
+  <circle cx="146" cy="74" r="36" fill="#FF6B2C"/>
+  <ellipse cx="110" cy="92" rx="34" ry="6" fill="#C93414" opacity="0.35"/>
+  <circle cx="80" cy="122" r="3.5" fill="#8B1E0A" opacity="0.65"/>
+  <circle cx="138" cy="118" r="4" fill="#8B1E0A" opacity="0.65"/>
+  <circle cx="108" cy="102" r="3" fill="#8B1E0A" opacity="0.55"/>
+  <circle cx="58" cy="138" r="3.5" fill="#8B1E0A" opacity="0.55"/>
+  <circle cx="162" cy="134" r="3" fill="#8B1E0A" opacity="0.55"/>
+  <circle cx="122" cy="138" r="3" fill="#8B1E0A" opacity="0.45"/>
+  <circle cx="90" cy="148" r="2.5" fill="#8B1E0A" opacity="0.4"/>
+  <ellipse cx="42" cy="174" rx="15" ry="7" fill="#FF6B2C"/>
+  <circle cx="30" cy="180" r="5" fill="#C93414"/>
+  <circle cx="42" cy="182" r="5" fill="#C93414"/>
+  <circle cx="54" cy="180" r="5" fill="#C93414"/>
+  <ellipse cx="178" cy="174" rx="15" ry="7" fill="#FF6B2C"/>
+  <circle cx="166" cy="180" r="5" fill="#C93414"/>
+  <circle cx="178" cy="182" r="5" fill="#C93414"/>
+  <circle cx="190" cy="180" r="5" fill="#C93414"/>
+  <circle cx="74" cy="74" r="24" fill="#F4EFE6"/>
+  <circle cx="146" cy="74" r="24" fill="#F4EFE6"/>
+  <circle cx="76" cy="74" r="16" fill="#15181B"/>
+  <circle cx="148" cy="74" r="16" fill="#15181B"/>
+  <circle cx="71" cy="69" r="5" fill="#FFFFFF"/>
+  <circle cx="143" cy="69" r="5" fill="#FFFFFF"/>
+  <path d="M 50 38 Q 64 30 84 36" stroke="#15181B" stroke-width="3" stroke-linecap="round" fill="none"/>
+  <path d="M 136 36 Q 156 30 170 38" stroke="#15181B" stroke-width="3" stroke-linecap="round" fill="none"/>
+  <ellipse cx="110" cy="118" rx="5" ry="6" fill="#8B1E0A"/>
+</svg>
