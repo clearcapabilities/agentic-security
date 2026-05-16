@@ -2,7 +2,7 @@
 
 ### The Claude Code plugin that catches what your AI assistant misses.
 
-> Built by **[Clear Capabilities](https://www.clearcapabilities.com/products/agentic-security)**
+> Built by **[Clear Capabilities](https://www.clearcapabilities.com/)**
 
 [![License](https://img.shields.io/badge/license-PolyForm--Internal--Use-blue)](./LICENSE)
 [![Bundle](https://img.shields.io/badge/bundle-2.30MB-orange)]()
@@ -462,4 +462,4 @@ Full legal terms in [LICENSE](./LICENSE). The short version: don't resell, don't
 
 ---
 
-> Built with care by **[Clear Capabilities](https://www.clearcapabilities.com/products/agentic-security)**. Found a bug, have a feature idea, want to talk? [ross@clearcapabilities.com](mailto:ross@clearcapabilities.com)
+> Built with care by **[Clear Capabilities](https://www.clearcapabilities.com/)**. Found a bug, have a feature idea, want to talk? [ross@clearcapabilities.com](mailto:ross@clearcapabilities.com)
