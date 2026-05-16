@@ -1,11 +1,10 @@
-<img src="docs/brand/patch-bug-scene.svg" align="right" width="220" alt="Patch the mascot side-eyeing a bug on a monitor — agentic-security's signature scene">
-
 # agentic-security
+
+<img src="docs/brand/patch-bug-scene.svg" align="right" width="220" alt="Patch the mascot side-eyeing a bug on a monitor — agentic-security's signature scene">
 
 ### The Claude Code plugin that catches what your AI assistant misses.
 
 > Built by **[Clear Capabilities](https://www.clearcapabilities.com/)**.
-> Watched over by [**Patch**](docs/brand/patch-mascot.html) — tiny, bright, watching.
 
 [![License](https://img.shields.io/badge/license-PolyForm--Internal--Use-blue)](./LICENSE)
 [![Bundle](https://img.shields.io/badge/bundle-2.30MB-orange)]()
