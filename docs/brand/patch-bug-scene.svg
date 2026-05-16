@@ -1,0 +1,70 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 260 240" width="260" height="240" role="img" aria-label="Patch the mascot side-eyeing a bug on a monitor — agentic-security's bug-spotted scene">
+  <!-- monitor screen -->
+  <rect x="12" y="58" width="118" height="86" rx="5" fill="#0F1113" stroke="#262C31" stroke-width="1.5"/>
+  <line x1="12" y1="70" x2="130" y2="70" stroke="#262C31" stroke-width="1"/>
+  <circle cx="19" cy="64" r="1.6" fill="#C93414"/>
+  <circle cx="25" cy="64" r="1.6" fill="#FFD166"/>
+  <circle cx="31" cy="64" r="1.6" fill="#4E7A3A"/>
+  <text x="18" y="82" font-family="ui-monospace, 'Geist Mono', monospace" font-size="7" fill="#6F6A60">$ scan .</text>
+  <text x="18" y="92" font-family="ui-monospace, 'Geist Mono', monospace" font-size="7" fill="#FFD166">! 1 critical</text>
+  <rect x="54" y="100" width="36" height="34" fill="none" stroke="#FF6B2C" stroke-width="1" stroke-dasharray="3 2"/>
+  <line x1="48" y1="117" x2="54" y2="117" stroke="#FF6B2C" stroke-width="1"/>
+  <line x1="90" y1="117" x2="96" y2="117" stroke="#FF6B2C" stroke-width="1"/>
+  <line x1="72" y1="94" x2="72" y2="100" stroke="#FF6B2C" stroke-width="1"/>
+  <line x1="72" y1="134" x2="72" y2="140" stroke="#FF6B2C" stroke-width="1"/>
+  <!-- the bug itself: geometric beetle, on screen, under crosshairs -->
+  <g transform="translate(72, 117)">
+    <ellipse cx="0" cy="1" rx="7" ry="9" fill="#F4EFE6"/>
+    <line x1="0" y1="-8" x2="0" y2="10" stroke="#15181B" stroke-width="0.8"/>
+    <circle cx="0" cy="-8" r="3.5" fill="#F4EFE6"/>
+    <line x1="-1.5" y1="-11" x2="-3.5" y2="-14" stroke="#F4EFE6" stroke-width="1"/>
+    <line x1="1.5" y1="-11" x2="3.5" y2="-14" stroke="#F4EFE6" stroke-width="1"/>
+    <line x1="-7" y1="-2" x2="-11" y2="-4" stroke="#F4EFE6" stroke-width="1"/>
+    <line x1="7" y1="-2" x2="11" y2="-4" stroke="#F4EFE6" stroke-width="1"/>
+    <line x1="-7" y1="2" x2="-11" y2="3" stroke="#F4EFE6" stroke-width="1"/>
+    <line x1="7" y1="2" x2="11" y2="3" stroke="#F4EFE6" stroke-width="1"/>
+    <line x1="-5" y1="7" x2="-9" y2="11" stroke="#F4EFE6" stroke-width="1"/>
+    <line x1="5" y1="7" x2="9" y2="11" stroke="#F4EFE6" stroke-width="1"/>
+  </g>
+  <!-- monitor stand -->
+  <rect x="63" y="144" width="16" height="7" fill="#262C31"/>
+  <polygon points="45,151 97,151 91,160 51,160" fill="#262C31"/>
+  <!-- Patch on right, smirking, side-eyeing the screen -->
+  <g transform="translate(122, 32) scale(0.62)">
+    <!-- frog base -->
+    <ellipse cx="110" cy="200" rx="78" ry="5" fill="#000" opacity="0.22"/>
+    <ellipse cx="34" cy="142" rx="22" ry="20" fill="#C93414"/>
+    <ellipse cx="186" cy="142" rx="22" ry="20" fill="#C93414"/>
+    <ellipse cx="110" cy="138" rx="82" ry="56" fill="#FF6B2C"/>
+    <ellipse cx="110" cy="160" rx="62" ry="30" fill="#FFA56B" opacity="0.85"/>
+    <circle cx="74" cy="74" r="36" fill="#FF6B2C"/>
+    <circle cx="146" cy="74" r="36" fill="#FF6B2C"/>
+    <ellipse cx="110" cy="92" rx="34" ry="6" fill="#C93414" opacity="0.35"/>
+    <circle cx="80" cy="122" r="3.5" fill="#8B1E0A" opacity="0.65"/>
+    <circle cx="138" cy="118" r="4" fill="#8B1E0A" opacity="0.65"/>
+    <circle cx="108" cy="102" r="3" fill="#8B1E0A" opacity="0.55"/>
+    <circle cx="58" cy="138" r="3.5" fill="#8B1E0A" opacity="0.55"/>
+    <circle cx="162" cy="134" r="3" fill="#8B1E0A" opacity="0.55"/>
+    <circle cx="122" cy="138" r="3" fill="#8B1E0A" opacity="0.45"/>
+    <circle cx="90" cy="148" r="2.5" fill="#8B1E0A" opacity="0.4"/>
+    <ellipse cx="42" cy="174" rx="15" ry="7" fill="#FF6B2C"/>
+    <circle cx="30" cy="180" r="5" fill="#C93414"/>
+    <circle cx="42" cy="182" r="5" fill="#C93414"/>
+    <circle cx="54" cy="180" r="5" fill="#C93414"/>
+    <ellipse cx="178" cy="174" rx="15" ry="7" fill="#FF6B2C"/>
+    <circle cx="166" cy="180" r="5" fill="#C93414"/>
+    <circle cx="178" cy="182" r="5" fill="#C93414"/>
+    <circle cx="190" cy="180" r="5" fill="#C93414"/>
+    <!-- smirk face -->
+    <circle cx="74" cy="74" r="24" fill="#F4EFE6"/>
+    <circle cx="146" cy="74" r="24" fill="#F4EFE6"/>
+    <circle cx="60" cy="82" r="12" fill="#15181B"/>
+    <circle cx="132" cy="82" r="12" fill="#15181B"/>
+    <circle cx="56" cy="78" r="4.5" fill="#FFFFFF"/>
+    <circle cx="128" cy="78" r="4.5" fill="#FFFFFF"/>
+    <path d="M 44 48 Q 72 56 100 70" stroke="#15181B" stroke-width="6.5" stroke-linecap="round" fill="none"/>
+    <path d="M 176 48 Q 148 56 120 70" stroke="#15181B" stroke-width="6.5" stroke-linecap="round" fill="none"/>
+    <path d="M 86 118 Q 104 126 122 116 Q 132 110 136 100" stroke="#15181B" stroke-width="3" stroke-linecap="round" fill="none"/>
+    <circle cx="132" cy="114" r="1.6" fill="#15181B"/>
+  </g>
+</svg>

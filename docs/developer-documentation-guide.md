@@ -1,4 +1,4 @@
-<img src="brand/patch-hero.svg" align="right" width="140" alt="Patch — the agentic-security mascot">
+<img src="brand/patch-bug-scene.svg" align="right" width="180" alt="Patch the mascot side-eyeing a bug on a monitor">
 
 # agentic-security — Developer Guide
 

@@ -1,4 +1,4 @@
-<img src="docs/brand/patch-hero.svg" align="right" width="180" alt="Patch — the agentic-security mascot, a strawberry poison dart frog with a smirk">
+<img src="docs/brand/patch-bug-scene.svg" align="right" width="220" alt="Patch the mascot side-eyeing a bug on a monitor — agentic-security's signature scene">
 
 # agentic-security
 
