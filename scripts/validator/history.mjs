@@ -15,7 +15,6 @@ import * as path from 'node:path';
 const HIST = path.join(process.cwd(), '.agentic-security', 'validator-history.json');
 
 function load() {
-  if (!fs.existsSync(HIST)) return [];
   try { return JSON.parse(fs.readFileSync(HIST, 'utf8')); } catch { return []; }
 }
 function save(rows) {
@@ -69,7 +68,7 @@ function summary() {
 }
 
 function clear() {
-  if (fs.existsSync(HIST)) fs.unlinkSync(HIST);
+  try { fs.unlinkSync(HIST); } catch (e) { if (e.code !== 'ENOENT') throw e; }
   process.stdout.write('cleared\n');
 }
 

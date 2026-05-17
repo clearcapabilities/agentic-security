@@ -16,6 +16,7 @@ ignorePaths:
 
   # Scan output artefacts — HTML report contains finding snippets
   - .agentic-security/**
+  - reports/**
 
   # Claude Code hooks (one-shot, exit immediately)
   - hooks/post-edit-scan.js
@@ -24,6 +25,12 @@ ignorePaths:
   # CI / standalone scripts
   - scripts/pr-comment.js
 
+  # Code-generator scripts — emit TypeScript snippets as Python strings;
+  # the scanner sees fs.readFileSync/writeFileSync inside the string literals
+  # and flags them as sync-I/O DoS risk, but the snippets are templates for
+  # user code, not running server code.
+  - scripts/llm-cost-ceiling.py
+
   # VS Code extension (editor activation, not a server)
   - vscode/src/extension.ts
 
@@ -31,3 +38,8 @@ ignorePaths:
   - .github/workflows/scan.yml
   - .github/workflows/example-consumer.yml
   - .github/workflows/bench.yml
+
+  # Bodyguard rule library — its `hint:` strings describe SAFE patterns
+  # (e.g., "Use jwt.verify(token, secret)") which the AuthZ rule misreads as code.
+  - hooks/pre-edit-bodyguard.js
+  - hooks/pre-bash-guard.js

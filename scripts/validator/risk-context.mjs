@@ -12,9 +12,12 @@ const id = process.argv[2];
 if (!id) { console.error('Usage: risk-context.js <finding-id>'); process.exit(2); }
 
 const scanPath = path.join(process.cwd(), '.agentic-security', 'last-scan.json');
-if (!fs.existsSync(scanPath)) { console.error('No .agentic-security/last-scan.json — run /scan first.'); process.exit(2); }
 let scan;
-try { scan = JSON.parse(fs.readFileSync(scanPath, 'utf8')); } catch (e) { console.error('Cannot parse scan:', e.message); process.exit(2); }
+try { scan = JSON.parse(fs.readFileSync(scanPath, 'utf8')); }
+catch (e) {
+  if (e.code === 'ENOENT') { console.error('No .agentic-security/last-scan.json — run /scan first.'); process.exit(2); }
+  console.error('Cannot parse scan:', e.message); process.exit(2);
+}
 
 const findings = [...(scan.findings || []), ...(scan.logicVulns || []), ...(scan.supplyChain || []), ...(scan.secrets || [])];
 const f = findings.find(x => x.id === id);

@@ -18,7 +18,6 @@ function ensureDir() { fs.mkdirSync(CACHE_DIR, { recursive: true }); }
 
 function findingFromScan(id) {
   const scanPath = path.join(process.cwd(), '.agentic-security', 'last-scan.json');
-  if (!fs.existsSync(scanPath)) return null;
   try {
     const scan = JSON.parse(fs.readFileSync(scanPath, 'utf8'));
     const findings = [...(scan.findings || []), ...(scan.logicVulns || []), ...(scan.supplyChain || [])];
@@ -53,8 +52,12 @@ function cacheKey(findingId) {
 function read(id) {
   const key = cacheKey(id);
   const p = path.join(CACHE_DIR, key + '.json');
-  if (!fs.existsSync(p)) { process.stdout.write('MISS'); process.exit(0); }
-  process.stdout.write(fs.readFileSync(p, 'utf8'));
+  try {
+    process.stdout.write(fs.readFileSync(p, 'utf8'));
+  } catch (e) {
+    if (e.code === 'ENOENT') { process.stdout.write('MISS'); process.exit(0); }
+    throw e;
+  }
 }
 
 function write(id, verdictJson) {
@@ -67,7 +70,7 @@ function write(id, verdictJson) {
 }
 
 function clear() {
-  if (fs.existsSync(CACHE_DIR)) fs.rmSync(CACHE_DIR, { recursive: true, force: true });
+  fs.rmSync(CACHE_DIR, { recursive: true, force: true });
   process.stdout.write('CLEARED\n');
 }
 

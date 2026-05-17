@@ -28,13 +28,10 @@ const cfgPath = path.join(stateDir, 'auto-update.json');
 const DEFAULT_CFG = { enabled: true, throttleHours: 24, lastCheck: 0 };
 
 function readCfg() {
-  if (!fs.existsSync(cfgPath)) return { ...DEFAULT_CFG };
   try {
     const data = JSON.parse(fs.readFileSync(cfgPath, 'utf8'));
     return { ...DEFAULT_CFG, ...data };
   } catch {
-    // Malformed — surface to caller so they can decide. We return defaults
-    // and let the caller proceed (safe default = check for updates).
     return { ...DEFAULT_CFG };
   }
 }
