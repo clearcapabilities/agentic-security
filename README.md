@@ -448,8 +448,8 @@ We try to be honest about the boundaries.
 
 ## License
 
-Full legal terms in [LICENSE](./LICENSE). The short version: don't resell, don't reverse-engineer, otherwise enjoy.
+Full legal terms in [LICENSE](./LICENSE).
 
 ---
 
-> Built with care by **[Clear Capabilities](https://www.clearcapabilities.com/)**. Found a bug, have a feature idea, want to talk? [ross@clearcapabilities.com](mailto:ross@clearcapabilities.com)
+> Built with care by **[Clear Capabilities](https://www.clearcapabilities.com/)**. Found a bug, have a feature idea, want to talk? please create a GitHub issue.
