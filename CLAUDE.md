@@ -22,6 +22,7 @@ Full ASPM + LLMSecOps Claude Code plugin. Delivers SAST, SCA (OSV + CISA KEV + f
 | `scanner/src/posture/` | Posture modules: aibom, api-inventory, blast-radius, custom-rules, deterministic, drift, epss, fix-history, license-policy, material-change, mttr, profile, router, rule-overrides, rule-packs, sbom, scorecard, streak, suppressions, triage |
 | `scanner/src/report/` | HTML/JSON/Markdown/SARIF/JUnit report generation |
 | `scanner/src/integrations/` | Third-party integrations (CI, PR comment, etc.) |
+| `scanner/src/mcp/` | MCP server: stdio JSON-RPC handler + four agent-callable tools (`scan_diff`, `query_taint`, `explain_finding`, `apply_fix`) |
 | `scanner/test/` | Node test runner suite (smoke + unit) |
 | `scanner/test/fixtures/` | Per-rule fixture trees used by tests |
 | `scanner/dist/` | Compiled single-file bundle (`agentic-security.mjs`) |
@@ -136,7 +137,7 @@ Each file exports one or more `scan*()` functions:
 
 Tests use the Node built-in test runner. Key test files:
 
-`smoke`, `llm`, `llm-owasp`, `logic`, `fn-reach`, `material-change`, `drift`, `sbom`, `api-inventory`, `sarif-ingest`, `pipeline`, `license-policy`, `mttr`, `container`, `dep-confusion`, `scorecard`, `mcp-audit`, `authz`, `kev`, `model-load`, `prompt-template`, `aibom`, `packs`, `junit`, `ci`, `cpp-dataflow` (requires `AGENTIC_SECURITY_CPP_DATAFLOW=1`)
+`smoke`, `llm`, `llm-owasp`, `logic`, `fn-reach`, `material-change`, `drift`, `sbom`, `api-inventory`, `sarif-ingest`, `pipeline`, `license-policy`, `mttr`, `container`, `dep-confusion`, `scorecard`, `mcp-audit`, `mcp` (MCP server), `authz`, `kev`, `model-load`, `prompt-template`, `aibom`, `packs`, `junit`, `ci`, `cpp-dataflow` (requires `AGENTIC_SECURITY_CPP_DATAFLOW=1`)
 
 New modules (`db-rls`, `rate-limit`, `auth-provider`, `env-hygiene`, `deploy-platform`, `stack-playbook`) are integration-tested via `npm run smoke` and inline module tests. Dedicated test files should be added under `test/` to match the pattern above.
 
@@ -177,3 +178,10 @@ New modules (`db-rls`, `rate-limit`, `auth-provider`, `env-hygiene`, `deploy-pla
 - **State:** `.agentic-security/last-scan.json` holds the most recent scan output used by downstream commands (fix, report, chain, drift, etc.).
 - **VS Code extension:** `vscode/src/extension.ts` — IDE integration source.
 - **PR comments:** `scripts/pr-comment.js` — posts scan results as GitHub PR review comments.
+- **MCP server:** registered in `plugin.json#mcpServers`. Bin entry `scanner/bin/agentic-security-mcp.js`, also reachable via `agentic-security mcp`. Exposes four tools any MCP-speaking agent (Claude Code, Cursor CLI, Codex CLI, Cline, Aider) can call: `scan_diff(files)`, `query_taint(source, sink)`, `explain_finding(finding_id)`, `apply_fix(finding_id, confirm, dry_run?)`. Transport: JSON-RPC 2.0 over NDJSON on stdin/stdout.
+  - **Session root** is fixed at boot (`--root` arg, `AGENTIC_SECURITY_MCP_ROOT` env, or cwd). All tool paths are confined under it via lstat + realpath (symlinks refused).
+  - **Kill switch:** `AGENTIC_SECURITY_MCP_DISABLED=1` exits the bin and refuses every `tools/call` (OWASP MCP09).
+  - **Integrity:** `apply_fix` refuses unless `last-scan.json` HMAC verifies; tool outputs include `_meta.untrusted_excerpts:true` so the agent treats scanner output as data, not instructions (OWASP MCP03/MCP06).
+  - **Secret hygiene:** all tool outputs and audit args are redacted of known credential shapes (AWS, GitHub, Slack, Anthropic, OpenAI, Stripe, JWT, PEM private keys, hardcoded password literals) — OWASP MCP01/MCP10.
+  - **Audit log:** `.agentic-security/mcp-audit.log` (NDJSON, hash-chained — verify with `verifyAuditLog`) records every `tools/call`. OWASP MCP08.
+  - **Fleet visibility:** `initialize` response includes `serverInfo.codeFingerprint` (SHA-256 of MCP source files) so an operator can detect unauthorized builds. OWASP MCP04/MCP09.

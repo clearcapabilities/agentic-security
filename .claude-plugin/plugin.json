@@ -6,5 +6,17 @@
   "vendor": "Clear Capabilities Inc.",
   "homepage": "https://github.com/Clear-Capabilities/agentic-security",
   "license": "PolyForm-Internal-Use-1.0.0",
-  "keywords": ["security", "sast", "sca", "secrets", "iac", "cve", "osv", "kev", "cisa-kev", "claude-code", "appsec", "prompt-injection", "llm-security", "ai-security", "mcp-security", "agent-security", "authz", "broken-access-control", "business-logic", "aspm", "llmsecops", "aibom", "ml-bom", "owasp-llm-top-10", "model-security", "sbom", "cyclonedx", "spdx", "pbom", "compliance", "owasp-asvs", "nist-ai-600-1", "scorecard", "red-team", "redteam", "promptfoo", "jailbreak", "llm-eval", "adversarial-testing", "ai-safety"]
+  "keywords": ["security", "sast", "sca", "secrets", "iac", "cve", "osv", "kev", "cisa-kev", "claude-code", "appsec", "prompt-injection", "llm-security", "ai-security", "mcp-security", "agent-security", "authz", "broken-access-control", "business-logic", "aspm", "llmsecops", "aibom", "ml-bom", "owasp-llm-top-10", "model-security", "sbom", "cyclonedx", "spdx", "pbom", "compliance", "owasp-asvs", "nist-ai-600-1", "scorecard", "red-team", "redteam", "promptfoo", "jailbreak", "llm-eval", "adversarial-testing", "ai-safety"],
+  "mcpServers": {
+    "agentic-security": {
+      "command": "node",
+      "args": ["${CLAUDE_PLUGIN_ROOT}/scanner/bin/agentic-security-mcp.js", "--root", "${CLAUDE_PROJECT_DIR}"],
+      "description": "agentic-security MCP server (scan_diff, query_taint, explain_finding, apply_fix). Session root is confined to the current project directory; apply_fix requires confirm:true and a valid last-scan.json HMAC signature; shadow findings are never auto-applied.",
+      "trust": {
+        "writes_files": true,
+        "session_scope": "project_directory_only",
+        "requires_confirm_for": ["apply_fix"]
+      }
+    }
+  }
 }

@@ -4,8 +4,7 @@
 import * as fs from 'node:fs';
 import * as fsp from 'node:fs/promises';
 import * as path from 'node:path';
-import * as crypto from 'node:crypto';
-import * as os from 'node:os';
+import { signLastScan as _signLastScan, verifyLastScan as _verifyLastScanShared } from '../src/posture/integrity.js';
 import { runScan } from '../src/runScan.js';
 import { toJSON, toMarkdown, toSARIF, toCSV, toJUnit, toCLI, toCLIByProfile, toShipVerdict, toProTable, toHTML, toSummary, exitCodeFor, normalizeFindings } from '../src/report/index.js';
 import { toCycloneDX, toSPDX } from '../src/posture/sbom.js';
@@ -28,25 +27,11 @@ import * as triage from '../src/posture/triage.js';
 import { buildSlackDigest, buildDiscordDigest, postWebhook, buildJiraIssue, buildPrComment, buildSiemEvent, loadIntegrationConfig } from '../src/integrations/index.js';
 import fg from 'fast-glob';
 
-// ─── last-scan.json integrity ────────────────────────────────────────────────
-// Detects accidental corruption and naive manual editing of the scan state.
-// Not a cryptographic guarantee — an attacker with filesystem access can also
-// rewrite the .sig file. The value is catching accidental file truncation,
-// copy-paste corruption, and low-effort tampering that would otherwise silently
-// skew severity counts or CI gate decisions.
-const _HMAC_SALT = 'agentic-security:last-scan:v1';
-function _hmacKey() {
-  return crypto.createHash('sha256').update(`${_HMAC_SALT}:${os.hostname()}`).digest();
-}
-function _signLastScan(body) {
-  return crypto.createHmac('sha256', _hmacKey()).update(body).digest('hex');
-}
+// last-scan.json integrity helpers — implementation in posture/integrity.js
+// so the MCP server tools can share verification.
 function _verifyLastScan(body, sigFile) {
-  try {
-    const stored = fs.readFileSync(sigFile, 'utf8').trim();
-    const expected = _signLastScan(body);
-    return crypto.timingSafeEqual(Buffer.from(stored, 'hex'), Buffer.from(expected, 'hex'));
-  } catch { return null; /* sig file absent — first run */ }
+  const v = _verifyLastScanShared(body, sigFile);
+  return v;
 }
 
 const USAGE = `agentic-security <command> [options]
@@ -72,6 +57,7 @@ Commands:
   rule list | test <glob>      List/test custom YAML rules in .agentic-security/rules/
   tickets sync --provider <p>  Two-way sync findings ↔ GitHub Issues / Linear / Jira
   digest --slack <webhook>     Vibecoder: send daily digest to Slack
+  mcp                          Start the MCP stdio server (scan_diff, query_taint, explain_finding, apply_fix)
   version                      Print version
 
 Options:
@@ -947,6 +933,12 @@ async function main() {
       case 'packs':    process.exit(await cmdPacks(args));
       case 'digest':   process.exit(await cmdDigest(args));
       case 'setup':    process.exit(await cmdSetup(args));
+      case 'mcp':      {
+        const { runStdio } = await import('../src/mcp/stdio.js');
+        const root = args.flags.root || process.env.AGENTIC_SECURITY_MCP_ROOT || process.cwd();
+        runStdio({ sessionRoot: path.resolve(root) });
+        return;
+      }
       case 'version':  console.log('agentic-security 0.39.2  ·  created by ClearCapabilities.Com'); process.exit(0);
       case 'help': case '--help': case '-h': case undefined:
         console.log(USAGE); process.exit(cmd ? 0 : 1);

@@ -6,7 +6,8 @@
   "main": "src/index.js",
   "bin": {
     "agentic-security": "dist/agentic-security.mjs",
-    "as": "dist/agentic-security.mjs"
+    "as": "dist/agentic-security.mjs",
+    "agentic-security-mcp": "bin/agentic-security-mcp.js"
   },
   "exports": {
     ".": "./src/index.js",
@@ -44,7 +45,7 @@
   "scripts": {
     "build": "ncc build bin/agentic-security.js -o dist --minify && mv dist/index.js dist/agentic-security.mjs && rm -f dist/package.json && chmod +x dist/agentic-security.mjs && node -e \"const fs=require('fs');const p='dist/agentic-security.mjs';const c=fs.readFileSync(p,'utf8');if(!c.startsWith('#!'))fs.writeFileSync(p,'#!/usr/bin/env node\\n'+c);\"",
     "prepublishOnly": "npm run build",
-    "test": "node --test test/smoke.test.js test/llm.test.js test/logic.test.js test/fn-reach.test.js test/material-change.test.js test/drift.test.js test/sbom.test.js test/api-inventory.test.js test/sarif-ingest.test.js test/pipeline.test.js test/license-policy.test.js test/mttr.test.js test/container.test.js test/dep-confusion.test.js test/scorecard.test.js test/mcp-audit.test.js test/authz.test.js test/kev.test.js test/model-load.test.js test/prompt-template.test.js test/llm-owasp.test.js test/aibom.test.js test/packs.test.js test/junit.test.js test/ci.test.js && AGENTIC_SECURITY_CPP_DATAFLOW=1 node --test test/cpp-dataflow.test.js",
+    "test": "node --test test/smoke.test.js test/llm.test.js test/logic.test.js test/fn-reach.test.js test/material-change.test.js test/drift.test.js test/sbom.test.js test/api-inventory.test.js test/sarif-ingest.test.js test/pipeline.test.js test/license-policy.test.js test/mttr.test.js test/container.test.js test/dep-confusion.test.js test/scorecard.test.js test/mcp-audit.test.js test/authz.test.js test/kev.test.js test/model-load.test.js test/prompt-template.test.js test/llm-owasp.test.js test/aibom.test.js test/packs.test.js test/junit.test.js test/ci.test.js test/mcp.test.js && AGENTIC_SECURITY_CPP_DATAFLOW=1 node --test test/cpp-dataflow.test.js",
     "smoke": "node bin/agentic-security.js scan test/fixtures/vulnerable-js",
     "prebench": "npm run build",
     "bench": "node test/benchmark/bench.js",

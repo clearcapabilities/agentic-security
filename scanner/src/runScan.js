@@ -79,7 +79,15 @@ export async function runScan(rootDir, opts = {}) {
   const root = path.resolve(rootDir);
   const startedAt = new Date().toISOString();
   const t0 = Date.now();
-  let { fileContents, depFileContents } = await readTree(root, opts);
+  // Caller may pre-build fileContents (used by the MCP server's scan_diff to
+  // scope a scan to a specific file list without walking the whole tree).
+  let fileContents, depFileContents;
+  if (opts.fileContents) {
+    fileContents = opts.fileContents;
+    depFileContents = opts.depFileContents || {};
+  } else {
+    ({ fileContents, depFileContents } = await readTree(root, opts));
+  }
 
   // Feat-10: incremental mode — restrict the scan to files changed since a git ref
   if (opts.changedSince) {
