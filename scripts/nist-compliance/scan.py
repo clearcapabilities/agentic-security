@@ -179,7 +179,10 @@ JS_IMPORT_RE = re.compile(
     re.MULTILINE,
 )
 GO_IMPORT_RE = re.compile(
-    r"""(?:^|\s)import\s+(?:\(\s*((?:[^)]|\n)+?)\)|"([^"]+)")""",
+    # `[^)]` already matches `\n` in Python re; the prior `(?:[^)]|\n)+?`
+    # was ambiguous and exponentially backtracked on `import (` + many `\n`
+    # without a closing `)` (CodeQL py/redos #751).
+    r"""(?:^|\s)import\s+(?:\(\s*([^)]+?)\)|"([^"]+)")""",
     re.MULTILINE,
 )
 RUBY_IMPORT_RE = re.compile(
