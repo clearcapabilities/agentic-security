@@ -178,6 +178,10 @@ function step(node, stateIn, callContext) {
 // Worklist traversal of one function's CFG with a given entry-taint-state.
 // Returns the merged exit state + the union of findings on every path + the
 // taint sources observed (for evidence trails).
+//
+// Premortem 2R4.4 / 2R-9: also honors callContext.deadlineMs by checking
+// every 100 iterations. A pathological CFG (large generated file with dense
+// control flow) can otherwise hold past the global timeout.
 function analyzeFunction(fn, entryState, callContext) {
   const nodes = fn.cfg.nodes; // plain object
   const work = [];
@@ -185,13 +189,16 @@ function analyzeFunction(fn, entryState, callContext) {
   const outStates = new Map();
   inStates.set(fn.cfg.entry, new Set(entryState));
   work.push(fn.cfg.entry);
-
+  const deadlineMs = (callContext && typeof callContext.deadlineMs === 'number') ? callContext.deadlineMs : Infinity;
   const visited = 0;
   let iterations = 0;
   const ITER_BUDGET = 5000;
 
   while (work.length) {
     if (++iterations > ITER_BUDGET) break;
+    // Check the global deadline every 100 iterations — Date.now() is cheap
+    // but not free; this keeps overhead negligible on small functions.
+    if ((iterations & 0x7f) === 0 && Date.now() > deadlineMs) break;
     const nid = work.shift();
     const node = nodes[nid];
     if (!node) continue;
@@ -261,6 +268,7 @@ export function runTaintEngine(perFileIR, callGraph, opts = {}) {
       _taintSources: [],
       _returnTainted: false,
       _stack: new Set(),
+      deadlineMs,   // honored by the worklist inside analyzeFunction
     };
     try {
       analyzeFunction(fn, new Set(), callContext);

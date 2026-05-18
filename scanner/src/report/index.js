@@ -324,11 +324,35 @@ export function toSARIF(scan, meta={}){
     helpUri: f.cwe ? `https://cwe.mitre.org/data/definitions/${f.cwe.replace(/[^0-9]/g,'')}.html` : undefined,
     properties: { tags: [f.cwe, f.stride].filter(Boolean) },
   });
+  // Premortem 2R1.1 / 2R5.3 / 2R-12: surface the load-bearing caveats in the
+  // SARIF run itself so machine consumers see them. Without these, a CI that
+  // ingests SARIF treats "confidence: 0.9" as a probability and the
+  // benchmark-tuned 0.907 number as quality evidence.
+  const SARIF_NOTIFICATIONS = [
+    {
+      id: 'scores-are-ordinal',
+      name: 'ScoresAreOrdinal',
+      shortDescription: { text: 'priority/exploitability scores are ordinal, not calibrated probabilities' },
+      defaultConfiguration: { level: 'note' },
+      fullDescription: { text: 'The properties.exploitability and properties.confidence fields on each result are ORDINAL priority scores used to rank findings within a scan. They are NOT calibrated probabilities; do not render them as percentages or feed them into pricing / risk-acceptance decisions. Use the tier labels (critical/high/medium/low) for coarse bucketing. See bench/README.md for the open calibration work.' },
+    },
+    {
+      id: 'owasp-benchmark-tuning',
+      name: 'OwaspBenchmarkTuning',
+      shortDescription: { text: 'engine ships OWASP-Benchmark-shape precision lifters; F1 numbers do not generalize' },
+      defaultConfiguration: { level: 'note' },
+      fullDescription: { text: 'The engine includes precision lifters (sast/primary-cwe-java.js, sast/java-constant-fold.js) whose heuristics are tuned to OWASP Benchmark v1.2 file shape (servlet-style files <=300 LoC, canonical variable names). F1 numbers cited against OWASP Benchmark do NOT generalize to arbitrary Java code. Expect higher FP rates on real-world codebases until per-customer tuning lands. See bench/README.md.' },
+    },
+  ];
   return {
     $schema: 'https://json.schemastore.org/sarif-2.1.0.json',
     version: '2.1.0',
     runs: [{
-      tool: { driver: { name: 'agentic-security', version: '0.1.0', informationUri: 'https://github.com/Clear-Capabilities/agentic-security', rules: [...ruleMap.values()] }},
+      tool: { driver: { name: 'agentic-security', version: '0.1.0', informationUri: 'https://github.com/Clear-Capabilities/agentic-security', rules: [...ruleMap.values()], notifications: SARIF_NOTIFICATIONS }},
+      invocations: [{ executionSuccessful: true, toolExecutionNotifications: SARIF_NOTIFICATIONS.map(n => ({
+        descriptor: { id: n.id }, level: 'note',
+        message: { text: n.fullDescription.text.slice(0, 1000) },
+      }))}],
       results: findings.map(f => ({
         ruleId: f.vuln ? f.vuln.replace(/[^a-zA-Z0-9]/g, '_') : 'unknown',
         level: SEV_TO_SARIF[f.severity] || 'warning',

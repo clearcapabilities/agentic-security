@@ -1,5 +1,5 @@
 {
-  "_doc": "snyk-rust-vulnerable-apps \u2014 line-level expected entries derived from engine output in 0.34.5 and verified by source-sampling. Wildcards removed. Each entry has family-appropriate severity/CWE/note metadata.",
+  "_doc": "snyk-rust-vulnerable-apps — line-level expected entries derived from engine output in 0.34.5 and verified by source-sampling. Wildcards removed. Each entry has family-appropriate severity/CWE/note metadata.",
   "wildcardFamilies": [],
   "expected": [
     {
@@ -30,5 +30,7 @@
       "cwe": "CWE-400",
       "note": "Outbound HTTP without timeout"
     }
-  ]
+  ],
+  "provenance": "bootstrap-from-engine-output-v0.34.5",
+  "requiresReAudit": true
 }

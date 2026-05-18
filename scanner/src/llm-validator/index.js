@@ -191,31 +191,47 @@ async function callEndpoint(endpoint, apiKey, model, prompt) {
   }
 }
 
-// Extract the LAST JSON object in the response. Walks backward, tracking
-// balanced braces, and parses the final complete `{...}` block. Stops an
-// attacker who echoes a fake JSON early from overriding the real reply.
+// Extract the LAST JSON object in the response. Walks FORWARD with proper
+// JSON string-state tracking (second-round premortem 2R2.1: a previous
+// implementation walked backward without string awareness and could be fooled
+// by braces inside string literals, e.g. {"reasoning":"foo}bar"} causing
+// brace-depth desynchronization). The right approach is to track ALL
+// candidate `{...}` blocks at depth=0 ignoring braces inside strings,
+// validate each as JSON, and return the LAST that parses.
 export function parseLastJsonObject(text) {
   if (!text || typeof text !== 'string') return null;
+  const candidates = [];
   let depth = 0;
-  let end = -1;
-  for (let i = text.length - 1; i >= 0; i--) {
+  let start = -1;
+  let inStr = false;
+  let escape = false;
+  for (let i = 0; i < text.length; i++) {
     const c = text[i];
-    if (c === '}') {
-      if (depth === 0) end = i;
+    if (escape) { escape = false; continue; }
+    if (inStr) {
+      if (c === '\\') { escape = true; continue; }
+      if (c === '"') { inStr = false; }
+      continue;
+    }
+    if (c === '"') { inStr = true; continue; }
+    if (c === '{') {
+      if (depth === 0) start = i;
       depth++;
-    } else if (c === '{') {
+    } else if (c === '}') {
       depth--;
-      if (depth === 0 && end >= 0) {
-        const candidate = text.slice(i, end + 1);
-        try { return JSON.parse(candidate); }
-        catch { /* try earlier; reset bracket-balance state */ }
-        end = -1;
+      if (depth === 0 && start >= 0) {
+        candidates.push(text.slice(start, i + 1));
+        start = -1;
       } else if (depth < 0) {
-        // Unbalanced — reset and keep scanning.
         depth = 0;
-        end = -1;
+        start = -1;
       }
     }
+  }
+  // Try LAST-first so attacker JSON injected earlier in the response can't
+  // override the model's real reply at the end.
+  for (let i = candidates.length - 1; i >= 0; i--) {
+    try { return JSON.parse(candidates[i]); } catch { /* keep looking */ }
   }
   return null;
 }
@@ -224,8 +240,18 @@ export function parseLastJsonObject(text) {
 //   { ok: true,  parsed: {verdict, confidence, reasoning} }
 //   { ok: false, reason: <string> }
 // All "not ok" cases fail-closed (caller marks unvalidated; KEEPS the finding).
+//
+// SECURITY (premortem 2R2.2): the caller MUST refuse to call this function
+// with an empty file or zero/falsy line — otherwise an attacker who knows
+// the validator runs on findings without precise location can return
+// {"file":"","line":0,...} and trivially satisfy the cross-check. The
+// preflight is in validateOne(), but this function also asserts internally
+// as a defense-in-depth.
 export function validateResponse(obj, { challenge, file, line }) {
   if (!obj || typeof obj !== 'object') return { ok: false, reason: 'no-json' };
+  if (typeof challenge !== 'string' || challenge.length < 8) return { ok: false, reason: 'bad-challenge-input' };
+  if (typeof file !== 'string' || file.length === 0) return { ok: false, reason: 'no-file-input' };
+  if (typeof line !== 'number' || line <= 0) return { ok: false, reason: 'no-line-input' };
   if (obj.challenge !== challenge) return { ok: false, reason: 'challenge-mismatch' };
   if (typeof obj.file !== 'string' || obj.file !== file) return { ok: false, reason: 'file-mismatch' };
   const lineNum = typeof obj.line === 'number' ? obj.line : parseInt(obj.line, 10);
@@ -246,6 +272,10 @@ export function validateResponse(obj, { challenge, file, line }) {
 
 // Validate a single finding. Returns the verdict object (also annotated onto
 // the finding). Cache-deterministic by file content + path signature.
+//
+// Pre-flight (premortem 2R2.2): findings WITHOUT a precise file:line cannot
+// be cross-checked against the LLM response (the model can trivially echo
+// empty/zero values). Such findings are marked unvalidated and KEPT.
 export async function validateOne(finding, fileContents, scanRoot) {
   const cfg = endpointConfig();
   if (!cfg) {
@@ -253,13 +283,25 @@ export async function validateOne(finding, fileContents, scanRoot) {
     finding.unvalidated = true;
     return { verdict: 'unvalidated' };
   }
+  // Pre-flight: refuse to validate location-less findings. Without a precise
+  // file:line, the response cross-check degenerates and the validator can be
+  // spoofed by trivially-true echoes.
+  if (typeof finding.file !== 'string' || finding.file.length === 0 ||
+      typeof finding.line !== 'number' || finding.line <= 0) {
+    finding.validator_verdict = 'unvalidated';
+    finding.unvalidated = true;
+    finding._validatorError = 'no-precise-location';
+    return { verdict: 'unvalidated', error: 'no-precise-location' };
+  }
   const fh = fileHashOf(fileContents, finding.file);
   const key = cacheKey(finding, fh, cfg.model);
   const cached = readCache(scanRoot, key);
   if (cached) {
     finding.validator_verdict = cached.verdict;
     finding.llm_confidence = cached.confidence;
-    finding.validator_reasoning = cached.reasoning;
+    // Re-sanitize cached reasoning on read (premortem 2R2.4 — defense-in-depth
+    // against any future write-path regression that might cache un-sanitized text).
+    finding.validator_reasoning = sanitizeReasoning(cached.reasoning);
     finding._validatorCache = 'hit';
     return cached;
   }

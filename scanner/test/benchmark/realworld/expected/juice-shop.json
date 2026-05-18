@@ -1,5 +1,5 @@
 {
-  "_doc": "Juice-Shop curated expected \u2014 all 138 entries are real findings in this intentionally-vulnerable training app, verified by direct source inspection and family-level sampling. wildcardFamilies removed in 0.34.5; every entry is line-level. New entries (added in this commit) carry generic family-level notes; the original canonical 19 entries (with specific challenge names) remain.",
+  "_doc": "Juice-Shop curated expected — all 138 entries are real findings in this intentionally-vulnerable training app, verified by direct source inspection and family-level sampling. wildcardFamilies removed in 0.34.5; every entry is line-level. New entries (added in this commit) carry generic family-level notes; the original canonical 19 entries (with specific challenge names) remain.",
   "wildcardFamilies": [],
   "expected": [
     {
@@ -9,7 +9,7 @@
       "family": "sql-injection",
       "severity": "critical",
       "cwe": "CWE-89",
-      "note": "sequelize.query with template literal containing req.body.email \u2014 challenges: loginAdminChallenge, loginBenderChallenge, loginJimChallenge"
+      "note": "sequelize.query with template literal containing req.body.email — challenges: loginAdminChallenge, loginBenderChallenge, loginJimChallenge"
     },
     {
       "file": "routes/search.ts",
@@ -18,7 +18,7 @@
       "family": "sql-injection",
       "severity": "critical",
       "cwe": "CWE-89",
-      "note": "sequelize.query with template literal containing search criteria \u2014 challenges: unionSqlInjectionChallenge, dbSchemaChallenge"
+      "note": "sequelize.query with template literal containing search criteria — challenges: unionSqlInjectionChallenge, dbSchemaChallenge"
     },
     {
       "file": "routes/updateProductReviews.ts",
@@ -27,7 +27,7 @@
       "family": "sql-injection",
       "severity": "high",
       "cwe": "CWE-943",
-      "note": "MongoDB Reviews.update({_id: req.body.id}, ..., {multi:true}) \u2014 NoSQL injection, challenge: noSqlReviewsChallenge"
+      "note": "MongoDB Reviews.update({_id: req.body.id}, ..., {multi:true}) — NoSQL injection, challenge: noSqlReviewsChallenge"
     },
     {
       "file": "routes/b2bOrder.ts",
@@ -36,7 +36,7 @@
       "family": "code-injection",
       "severity": "critical",
       "cwe": "CWE-94",
-      "note": "vm.runInContext('safeEval(orderLinesData)') \u2014 RCE via VM-sandbox escape, challenges: rceChallenge, rceOccupyChallenge"
+      "note": "vm.runInContext('safeEval(orderLinesData)') — RCE via VM-sandbox escape, challenges: rceChallenge, rceOccupyChallenge"
     },
     {
       "file": "lib/insecurity.ts",
@@ -45,7 +45,7 @@
       "family": "weak-crypto",
       "severity": "high",
       "cwe": "CWE-916",
-      "note": "crypto.createHash('md5') used in the hash() helper that hashes passwords \u2014 challenge: weakPasswordChallenge"
+      "note": "crypto.createHash('md5') used in the hash() helper that hashes passwords — challenge: weakPasswordChallenge"
     },
     {
       "file": "lib/insecurity.ts",
@@ -54,7 +54,7 @@
       "family": "weak-rng",
       "severity": "high",
       "cwe": "CWE-338",
-      "note": "Math.random() used as JWT secret in denyAll() \u2014 cryptographically weak PRNG for a security-critical value"
+      "note": "Math.random() used as JWT secret in denyAll() — cryptographically weak PRNG for a security-critical value"
     },
     {
       "file": "routes/redirect.ts",
@@ -63,7 +63,7 @@
       "family": "open-redirect",
       "severity": "medium",
       "cwe": "CWE-601",
-      "note": "res.redirect(toUrl) where toUrl=query.to (user-controlled); allowlist check in insecurity.ts uses includes() not startsWith() \u2014 challenge: redirectChallenge"
+      "note": "res.redirect(toUrl) where toUrl=query.to (user-controlled); allowlist check in insecurity.ts uses includes() not startsWith() — challenge: redirectChallenge"
     },
     {
       "file": "routes/address.ts",
@@ -72,7 +72,7 @@
       "family": "idor",
       "severity": "high",
       "cwe": "CWE-639",
-      "note": "AddressModel.findOne({where:{id:req.params.id,UserId:req.body.UserId}}) \u2014 UserId is user-controlled, allows accessing any user's address"
+      "note": "AddressModel.findOne({where:{id:req.params.id,UserId:req.body.UserId}}) — UserId is user-controlled, allows accessing any user's address"
     },
     {
       "file": "routes/address.ts",
@@ -81,7 +81,7 @@
       "family": "idor",
       "severity": "high",
       "cwe": "CWE-639",
-      "note": "AddressModel.destroy({where:{id:req.params.id,UserId:req.body.UserId}}) \u2014 UserId is user-controlled, allows deleting any user's address"
+      "note": "AddressModel.destroy({where:{id:req.params.id,UserId:req.body.UserId}}) — UserId is user-controlled, allows deleting any user's address"
     },
     {
       "file": "routes/basketItems.ts",
@@ -90,7 +90,7 @@
       "family": "idor",
       "severity": "high",
       "cwe": "CWE-639",
-      "note": "BasketItemModel.findOne({where:{id:req.params.id}}) \u2014 no ownership check, any authenticated user can access any basket item \u2014 challenge: basketManipulateChallenge"
+      "note": "BasketItemModel.findOne({where:{id:req.params.id}}) — no ownership check, any authenticated user can access any basket item — challenge: basketManipulateChallenge"
     },
     {
       "file": "routes/deluxe.ts",
@@ -99,7 +99,7 @@
       "family": "idor",
       "severity": "high",
       "cwe": "CWE-639",
-      "note": "UserModel.findOne({where:{id:req.body.UserId,...}}) \u2014 UserId from request body, user can impersonate others to activate deluxe membership"
+      "note": "UserModel.findOne({where:{id:req.body.UserId,...}}) — UserId from request body, user can impersonate others to activate deluxe membership"
     },
     {
       "file": "routes/deluxe.ts",
@@ -108,7 +108,7 @@
       "family": "idor",
       "severity": "high",
       "cwe": "CWE-639",
-      "note": "CardModel.findOne({where:{id:req.body.paymentId,UserId:req.body.UserId}}) \u2014 both IDs from request body, allows using another user's payment card"
+      "note": "CardModel.findOne({where:{id:req.body.paymentId,UserId:req.body.UserId}}) — both IDs from request body, allows using another user's payment card"
     },
     {
       "file": "routes/order.ts",
@@ -117,7 +117,7 @@
       "family": "idor",
       "severity": "high",
       "cwe": "CWE-639",
-      "note": "BasketModel.findOne({where:{id:req.params.id}}) then BasketItemModel.destroy \u2014 no ownership check, allows placing order for another user's basket"
+      "note": "BasketModel.findOne({where:{id:req.params.id}}) then BasketItemModel.destroy — no ownership check, allows placing order for another user's basket"
     },
     {
       "file": "routes/payment.ts",
@@ -126,7 +126,7 @@
       "family": "idor",
       "severity": "high",
       "cwe": "CWE-639",
-      "note": "CardModel.findOne({where:{id:req.params.id,UserId:req.body.UserId}}) \u2014 UserId from request body, allows accessing another user's payment card"
+      "note": "CardModel.findOne({where:{id:req.params.id,UserId:req.body.UserId}}) — UserId from request body, allows accessing another user's payment card"
     },
     {
       "file": "routes/payment.ts",
@@ -135,7 +135,7 @@
       "family": "idor",
       "severity": "high",
       "cwe": "CWE-639",
-      "note": "CardModel.destroy({where:{id:req.params.id,UserId:req.body.UserId}}) \u2014 UserId from request body, allows deleting another user's payment card"
+      "note": "CardModel.destroy({where:{id:req.params.id,UserId:req.body.UserId}}) — UserId from request body, allows deleting another user's payment card"
     },
     {
       "file": "routes/wallet.ts",
@@ -144,7 +144,7 @@
       "family": "idor",
       "severity": "high",
       "cwe": "CWE-639",
-      "note": "CardModel.findOne({where:{id:cardId,UserId:req.body.UserId}}) \u2014 UserId from request body, allows using another user's card for wallet top-up"
+      "note": "CardModel.findOne({where:{id:cardId,UserId:req.body.UserId}}) — UserId from request body, allows using another user's card for wallet top-up"
     },
     {
       "file": "routes/showProductReviews.ts",
@@ -154,7 +154,7 @@
       "family": "sql-injection",
       "severity": "high",
       "cwe": "CWE-943",
-      "note": "$where with string concatenation of req.params.id \u2014 noSqlCommandChallenge; matchAny consumes both NoSQL Operator and $where STRUCTURAL findings"
+      "note": "$where with string concatenation of req.params.id — noSqlCommandChallenge; matchAny consumes both NoSQL Operator and $where STRUCTURAL findings"
     },
     {
       "file": "routes/trackOrder.ts",
@@ -164,7 +164,7 @@
       "family": "sql-injection",
       "severity": "high",
       "cwe": "CWE-943",
-      "note": "$where template literal with req.params.id \u2014 noSqlOrdersChallenge; matchAny consumes both NoSQL Operator and STRUCTURAL $where findings"
+      "note": "$where template literal with req.params.id — noSqlOrdersChallenge; matchAny consumes both NoSQL Operator and STRUCTURAL $where findings"
     },
     {
       "file": "package.json",
@@ -309,7 +309,7 @@
       "family": "idor",
       "severity": "high",
       "cwe": "CWE-639",
-      "note": "IDOR \u2014 Model.findX/destroy with user-controlled id, no ownership check"
+      "note": "IDOR — Model.findX/destroy with user-controlled id, no ownership check"
     },
     {
       "file": "lib/insecurity.ts",
@@ -372,7 +372,7 @@
       "family": "timing-oracle",
       "severity": "medium",
       "cwe": "CWE-208",
-      "note": "Non-constant-time secret comparison \u2014 timing side channel"
+      "note": "Non-constant-time secret comparison — timing side channel"
     },
     {
       "file": "lib/utils.ts",
@@ -381,7 +381,7 @@
       "family": "timing-oracle",
       "severity": "medium",
       "cwe": "CWE-208",
-      "note": "Non-constant-time secret comparison \u2014 timing side channel"
+      "note": "Non-constant-time secret comparison — timing side channel"
     },
     {
       "file": "lib/utils.ts",
@@ -426,7 +426,7 @@
       "family": "orm-no-pagination",
       "severity": "low",
       "cwe": "CWE-770",
-      "note": "ORM collection query without LIMIT \u2014 potential DoS/memory exhaustion"
+      "note": "ORM collection query without LIMIT — potential DoS/memory exhaustion"
     },
     {
       "file": "routes/b2bOrder.ts",
@@ -516,7 +516,7 @@
       "family": "idor",
       "severity": "high",
       "cwe": "CWE-639",
-      "note": "IDOR \u2014 Model.findX/destroy with user-controlled id, no ownership check"
+      "note": "IDOR — Model.findX/destroy with user-controlled id, no ownership check"
     },
     {
       "file": "routes/chatbot.ts",
@@ -525,7 +525,7 @@
       "family": "idor",
       "severity": "high",
       "cwe": "CWE-639",
-      "note": "IDOR \u2014 Model.findX/destroy with user-controlled id, no ownership check"
+      "note": "IDOR — Model.findX/destroy with user-controlled id, no ownership check"
     },
     {
       "file": "routes/continueCode.ts",
@@ -552,7 +552,7 @@
       "family": "orm-no-pagination",
       "severity": "low",
       "cwe": "CWE-770",
-      "note": "ORM collection query without LIMIT \u2014 potential DoS/memory exhaustion"
+      "note": "ORM collection query without LIMIT — potential DoS/memory exhaustion"
     },
     {
       "file": "routes/continueCode.ts",
@@ -570,7 +570,7 @@
       "family": "orm-no-pagination",
       "severity": "low",
       "cwe": "CWE-770",
-      "note": "ORM collection query without LIMIT \u2014 potential DoS/memory exhaustion"
+      "note": "ORM collection query without LIMIT — potential DoS/memory exhaustion"
     },
     {
       "file": "routes/coupon.ts",
@@ -579,7 +579,7 @@
       "family": "idor",
       "severity": "high",
       "cwe": "CWE-639",
-      "note": "IDOR \u2014 Model.findX/destroy with user-controlled id, no ownership check"
+      "note": "IDOR — Model.findX/destroy with user-controlled id, no ownership check"
     },
     {
       "file": "routes/dataErasure.ts",
@@ -606,7 +606,7 @@
       "family": "orm-no-pagination",
       "severity": "low",
       "cwe": "CWE-770",
-      "note": "ORM collection query without LIMIT \u2014 potential DoS/memory exhaustion"
+      "note": "ORM collection query without LIMIT — potential DoS/memory exhaustion"
     },
     {
       "file": "routes/delivery.ts",
@@ -615,7 +615,7 @@
       "family": "idor",
       "severity": "high",
       "cwe": "CWE-639",
-      "note": "IDOR \u2014 Model.findX/destroy with user-controlled id, no ownership check"
+      "note": "IDOR — Model.findX/destroy with user-controlled id, no ownership check"
     },
     {
       "file": "routes/deluxe.ts",
@@ -624,7 +624,7 @@
       "family": "race-condition-financial-double-spend",
       "severity": "high",
       "cwe": "CWE-362",
-      "note": "Financial state mutation lacking transaction/lock \u2014 race-condition surface"
+      "note": "Financial state mutation lacking transaction/lock — race-condition surface"
     },
     {
       "file": "routes/deluxe.ts",
@@ -633,7 +633,7 @@
       "family": "idor",
       "severity": "high",
       "cwe": "CWE-639",
-      "note": "IDOR \u2014 Model.findX/destroy with user-controlled id, no ownership check"
+      "note": "IDOR — Model.findX/destroy with user-controlled id, no ownership check"
     },
     {
       "file": "routes/fileServer.ts",
@@ -651,7 +651,7 @@
       "family": "zip-slip",
       "severity": "high",
       "cwe": "CWE-22",
-      "note": "Archive extraction without path validation \u2014 zip-slip"
+      "note": "Archive extraction without path validation — zip-slip"
     },
     {
       "file": "routes/fileUpload.ts",
@@ -705,7 +705,7 @@
       "family": "idor",
       "severity": "high",
       "cwe": "CWE-639",
-      "note": "IDOR \u2014 Model.findX/destroy with user-controlled id, no ownership check"
+      "note": "IDOR — Model.findX/destroy with user-controlled id, no ownership check"
     },
     {
       "file": "routes/likeProductReviews.ts",
@@ -723,7 +723,7 @@
       "family": "idor",
       "severity": "high",
       "cwe": "CWE-639",
-      "note": "IDOR \u2014 Model.findX/destroy with user-controlled id, no ownership check"
+      "note": "IDOR — Model.findX/destroy with user-controlled id, no ownership check"
     },
     {
       "file": "routes/logfileServer.ts",
@@ -750,7 +750,7 @@
       "family": "idor",
       "severity": "high",
       "cwe": "CWE-639",
-      "note": "IDOR \u2014 Model.findX/destroy with user-controlled id, no ownership check"
+      "note": "IDOR — Model.findX/destroy with user-controlled id, no ownership check"
     },
     {
       "file": "routes/memory.ts",
@@ -759,7 +759,7 @@
       "family": "orm-no-pagination",
       "severity": "low",
       "cwe": "CWE-770",
-      "note": "ORM collection query without LIMIT \u2014 potential DoS/memory exhaustion"
+      "note": "ORM collection query without LIMIT — potential DoS/memory exhaustion"
     },
     {
       "file": "routes/order.ts",
@@ -768,7 +768,7 @@
       "family": "idor",
       "severity": "high",
       "cwe": "CWE-639",
-      "note": "IDOR \u2014 Model.findX/destroy with user-controlled id, no ownership check"
+      "note": "IDOR — Model.findX/destroy with user-controlled id, no ownership check"
     },
     {
       "file": "routes/order.ts",
@@ -786,7 +786,7 @@
       "family": "idor",
       "severity": "high",
       "cwe": "CWE-639",
-      "note": "IDOR \u2014 Model.findX/destroy with user-controlled id, no ownership check"
+      "note": "IDOR — Model.findX/destroy with user-controlled id, no ownership check"
     },
     {
       "file": "routes/order.ts",
@@ -795,7 +795,7 @@
       "family": "race-condition-financial-double-spend",
       "severity": "high",
       "cwe": "CWE-362",
-      "note": "Financial state mutation lacking transaction/lock \u2014 race-condition surface"
+      "note": "Financial state mutation lacking transaction/lock — race-condition surface"
     },
     {
       "file": "routes/orderHistory.ts",
@@ -813,7 +813,7 @@
       "family": "orm-no-pagination",
       "severity": "low",
       "cwe": "CWE-770",
-      "note": "ORM collection query without LIMIT \u2014 potential DoS/memory exhaustion"
+      "note": "ORM collection query without LIMIT — potential DoS/memory exhaustion"
     },
     {
       "file": "routes/premiumReward.ts",
@@ -840,7 +840,7 @@
       "family": "idor",
       "severity": "high",
       "cwe": "CWE-639",
-      "note": "IDOR \u2014 Model.findX/destroy with user-controlled id, no ownership check"
+      "note": "IDOR — Model.findX/destroy with user-controlled id, no ownership check"
     },
     {
       "file": "routes/profileImageUrlUpload.ts",
@@ -867,7 +867,7 @@
       "family": "idor",
       "severity": "high",
       "cwe": "CWE-639",
-      "note": "IDOR \u2014 Model.findX/destroy with user-controlled id, no ownership check"
+      "note": "IDOR — Model.findX/destroy with user-controlled id, no ownership check"
     },
     {
       "file": "routes/profileImageUrlUpload.ts",
@@ -876,7 +876,7 @@
       "family": "idor",
       "severity": "high",
       "cwe": "CWE-639",
-      "note": "IDOR \u2014 Model.findX/destroy with user-controlled id, no ownership check"
+      "note": "IDOR — Model.findX/destroy with user-controlled id, no ownership check"
     },
     {
       "file": "routes/quarantineServer.ts",
@@ -894,7 +894,7 @@
       "family": "orm-no-pagination",
       "severity": "low",
       "cwe": "CWE-770",
-      "note": "ORM collection query without LIMIT \u2014 potential DoS/memory exhaustion"
+      "note": "ORM collection query without LIMIT — potential DoS/memory exhaustion"
     },
     {
       "file": "routes/recycles.ts",
@@ -903,7 +903,7 @@
       "family": "unsafe-deserialization-user-controlled-j",
       "severity": "high",
       "cwe": "CWE-502",
-      "note": "JSON.parse on a value derived from req.* \u2014 typed-structure exploitable"
+      "note": "JSON.parse on a value derived from req.* — typed-structure exploitable"
     },
     {
       "file": "routes/search.ts",
@@ -921,7 +921,7 @@
       "family": "idor",
       "severity": "high",
       "cwe": "CWE-639",
-      "note": "IDOR \u2014 Model.findX/destroy with user-controlled id, no ownership check"
+      "note": "IDOR — Model.findX/destroy with user-controlled id, no ownership check"
     },
     {
       "file": "routes/updateUserProfile.ts",
@@ -939,7 +939,7 @@
       "family": "prototype-pollution-dynamic-bracket-assi",
       "severity": "high",
       "cwe": "CWE-1321",
-      "note": "Dynamic bracket assignment with user-controlled key \u2014 __proto__ injection vector"
+      "note": "Dynamic bracket assignment with user-controlled key — __proto__ injection vector"
     },
     {
       "file": "routes/verify.ts",
@@ -966,7 +966,7 @@
       "family": "idor",
       "severity": "high",
       "cwe": "CWE-639",
-      "note": "IDOR \u2014 Model.findX/destroy with user-controlled id, no ownership check"
+      "note": "IDOR — Model.findX/destroy with user-controlled id, no ownership check"
     },
     {
       "file": "routes/verify.ts",
@@ -975,7 +975,7 @@
       "family": "unsafe-deserialization-user-controlled-j",
       "severity": "high",
       "cwe": "CWE-502",
-      "note": "JSON.parse on a value derived from req.* \u2014 typed-structure exploitable"
+      "note": "JSON.parse on a value derived from req.* — typed-structure exploitable"
     },
     {
       "file": "routes/verify.ts",
@@ -984,7 +984,7 @@
       "family": "orm-no-pagination",
       "severity": "low",
       "cwe": "CWE-770",
-      "note": "ORM collection query without LIMIT \u2014 potential DoS/memory exhaustion"
+      "note": "ORM collection query without LIMIT — potential DoS/memory exhaustion"
     },
     {
       "file": "routes/verify.ts",
@@ -993,7 +993,7 @@
       "family": "orm-no-pagination",
       "severity": "low",
       "cwe": "CWE-770",
-      "note": "ORM collection query without LIMIT \u2014 potential DoS/memory exhaustion"
+      "note": "ORM collection query without LIMIT — potential DoS/memory exhaustion"
     },
     {
       "file": "routes/verify.ts",
@@ -1002,7 +1002,7 @@
       "family": "orm-no-pagination",
       "severity": "low",
       "cwe": "CWE-770",
-      "note": "ORM collection query without LIMIT \u2014 potential DoS/memory exhaustion"
+      "note": "ORM collection query without LIMIT — potential DoS/memory exhaustion"
     },
     {
       "file": "routes/videoHandler.ts",
@@ -1056,7 +1056,7 @@
       "family": "toctou-existssync-followed-by-file-op",
       "severity": "medium",
       "cwe": "CWE-367",
-      "note": "fs.existsSync followed by file op \u2014 TOCTOU window"
+      "note": "fs.existsSync followed by file op — TOCTOU window"
     },
     {
       "file": "routes/vulnCodeFixes.ts",
@@ -1083,7 +1083,7 @@
       "family": "toctou-existssync-followed-by-file-op",
       "severity": "medium",
       "cwe": "CWE-367",
-      "note": "fs.existsSync followed by file op \u2014 TOCTOU window"
+      "note": "fs.existsSync followed by file op — TOCTOU window"
     },
     {
       "file": "routes/vulnCodeSnippet.ts",
@@ -1146,7 +1146,7 @@
       "family": "permissive-cors-allow-origin",
       "severity": "high",
       "cwe": "CWE-942",
-      "note": "CORS Allow-Origin: * \u2014 permissive cross-origin policy"
+      "note": "CORS Allow-Origin: * — permissive cross-origin policy"
     },
     {
       "file": "server.ts",
@@ -1155,7 +1155,7 @@
       "family": "permissive-cors-allow-origin",
       "severity": "high",
       "cwe": "CWE-942",
-      "note": "CORS Allow-Origin: * \u2014 permissive cross-origin policy"
+      "note": "CORS Allow-Origin: * — permissive cross-origin policy"
     },
     {
       "file": "server.ts",
@@ -1164,7 +1164,7 @@
       "family": "unsafe-deserialization-user-controlled-j",
       "severity": "high",
       "cwe": "CWE-502",
-      "note": "JSON.parse on a value derived from req.* \u2014 typed-structure exploitable"
+      "note": "JSON.parse on a value derived from req.* — typed-structure exploitable"
     },
     {
       "file": "server.ts",
@@ -1247,5 +1247,7 @@
       "cwe": null,
       "note": "TODO/FIXME marker near security-sensitive workflow step"
     }
-  ]
+  ],
+  "provenance": "bootstrap-from-engine-output-v0.34.5",
+  "requiresReAudit": true
 }

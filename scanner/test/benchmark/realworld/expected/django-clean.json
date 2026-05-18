@@ -1,5 +1,5 @@
 {
-  "_doc": "django-clean \u2014 line-level expected entries derived from engine output in 0.34.5 and verified by source-sampling. Wildcards removed. Each entry has family-appropriate severity/CWE/note metadata.",
+  "_doc": "django-clean — line-level expected entries derived from engine output in 0.34.5 and verified by source-sampling. Wildcards removed. Each entry has family-appropriate severity/CWE/note metadata.",
   "wildcardFamilies": [],
   "expected": [
     {
@@ -261,7 +261,7 @@
       "family": "excessive-agency-unrestricted-execute-sq",
       "severity": "medium",
       "cwe": null,
-      "note": "Engine-emitted: Excessive Agency \u2014 unrestricted execute_sql() reachable from LLM (LLM06)"
+      "note": "Engine-emitted: Excessive Agency — unrestricted execute_sql() reachable from LLM (LLM06)"
     },
     {
       "file": "db/models/sql/compiler.py",
@@ -270,7 +270,7 @@
       "family": "excessive-agency-unrestricted-execute-sq",
       "severity": "medium",
       "cwe": null,
-      "note": "Engine-emitted: Excessive Agency \u2014 unrestricted execute_sql() reachable from LLM (LLM06)"
+      "note": "Engine-emitted: Excessive Agency — unrestricted execute_sql() reachable from LLM (LLM06)"
     },
     {
       "file": "http/request.py",
@@ -317,5 +317,7 @@
       "cwe": "CWE-798",
       "note": "Hardcoded credential pattern"
     }
-  ]
+  ],
+  "provenance": "bootstrap-from-engine-output-v0.34.5",
+  "requiresReAudit": true
 }

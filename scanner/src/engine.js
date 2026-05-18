@@ -6938,7 +6938,11 @@ async function runFullScan({fileContents={}, depFileContents={}, scanRoot=null},
   // pipeline accounts for that. When enabled, the validator emits accept/reject
   // /escalate per finding; rejects are dropped into the suppression log.
   try {
-    await llmValidateMany(finalFindings, { fileContents: fc, scanRoot, concurrency: 4 });
+    // Concurrency defaults to 1 (the validator's deterministic-default).
+    // Operators raise via AGENTIC_SECURITY_LLM_CONCURRENCY at the cost of
+    // strict cache-cold reproducibility (premortem 2R2.3).
+    const llmConcurrency = Math.max(1, parseInt(process.env.AGENTIC_SECURITY_LLM_CONCURRENCY || '1', 10));
+    await llmValidateMany(finalFindings, { fileContents: fc, scanRoot, concurrency: llmConcurrency });
     const { kept, dropped } = applyValidatorVerdicts(finalFindings);
     finalFindings = kept;
     for (const d of dropped) _suppressionLog.push({

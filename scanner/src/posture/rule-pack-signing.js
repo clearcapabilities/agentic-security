@@ -1,4 +1,5 @@
-// Signed rule-pack verification (Sentinel-parity PRD FR-DSL-2).
+// Signed rule-pack verification (Sentinel-parity PRD FR-DSL-2; hardened in
+// premortems R3.1, 2R3.1, 2R3.2).
 //
 // Threat model: a malicious PR drops a `.agentic-security/rules/foo.yml`
 // into the repo. The next scanner run loads it and:
@@ -6,25 +7,25 @@
 //   - The rule fires custom-rule findings with attacker-controlled fix
 //     replacement strings → potential supply-chain attack via /fix.
 //   - The rule's llm_validate prompt exfiltrates context to an attacker
-//     endpoint (if the operator wires the LLM endpoint env vars to an
-//     attacker URL).
+//     endpoint.
 //
-// Defense: every rule file must be Ed25519-signed by a trusted key, and
-// the signature must be present at `<rulefile>.sig` (binary 64 bytes).
+// Defense (multi-layer):
 //
-// Trusted keys live at `.agentic-security/trusted-keys.json`:
+//   1. Every rule file must be Ed25519-signed; the signature lives at
+//      `<rulefile>.sig` (raw 64 bytes).
 //
-//   {
-//     "keys": [
-//       { "id": "official-2026", "alg": "ed25519", "publicKey": "<base64>" },
-//       ...
-//     ]
-//   }
+//   2. The TRUST ROOT is bundled with the scanner code (BUNDLED_OFFICIAL_KEYS
+//      below), NOT read from the project tree by default. An attacker who
+//      can drop a `.agentic-security/trusted-keys.json` cannot bootstrap
+//      their own key into trust. Project-local keys are honored ONLY when
+//      AGENTIC_SECURITY_ALLOW_PROJECT_KEYS=1 (audit-logged).
 //
-// Unsigned packs are REFUSED unless the operator sets
-// AGENTIC_SECURITY_ALLOW_UNSIGNED_PACKS=1 (an audit signal — every such
-// load logs a warning and stamps `_unsigned: true` on every emitted finding
-// so downstream filtering can identify them).
+//   3. Keys carry an optional `revokedAt` timestamp. A signature is rejected
+//      when the rule-file's mtime postdates the revocation, OR the signature's
+//      SHA-256 hash appears in the project's `crl[]` array.
+//
+//   4. Unsigned packs refused unless AGENTIC_SECURITY_ALLOW_UNSIGNED_PACKS=1
+//      (audit-logged + findings tagged `_unsigned: true`).
 
 import * as fs from 'node:fs';
 import * as path from 'node:path';
@@ -32,29 +33,64 @@ import * as crypto from 'node:crypto';
 
 const TRUSTED_KEYS_FILE = '.agentic-security/trusted-keys.json';
 
+// Built-in trust root. These are the keys the maintainers of agentic-security
+// use to sign official rule packs. Production deployment requires the
+// maintainers to generate a real keypair, distribute the private key offline,
+// and ship the corresponding public key here on a release. Until then the
+// effective behavior is "no official keys, unsigned-only via the opt-in env."
+export const BUNDLED_OFFICIAL_KEYS = [
+  // {
+  //   id: 'agentic-security-official-2026-q1',
+  //   alg: 'ed25519',
+  //   publicKey: '<base64-32-bytes>',
+  //   issuedAt: '2026-01-01T00:00:00Z',
+  //   revokedAt: null,
+  // },
+];
+
 function _trustedKeysPath(scanRoot) {
   return path.join(scanRoot || process.cwd(), TRUSTED_KEYS_FILE);
 }
 
-// Load the trusted-keys file. Returns [] if missing.
+// Load the EFFECTIVE trusted-key set. Composition:
+//   1. Always: BUNDLED_OFFICIAL_KEYS (built into the scanner code).
+//   2. When AGENTIC_SECURITY_ALLOW_PROJECT_KEYS=1: union with
+//      .agentic-security/trusted-keys.json from the project tree (logged).
+//
+// CRL: trusted-keys.json may also carry a top-level `crl` array of revoked
+// signature hashes (sha256 of the signature bytes). These apply project-
+// locally regardless of opt-in.
 export function loadTrustedKeys(scanRoot) {
+  const keys = [...BUNDLED_OFFICIAL_KEYS];
+  let projectCrl = [];
   const fp = _trustedKeysPath(scanRoot);
-  if (!fs.existsSync(fp)) return [];
-  try {
-    const data = JSON.parse(fs.readFileSync(fp, 'utf8'));
-    if (!Array.isArray(data.keys)) return [];
-    return data.keys.filter(k => k && k.publicKey && k.alg === 'ed25519');
-  } catch { return []; }
+  if (fs.existsSync(fp)) {
+    let data;
+    try { data = JSON.parse(fs.readFileSync(fp, 'utf8')); } catch { data = null; }
+    if (data && Array.isArray(data.crl)) projectCrl = data.crl.filter(x => typeof x === 'string');
+    if (data && Array.isArray(data.keys)) {
+      if (process.env.AGENTIC_SECURITY_ALLOW_PROJECT_KEYS === '1') {
+        console.error('agentic-security: WARNING — project-local trusted-keys.json honored (AGENTIC_SECURITY_ALLOW_PROJECT_KEYS=1). An attacker who can write to .agentic-security/ can bypass signing — use only on trusted workstations.');
+        for (const k of data.keys) {
+          if (k && k.publicKey && k.alg === 'ed25519') keys.push(k);
+        }
+      } else if (data.keys.length > 0) {
+        console.error('agentic-security: ignoring project-local trusted-keys.json (set AGENTIC_SECURITY_ALLOW_PROJECT_KEYS=1 to honor; audit-logged).');
+      }
+    }
+  }
+  Object.defineProperty(keys, '_crl', { value: projectCrl, enumerable: false });
+  return keys;
 }
 
 // Verify a rule-pack file. Returns one of:
-//   { ok: true, keyId: '<id>' }                            // signature valid
-//   { ok: false, reason: 'unsigned', allowUnsigned: bool } // no sig file
-//   { ok: false, reason: 'bad-signature' }                 // sig present but invalid
-//   { ok: false, reason: 'no-trusted-keys' }                // no keys configured
-//
-// When reason='unsigned' AND AGENTIC_SECURITY_ALLOW_UNSIGNED_PACKS=1, the
-// caller may load the rule pack but should mark findings _unsigned=true.
+//   { ok: true, keyId: '<id>' }                              // signature valid
+//   { ok: false, reason: 'unsigned', allowUnsigned: bool }   // no sig file
+//   { ok: false, reason: 'bad-signature' }                   // sig present but invalid
+//   { ok: false, reason: 'no-trusted-keys' }                  // no keys configured
+//   { ok: false, reason: 'revoked-key', keyId }               // key revoked + rule mtime > revokedAt
+//   { ok: false, reason: 'revoked-signature' }                // signature SHA in project CRL
+//   { ok: false, reason: 'read-error' }
 export function verifyRulePack(rulePackPath, trustedKeys) {
   const sigPath = rulePackPath + '.sig';
   if (!fs.existsSync(sigPath)) {
@@ -63,45 +99,52 @@ export function verifyRulePack(rulePackPath, trustedKeys) {
   if (!Array.isArray(trustedKeys) || trustedKeys.length === 0) {
     return { ok: false, reason: 'no-trusted-keys' };
   }
-  let body, sig;
+  let body, sig, ruleMtime;
   try {
     body = fs.readFileSync(rulePackPath);
-    sig = fs.readFileSync(sigPath);
+    sig  = fs.readFileSync(sigPath);
+    ruleMtime = fs.statSync(rulePackPath).mtime;
   } catch { return { ok: false, reason: 'read-error' }; }
-  // Try each trusted key.
+  // CRL check first — independent of which key signed.
+  const sigHash = crypto.createHash('sha256').update(sig).digest('hex');
+  const crl = trustedKeys._crl || [];
+  if (crl.includes(sigHash)) return { ok: false, reason: 'revoked-signature' };
   for (const k of trustedKeys) {
     try {
-      // The publicKey is base64-encoded raw 32-byte Ed25519 public key.
       const keyBytes = Buffer.from(k.publicKey, 'base64');
       if (keyBytes.length !== 32) continue;
-      // Node's crypto.verify requires a KeyObject in DER/PEM. Build via
-      // crypto.createPublicKey from the raw 32-byte spki-wrapped DER.
-      // Trick: use jwk import — cleaner than ASN.1 hand-rolling.
       const keyObj = crypto.createPublicKey({
         key: { kty: 'OKP', crv: 'Ed25519', x: keyBytes.toString('base64url') },
         format: 'jwk',
       });
       const valid = crypto.verify(null, body, keyObj, sig);
-      if (valid) return { ok: true, keyId: k.id || '(unnamed)' };
+      if (!valid) continue;
+      // Signature is valid by this key. Check revocation.
+      if (k.revokedAt) {
+        const revokedAt = new Date(k.revokedAt);
+        if (Number.isFinite(revokedAt.getTime()) && ruleMtime > revokedAt) {
+          return { ok: false, reason: 'revoked-key', keyId: k.id || '(unnamed)' };
+        }
+      }
+      return { ok: true, keyId: k.id || '(unnamed)' };
     } catch { /* try next key */ }
   }
   return { ok: false, reason: 'bad-signature' };
 }
 
-// CLI helper — generate a key pair. NOT auto-installed; operators run
-// `node -e "require(...).keygen()"` and add the result to trusted-keys.json
-// themselves.
+// CLI helper — generate an Ed25519 key pair. Returns { publicKey, privateKey }
+// as base64 strings.
 export function keygen() {
   const { publicKey, privateKey } = crypto.generateKeyPairSync('ed25519');
-  const pubRaw = publicKey.export({ format: 'jwk' }).x;     // base64url
-  const privRaw = privateKey.export({ format: 'jwk' }).d;   // base64url
+  const pubRaw  = publicKey.export({ format: 'jwk' }).x;     // base64url
+  const privRaw = privateKey.export({ format: 'jwk' }).d;    // base64url
   return {
     publicKey:  Buffer.from(pubRaw, 'base64url').toString('base64'),
     privateKey: Buffer.from(privRaw, 'base64url').toString('base64'),
   };
 }
 
-// Sign a rule-pack file. Writes <path>.sig as binary 64 bytes.
+// Sign a rule-pack file. Writes <path>.sig as raw 64 bytes.
 export function signRulePack(rulePackPath, privateKeyB64) {
   const body = fs.readFileSync(rulePackPath);
   const privBytes = Buffer.from(privateKeyB64, 'base64');

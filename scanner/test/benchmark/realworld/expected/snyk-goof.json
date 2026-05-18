@@ -1,5 +1,5 @@
 {
-  "_doc": "snyk-goof \u2014 line-level expected entries derived from engine output in 0.34.5 and verified by source-sampling. Wildcards removed. Each entry has family-appropriate severity/CWE/note metadata.",
+  "_doc": "snyk-goof — line-level expected entries derived from engine output in 0.34.5 and verified by source-sampling. Wildcards removed. Each entry has family-appropriate severity/CWE/note metadata.",
   "wildcardFamilies": [],
   "expected": [
     {
@@ -18,7 +18,7 @@
       "family": "open-redirect",
       "severity": "high",
       "cwe": "CWE-601",
-      "note": "res.redirect(redirectPage) \u2014 onLoginSuccessHook"
+      "note": "res.redirect(redirectPage) — onLoginSuccessHook"
     },
     {
       "file": "routes/index.js",
@@ -27,7 +27,7 @@
       "family": "open-redirect",
       "severity": "high",
       "cwe": "CWE-601",
-      "note": "res.redirect(redirectPage) \u2014 adminLoginSuccess"
+      "note": "res.redirect(redirectPage) — adminLoginSuccess"
     },
     {
       "file": "routes/index.js",
@@ -36,7 +36,7 @@
       "family": "mass-assignment",
       "severity": "high",
       "cwe": "CWE-915",
-      "note": "todo.content = req.body.content; .save() \u2014 mass assignment update flow"
+      "note": "todo.content = req.body.content; .save() — mass assignment update flow"
     },
     {
       "file": "routes/index.js",
@@ -45,7 +45,7 @@
       "family": "mass-assignment",
       "severity": "high",
       "cwe": "CWE-915",
-      "note": "_.merge(message, req.body.message, ...) \u2014 also mass-assignment family in the engine output"
+      "note": "_.merge(message, req.body.message, ...) — also mass-assignment family in the engine output"
     },
     {
       "file": "routes/users.js",
@@ -63,7 +63,7 @@
       "family": "privilege-field-set-from-request-body",
       "severity": "high",
       "cwe": "CWE-915",
-      "note": "user.role = req.body.role \u2014 direct privilege-field assignment from request body"
+      "note": "user.role = req.body.role — direct privilege-field assignment from request body"
     },
     {
       "file": "routes/index.js",
@@ -72,7 +72,7 @@
       "family": "prototype-pollution",
       "severity": "critical",
       "cwe": "CWE-1321",
-      "note": "_.merge(message, req.body.message, ...) \u2014 lodash deep merge of user input is the canonical proto-pollution sink"
+      "note": "_.merge(message, req.body.message, ...) — lodash deep merge of user input is the canonical proto-pollution sink"
     },
     {
       "file": "routes/index.js",
@@ -81,7 +81,7 @@
       "family": "idor",
       "severity": "high",
       "cwe": "CWE-639",
-      "note": "Todo.findById(req.params.id) without ownership check \u2014 destroy"
+      "note": "Todo.findById(req.params.id) without ownership check — destroy"
     },
     {
       "file": "routes/index.js",
@@ -90,7 +90,7 @@
       "family": "idor",
       "severity": "high",
       "cwe": "CWE-639",
-      "note": "Todo.findById(req.params.id) without ownership check \u2014 update"
+      "note": "Todo.findById(req.params.id) without ownership check — update"
     },
     {
       "file": "app.js",
@@ -99,7 +99,7 @@
       "family": "hardcoded-secret",
       "severity": "high",
       "cwe": "CWE-798",
-      "note": "session({secret: 'keyboard cat'}) \u2014 hardcoded session signing key"
+      "note": "session({secret: 'keyboard cat'}) — hardcoded session signing key"
     },
     {
       "file": "app.js",
@@ -117,7 +117,7 @@
       "family": "session-cookie-missing-secure-flag",
       "severity": "medium",
       "cwe": "CWE-614",
-      "note": "session({cookie:{path:'/'}}) \u2014 missing secure flag on session cookie"
+      "note": "session({cookie:{path:'/'}}) — missing secure flag on session cookie"
     },
     {
       "file": "app.js",
@@ -126,7 +126,7 @@
       "family": "header-hardening",
       "severity": "medium",
       "cwe": "CWE-1004",
-      "note": "session({cookie:{path:'/'}}) \u2014 missing httpOnly/sameSite flags"
+      "note": "session({cookie:{path:'/'}}) — missing httpOnly/sameSite flags"
     },
     {
       "file": "app.js",
@@ -135,7 +135,7 @@
       "family": "header-hardening",
       "severity": "low",
       "cwe": "CWE-693",
-      "note": "No app.disable('x-powered-by') \u2014 server fingerprint leak"
+      "note": "No app.disable('x-powered-by') — server fingerprint leak"
     },
     {
       "file": "app.js",
@@ -144,7 +144,7 @@
       "family": "debug-admin-route-exposed",
       "severity": "medium",
       "cwe": "CWE-489",
-      "note": "app.get('/admin', ...) \u2014 admin route mounted, accessible via /admin URL"
+      "note": "app.get('/admin', ...) — admin route mounted, accessible via /admin URL"
     },
     {
       "file": "app.js",
@@ -171,7 +171,7 @@
       "family": "hardcoded-secret",
       "severity": "high",
       "cwe": "CWE-798",
-      "note": "console.log('token: ' + token) \u2014 secret reflected to log"
+      "note": "console.log('token: ' + token) — secret reflected to log"
     },
     {
       "file": "mongoose-db.js",
@@ -180,7 +180,7 @@
       "family": "hardcoded-secret",
       "severity": "high",
       "cwe": "CWE-798",
-      "note": "new User({password: 'SuperSecretPassword'}) \u2014 admin seed password literal"
+      "note": "new User({password: 'SuperSecretPassword'}) — admin seed password literal"
     },
     {
       "file": "utils.js",
@@ -189,7 +189,7 @@
       "family": "weak-rng",
       "severity": "medium",
       "cwe": "CWE-330",
-      "note": "Math.floor(Math.random() * ...) \u2014 utility used for IDs/tokens"
+      "note": "Math.floor(Math.random() * ...) — utility used for IDs/tokens"
     },
     {
       "file": "routes/index.js",
@@ -198,7 +198,7 @@
       "family": "weak-rng",
       "severity": "medium",
       "cwe": "CWE-330",
-      "note": "Math.random().toString(32) for admin password \u2014 definitively crypto-weak"
+      "note": "Math.random().toString(32) for admin password — definitively crypto-weak"
     },
     {
       "file": "Dockerfile",
@@ -207,7 +207,7 @@
       "family": "container-base-image",
       "severity": "medium",
       "cwe": "CWE-1395",
-      "note": "FROM node:18.13.0 \u2014 node 18 reached EOL April 2025"
+      "note": "FROM node:18.13.0 — node 18 reached EOL April 2025"
     },
     {
       "file": "docker-compose.yml",
@@ -216,7 +216,7 @@
       "family": "docker-service-publishes-sensitive-port-",
       "severity": "medium",
       "cwe": "CWE-200",
-      "note": "Publishes MongoDB port 27017 to host \u2014 direct DB access from outside"
+      "note": "Publishes MongoDB port 27017 to host — direct DB access from outside"
     },
     {
       "file": "docker-compose.yml",
@@ -225,7 +225,7 @@
       "family": "docker-service-publishes-sensitive-port-",
       "severity": "medium",
       "cwe": "CWE-200",
-      "note": "Publishes MySQL port 3306 to host \u2014 direct DB access from outside"
+      "note": "Publishes MySQL port 3306 to host — direct DB access from outside"
     },
     {
       "file": "routes/index.js",
@@ -234,7 +234,7 @@
       "family": "log-injection",
       "severity": "medium",
       "cwe": "CWE-117",
-      "note": "console.log(JSON.stringify(req.query)) \u2014 unsanitized user input logged"
+      "note": "console.log(JSON.stringify(req.query)) — unsanitized user input logged"
     },
     {
       "file": "routes/index.js",
@@ -243,7 +243,7 @@
       "family": "xss",
       "severity": "high",
       "cwe": "CWE-79",
-      "note": "res.send(messages) \u2014 stored XSS surface; messages array is populated from req.body.message via _.merge at line 360"
+      "note": "res.send(messages) — stored XSS surface; messages array is populated from req.body.message via _.merge at line 360"
     },
     {
       "file": "routes/index.js",
@@ -261,7 +261,7 @@
       "family": "broken-marker",
       "severity": "info",
       "cwe": null,
-      "note": "@TODO comment near admin-service file \u2014 broken-marker rule flags incomplete admin code"
+      "note": "@TODO comment near admin-service file — broken-marker rule flags incomplete admin code"
     },
     {
       "file": "package.json",
@@ -291,5 +291,7 @@
       "cwe": "CWE-79",
       "note": "XSS sink"
     }
-  ]
+  ],
+  "provenance": "bootstrap-from-engine-output-v0.34.5",
+  "requiresReAudit": true
 }

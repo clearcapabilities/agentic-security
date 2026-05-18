@@ -1,5 +1,5 @@
 {
-  "_doc": "PyGoat \u2014 line-level expected entries derived from engine output in 0.34.5 and verified by source inspection on sampled entries. PyGoat is intentionally vulnerable; every engine finding maps to a real vuln. wildcardFamilies removed.",
+  "_doc": "PyGoat — line-level expected entries derived from engine output in 0.34.5 and verified by source inspection on sampled entries. PyGoat is intentionally vulnerable; every engine finding maps to a real vuln. wildcardFamilies removed.",
   "wildcardFamilies": [],
   "expected": [
     {
@@ -515,5 +515,7 @@
       "cwe": "CWE-79",
       "note": "XSS sink"
     }
-  ]
+  ],
+  "provenance": "bootstrap-from-engine-output-v0.34.5",
+  "requiresReAudit": true
 }

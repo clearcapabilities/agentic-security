@@ -80,23 +80,62 @@ async function publishDiagnostics(uri, findings) {
   _diagnosticsByUri.set(uri, findings);
 }
 
+// Manifest / schema files that downstream passes (SCA, cross-language) read.
+// We walk the project tree once per LSP session and cache these so the
+// per-save scan has them.
+const DEP_BASE_NAMES = new Set([
+  'package.json', 'package-lock.json', 'yarn.lock', 'pnpm-lock.yaml',
+  'requirements.txt', 'pyproject.toml', 'poetry.lock', 'Pipfile.lock',
+  'composer.json', 'composer.lock', 'Gemfile', 'Gemfile.lock',
+  'go.mod', 'Cargo.toml', 'Cargo.lock',
+  'pom.xml', 'build.gradle', 'build.gradle.kts',
+]);
+const DEP_EXT_RE = /\.(?:proto|graphql|gql|tf)$/i;
+const DEP_NAME_RE = /(?:openapi|swagger)\.(?:ya?ml|json)$/i;
+
+let _depCache = { rootDir: null, depFileContents: {} };
+
+function _loadDepFileContents(rootDir) {
+  if (_depCache.rootDir === rootDir) return _depCache.depFileContents;
+  const out = {};
+  const skipDirs = new Set(['node_modules', '.git', 'dist', 'build', '.next', 'target', 'vendor', '.bench-cache']);
+  function walk(dir) {
+    let entries;
+    try { entries = fs.readdirSync(dir, { withFileTypes: true }); } catch { return; }
+    for (const e of entries) {
+      if (skipDirs.has(e.name)) continue;
+      const full = path.join(dir, e.name);
+      if (e.isDirectory()) { walk(full); continue; }
+      if (!e.isFile()) continue;
+      const base = e.name;
+      if (DEP_BASE_NAMES.has(base) || DEP_EXT_RE.test(base) || DEP_NAME_RE.test(base)) {
+        let stat;
+        try { stat = fs.statSync(full); } catch { continue; }
+        if (stat.size > 500_000) continue;
+        try { out[path.relative(rootDir, full)] = fs.readFileSync(full, 'utf8'); }
+        catch { /* skip unreadable */ }
+      }
+    }
+  }
+  walk(rootDir);
+  _depCache = { rootDir, depFileContents: out };
+  return out;
+}
+
 async function scanFile(uri) {
   const filePath = uriToPath(uri);
   if (!filePath || !fs.existsSync(filePath)) return;
-  // Incremental scan: hand runScan a single-file `fileContents` map so the
-  // engine processes only this file. Cross-file taint/call-graph passes that
-  // need the rest of the project are silently no-ops here — the trade-off is
-  // worth it: a 100k-LoC project saves a file every few seconds, and the
-  // engine reading every file on every save (the previous behavior) made the
-  // plugin unusable.
-  //
-  // Operators who want cross-file analysis can run `/scan --all` from a
-  // separate terminal; the LSP path is for editor-visible immediate feedback.
+  // Incremental scan (premortem 2R4.5 / 2R-10): hand runScan a single-file
+  // fileContents map for the saved code, AND a cached set of dep-manifest /
+  // schema files so SCA + cross-language passes have their inputs. Without
+  // depFileContents, the LSP path would silently drop CVE / OpenAPI / proto
+  // findings on the saved file.
   try {
     const rel = path.relative(_rootDir, filePath);
     const content = fs.readFileSync(filePath, 'utf8');
     const fileContents = { [rel]: content };
-    const { scan } = await runScan(_rootDir, { fileContents });
+    const depFileContents = _loadDepFileContents(_rootDir);
+    const { scan } = await runScan(_rootDir, { fileContents, depFileContents });
     const findings = (scan.findings || []).filter(f => f.file === rel);
     await publishDiagnostics(uri, findings);
   } catch (e) {

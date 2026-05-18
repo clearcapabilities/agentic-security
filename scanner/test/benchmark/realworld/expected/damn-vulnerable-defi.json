@@ -1,5 +1,5 @@
 {
-  "_doc": "damn-vulnerable-defi \u2014 line-level expected entries derived from engine output in 0.34.5 and verified by source-sampling. Wildcards removed. Each entry has family-appropriate severity/CWE/note metadata.",
+  "_doc": "damn-vulnerable-defi — line-level expected entries derived from engine output in 0.34.5 and verified by source-sampling. Wildcards removed. Each entry has family-appropriate severity/CWE/note metadata.",
   "wildcardFamilies": [],
   "expected": [
     {
@@ -18,7 +18,7 @@
       "family": "delegatecall-untrusted",
       "severity": "medium",
       "cwe": null,
-      "note": "Engine-emitted: delegatecall \u2014 verify the target address is fixed and trusted"
+      "note": "Engine-emitted: delegatecall — verify the target address is fixed and trusted"
     },
     {
       "file": "withdrawal/L2MessageStore.sol",
@@ -29,5 +29,7 @@
       "cwe": "CWE-330",
       "note": "Weak PRNG (Math.random / java.util.Random / etc.)"
     }
-  ]
+  ],
+  "provenance": "bootstrap-from-engine-output-v0.34.5",
+  "requiresReAudit": true
 }

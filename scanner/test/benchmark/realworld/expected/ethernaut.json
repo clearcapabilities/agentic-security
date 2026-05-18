@@ -1,5 +1,5 @@
 {
-  "_doc": "ethernaut \u2014 line-level expected entries derived from engine output in 0.34.5 and verified by source-sampling. Wildcards removed. Each entry has family-appropriate severity/CWE/note metadata.",
+  "_doc": "ethernaut — line-level expected entries derived from engine output in 0.34.5 and verified by source-sampling. Wildcards removed. Each entry has family-appropriate severity/CWE/note metadata.",
   "wildcardFamilies": [],
   "expected": [
     {
@@ -9,7 +9,7 @@
       "family": "integer-overflow",
       "severity": "medium",
       "cwe": null,
-      "note": "Engine-emitted: Integer overflow risk \u2014 pragma <0.8 without SafeMath"
+      "note": "Engine-emitted: Integer overflow risk — pragma <0.8 without SafeMath"
     },
     {
       "file": "AlienCodexFactory.sol",
@@ -18,7 +18,7 @@
       "family": "integer-overflow",
       "severity": "medium",
       "cwe": null,
-      "note": "Engine-emitted: Integer overflow risk \u2014 pragma <0.8 without SafeMath"
+      "note": "Engine-emitted: Integer overflow risk — pragma <0.8 without SafeMath"
     },
     {
       "file": "Denial.sol",
@@ -27,7 +27,7 @@
       "family": "reentrancy",
       "severity": "medium",
       "cwe": null,
-      "note": "Engine-emitted: Reentrancy \u2014 external call before state update (Check-Effects-Interactions viola"
+      "note": "Engine-emitted: Reentrancy — external call before state update (Check-Effects-Interactions viola"
     },
     {
       "file": "Denial.sol",
@@ -36,7 +36,7 @@
       "family": "unchecked-low-level-call",
       "severity": "medium",
       "cwe": null,
-      "note": "Engine-emitted: Unchecked low-level call \u2014 return value not inspected"
+      "note": "Engine-emitted: Unchecked low-level call — return value not inspected"
     },
     {
       "file": "FalloutFactory.sol",
@@ -45,7 +45,7 @@
       "family": "integer-overflow",
       "severity": "medium",
       "cwe": null,
-      "note": "Engine-emitted: Integer overflow risk \u2014 pragma <0.8 without SafeMath"
+      "note": "Engine-emitted: Integer overflow risk — pragma <0.8 without SafeMath"
     },
     {
       "file": "GatekeeperThree.sol",
@@ -63,7 +63,7 @@
       "family": "integer-overflow",
       "severity": "medium",
       "cwe": null,
-      "note": "Engine-emitted: Integer overflow risk \u2014 pragma <0.8 without SafeMath"
+      "note": "Engine-emitted: Integer overflow risk — pragma <0.8 without SafeMath"
     },
     {
       "file": "HigherOrderFactory.sol",
@@ -72,7 +72,7 @@
       "family": "integer-overflow",
       "severity": "medium",
       "cwe": null,
-      "note": "Engine-emitted: Integer overflow risk \u2014 pragma <0.8 without SafeMath"
+      "note": "Engine-emitted: Integer overflow risk — pragma <0.8 without SafeMath"
     },
     {
       "file": "Motorbike.sol",
@@ -81,7 +81,7 @@
       "family": "delegatecall-untrusted",
       "severity": "medium",
       "cwe": null,
-      "note": "Engine-emitted: delegatecall \u2014 verify the target address is fixed and trusted"
+      "note": "Engine-emitted: delegatecall — verify the target address is fixed and trusted"
     },
     {
       "file": "Motorbike.sol",
@@ -90,7 +90,7 @@
       "family": "delegatecall-untrusted",
       "severity": "medium",
       "cwe": null,
-      "note": "Engine-emitted: delegatecall \u2014 verify the target address is fixed and trusted"
+      "note": "Engine-emitted: delegatecall — verify the target address is fixed and trusted"
     },
     {
       "file": "Preservation.sol",
@@ -99,7 +99,7 @@
       "family": "delegatecall-untrusted",
       "severity": "medium",
       "cwe": null,
-      "note": "Engine-emitted: delegatecall \u2014 verify the target address is fixed and trusted"
+      "note": "Engine-emitted: delegatecall — verify the target address is fixed and trusted"
     },
     {
       "file": "Preservation.sol",
@@ -108,7 +108,7 @@
       "family": "delegatecall-untrusted",
       "severity": "medium",
       "cwe": null,
-      "note": "Engine-emitted: delegatecall \u2014 verify the target address is fixed and trusted"
+      "note": "Engine-emitted: delegatecall — verify the target address is fixed and trusted"
     },
     {
       "file": "Recovery.sol",
@@ -135,7 +135,7 @@
       "family": "reentrancy",
       "severity": "medium",
       "cwe": null,
-      "note": "Engine-emitted: Reentrancy \u2014 external call before state update (Check-Effects-Interactions viola"
+      "note": "Engine-emitted: Reentrancy — external call before state update (Check-Effects-Interactions viola"
     },
     {
       "file": "ReentranceFactory.sol",
@@ -144,7 +144,7 @@
       "family": "integer-overflow",
       "severity": "medium",
       "cwe": null,
-      "note": "Engine-emitted: Integer overflow risk \u2014 pragma <0.8 without SafeMath"
+      "note": "Engine-emitted: Integer overflow risk — pragma <0.8 without SafeMath"
     },
     {
       "file": "Telephone.sol",
@@ -162,7 +162,7 @@
       "family": "integer-overflow",
       "severity": "medium",
       "cwe": null,
-      "note": "Engine-emitted: Integer overflow risk \u2014 pragma <0.8 without SafeMath"
+      "note": "Engine-emitted: Integer overflow risk — pragma <0.8 without SafeMath"
     },
     {
       "file": "TokenFactory.sol",
@@ -171,7 +171,7 @@
       "family": "integer-overflow",
       "severity": "medium",
       "cwe": null,
-      "note": "Engine-emitted: Integer overflow risk \u2014 pragma <0.8 without SafeMath"
+      "note": "Engine-emitted: Integer overflow risk — pragma <0.8 without SafeMath"
     },
     {
       "file": "UniqueNFT.sol",
@@ -198,7 +198,7 @@
       "family": "integer-overflow",
       "severity": "medium",
       "cwe": null,
-      "note": "Engine-emitted: Integer overflow risk \u2014 pragma <0.8 without SafeMath"
+      "note": "Engine-emitted: Integer overflow risk — pragma <0.8 without SafeMath"
     },
     {
       "file": "base/Level-06.sol",
@@ -207,7 +207,9 @@
       "family": "integer-overflow",
       "severity": "medium",
       "cwe": null,
-      "note": "Engine-emitted: Integer overflow risk \u2014 pragma <0.8 without SafeMath"
+      "note": "Engine-emitted: Integer overflow risk — pragma <0.8 without SafeMath"
     }
-  ]
+  ],
+  "provenance": "bootstrap-from-engine-output-v0.34.5",
+  "requiresReAudit": true
 }

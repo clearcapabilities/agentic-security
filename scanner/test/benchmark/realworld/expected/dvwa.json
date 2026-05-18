@@ -1,5 +1,5 @@
 {
-  "_doc": "DVWA \u2014 line-level expected entries derived from engine output in 0.34.5 and verified by source inspection on sampled entries. wildcardFamilies removed.",
+  "_doc": "DVWA — line-level expected entries derived from engine output in 0.34.5 and verified by source inspection on sampled entries. wildcardFamilies removed.",
   "wildcardFamilies": [],
   "expected": [
     {
@@ -452,5 +452,7 @@
       "cwe": "CWE-79",
       "note": "XSS sink"
     }
-  ]
+  ],
+  "provenance": "bootstrap-from-engine-output-v0.34.5",
+  "requiresReAudit": true
 }

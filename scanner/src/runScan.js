@@ -6,6 +6,8 @@ import * as cp from 'node:child_process';
 import fg from 'fast-glob';
 import { runFullScan, shouldScan } from './engine.js';
 import { appendScanSnapshot } from './posture/security-trend.js';
+import { recover as recoverFixHistory } from './posture/fix-history.js';
+import { stampScan } from './posture/ruleset-version.js';
 
 const DEP_FILE_NAMES = new Set([
   'package.json','package-lock.json','yarn.lock','pnpm-lock.yaml',
@@ -86,6 +88,16 @@ export async function runScan(rootDir, opts = {}) {
   const root = path.resolve(rootDir);
   const startedAt = new Date().toISOString();
   const t0 = Date.now();
+  // Premortem 2R4.1: reconcile any pending entries from a crash mid-apply_fix
+  // before we do anything else. Idempotent + best-effort; logs to stderr.
+  try {
+    const recovered = await recoverFixHistory(root);
+    if (Array.isArray(recovered) && recovered.length) {
+      for (const r of recovered) {
+        process.stderr.write(`agentic-security: recovered fix-history entry ${r.id} → status=${r.status}${r.error ? ' (' + r.error + ')' : ''}\n`);
+      }
+    }
+  } catch (_) { /* best-effort */ }
   // Caller may pre-build fileContents (used by the MCP server's scan_diff to
   // scope a scan to a specific file list without walking the whole tree).
   let fileContents, depFileContents;
@@ -111,6 +123,9 @@ export async function runScan(rootDir, opts = {}) {
   }
 
   const scan = await runFullScan({ fileContents, depFileContents, scanRoot: root }, opts.onProgress || (()=>{}));
+  // Premortem 2R4.2: stamp ruleset version + source on the scan result, and
+  // notify if the operator pinned a different version than what's installed.
+  try { stampScan(root, scan); } catch {}
   // Append snapshot to history for /security-trend (non-blocking, never throws)
   try { appendScanSnapshot(scan, root); } catch {}
   return {

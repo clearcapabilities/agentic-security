@@ -251,6 +251,9 @@ function toFinding(rule, file, m) {
     ...(rule.llmValidate ? { _llmValidate: rule.llmValidate } : {}),
     ...(rule.pathConstraints ? { _pathConstraints: rule.pathConstraints } : {}),
     ...(rule.shadow ? { _shadow: true } : {}),
+    // Premortem 2R3.4 / 2R-8: carry the rule's unsigned tag onto the finding
+    // so SARIF emit / report renderers can show provenance.
+    ...(rule._unsigned ? { _unsigned: true } : {}),
   };
 }
 

@@ -13,7 +13,21 @@ const fs = require('fs');
 const path = require('path');
 const readline = require('readline');
 
-const arg = (process.argv[1] || '').trim();
+const argv = process.argv.slice(1);
+const arg = (argv.find(a => !a.startsWith('--')) || '').trim();
+const learnFlag = argv.includes('--learn');
+
+// Premortem 2R3.3 / 2R-11: write path gated symmetrically with read path so
+// an attacker who runs /triage can't poison the file in advance of an
+// AGENTIC_SECURITY_LEARN flip. Default OFF — verdicts only persist when the
+// operator explicitly says so.
+const LEARN_ENABLED = process.env.AGENTIC_SECURITY_LEARN === '1' || learnFlag;
+if (!LEARN_ENABLED) {
+  console.error('agentic-security: triage verdicts will NOT be persisted.');
+  console.error('  To enable: set AGENTIC_SECURITY_LEARN=1 in your env, or pass --learn.');
+  console.error('  (Read-only triage mode — you can still walk findings.)');
+}
+
 let scan;
 try { scan = JSON.parse(fs.readFileSync('.agentic-security/last-scan.json', 'utf8')); }
 catch (e) { console.error('No last-scan.json found. Run /scan --all first.'); process.exit(1); }
@@ -53,6 +67,10 @@ const ask = q => new Promise(res => rl.question(q, ans => res(ans.trim())));
     if (['t','f','w'].includes(ans)) {
       const reason = (await ask('  Reason (optional): ')).slice(0, 280);
       const verdict = ans === 't' ? 'tp' : ans === 'f' ? 'fp' : 'wontfix';
+      if (!LEARN_ENABLED) {
+        console.log(W('  · (verdict NOT recorded — read-only mode; pass --learn or set AGENTIC_SECURITY_LEARN=1 to persist)', '33'));
+        i++; continue;
+      }
       feedback.entries.push({
         stableId: f.stableId || null,
         verdict, reason,
@@ -63,6 +81,12 @@ const ask = q => new Promise(res => rl.question(q, ans => res(ans.trim())));
       });
       fs.mkdirSync(path.dirname(FEEDBACK), { recursive: true });
       fs.writeFileSync(FEEDBACK, JSON.stringify(feedback, null, 2));
+      // Premortem 2R-7: also record into per-CWE production-triage metrics so
+      // /security-trend can surface real-world precision trends.
+      try {
+        const { recordTriage } = await import(path.join(process.env.CLAUDE_PLUGIN_ROOT || '.', 'scanner/src/posture/validator-metrics.js'));
+        recordTriage(process.cwd(), { family: f.family, verdict, stableId: f.stableId });
+      } catch { /* best-effort telemetry */ }
       console.log(W('  ✓ recorded ' + verdict, '32'));
       i++; continue;
     }

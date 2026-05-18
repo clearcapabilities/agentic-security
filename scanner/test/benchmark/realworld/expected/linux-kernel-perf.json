@@ -1,5 +1,5 @@
 {
-  "_doc": "linux-kernel-perf \u2014 line-level expected entries derived from engine output in 0.34.5 and verified by source-sampling. Wildcards removed. Each entry has family-appropriate severity/CWE/note metadata.",
+  "_doc": "linux-kernel-perf — line-level expected entries derived from engine output in 0.34.5 and verified by source-sampling. Wildcards removed. Each entry has family-appropriate severity/CWE/note metadata.",
   "wildcardFamilies": [],
   "expected": [
     {
@@ -9,7 +9,7 @@
       "family": "mem-unsafe",
       "severity": "medium",
       "cwe": null,
-      "note": "Engine-emitted: Memory-safety risk \u2014 memcpy/memmove with externally-controlled size"
+      "note": "Engine-emitted: Memory-safety risk — memcpy/memmove with externally-controlled size"
     },
     {
       "file": "send.c",
@@ -18,7 +18,7 @@
       "family": "mem-unsafe",
       "severity": "medium",
       "cwe": null,
-      "note": "Engine-emitted: Memory-safety risk \u2014 memcpy/memmove with externally-controlled size"
+      "note": "Engine-emitted: Memory-safety risk — memcpy/memmove with externally-controlled size"
     },
     {
       "file": "volumes.c",
@@ -27,7 +27,9 @@
       "family": "mem-unsafe",
       "severity": "medium",
       "cwe": null,
-      "note": "Engine-emitted: Memory-safety risk \u2014 memcpy/memmove with externally-controlled size"
+      "note": "Engine-emitted: Memory-safety risk — memcpy/memmove with externally-controlled size"
     }
-  ]
+  ],
+  "provenance": "bootstrap-from-engine-output-v0.34.5",
+  "requiresReAudit": true
 }
