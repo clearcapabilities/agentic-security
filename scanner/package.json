@@ -10,7 +10,9 @@
     "agentic-security-mcp": "bin/agentic-security-mcp.js",
     "agentic-security-lsp": "bin/agentic-security-lsp.js",
     "agentic-security-rule": "bin/agentic-security-rule.js",
-    "agentic-security-diff": "bin/agentic-security-diff.js"
+    "agentic-security-diff": "bin/agentic-security-diff.js",
+    "agentic-security-consistency": "bin/agentic-security-consistency.js",
+    "agentic-security-audit": "bin/agentic-security-audit.js"
   },
   "exports": {
     ".": "./src/index.js",
@@ -49,7 +51,15 @@
   "scripts": {
     "build": "ncc build bin/agentic-security.js -o dist --minify && mv dist/index.js dist/agentic-security.mjs && rm -f dist/package.json && chmod +x dist/agentic-security.mjs && node -e \"const fs=require('fs');const p='dist/agentic-security.mjs';const c=fs.readFileSync(p,'utf8');if(!c.startsWith('#!'))fs.writeFileSync(p,'#!/usr/bin/env node\\n'+c);\" && node -e \"const fs=require('fs');const c=require('crypto');const h=c.createHash('sha256').update(fs.readFileSync('dist/agentic-security.mjs')).digest('hex');fs.writeFileSync('dist/agentic-security.mjs.sha256',h+'  agentic-security.mjs\\n');\"",
     "prepublishOnly": "npm run build && node -e \"const fs=require('fs');const cur=fs.existsSync('CHANGELOG.md')?fs.readFileSync('CHANGELOG.md','utf8'):'';const src=fs.readFileSync('../CHANGELOG.md','utf8');if(cur && cur!==src){console.error('scanner/CHANGELOG.md has local edits that differ from ../CHANGELOG.md.');console.error('Refusing to overwrite. Either commit the edit upstream first or rm scanner/CHANGELOG.md to accept the upstream copy.');process.exit(1);}fs.writeFileSync('CHANGELOG.md',src);\"",
-    "test": "node --test test/smoke.test.js test/llm.test.js test/logic.test.js test/fn-reach.test.js test/material-change.test.js test/drift.test.js test/sbom.test.js test/api-inventory.test.js test/sarif-ingest.test.js test/pipeline.test.js test/license-policy.test.js test/mttr.test.js test/container.test.js test/dep-confusion.test.js test/scorecard.test.js test/mcp-audit.test.js test/authz.test.js test/kev.test.js test/model-load.test.js test/prompt-template.test.js test/llm-owasp.test.js test/aibom.test.js test/packs.test.js test/junit.test.js test/ci.test.js test/mcp.test.js test/phase1-detectors.test.js test/phase2-detectors.test.js test/deep-taint.test.js test/phase5-xlang.test.js test/poc-generator.test.js test/cross-lang-queues.test.js test/calibration.test.js test/verifier.test.js test/cross-lang-meta.test.js test/python-sinks.test.js test/iam-policy.test.js test/container-runtime.test.js test/verifier-target.test.js test/regression-test-gen.test.js test/business-logic.test.js test/rule-synthesis.test.js test/flow-narration.test.js test/policy-gate.test.js test/phase3-v3.test.js test/phase4-harness.test.js test/phase5-coverage.test.js test/phase6-taint.test.js test/phase7-extensions.test.js test/phase8-extensions.test.js test/dead-code.test.js test/no-dead-modules.test.js && AGENTIC_SECURITY_CPP_DATAFLOW=1 node --test test/cpp-dataflow.test.js",
+    "test": "npm run test:smoke && npm run test:sast && npm run test:posture && npm run test:dataflow && npm run test:mcp && npm run test:report && npm run test:bench-modules && npm run test:lifecycle && AGENTIC_SECURITY_CPP_DATAFLOW=1 node --test test/cpp-dataflow.test.js",
+    "test:smoke": "node --test test/smoke.test.js",
+    "test:sast": "node --test test/llm.test.js test/llm-owasp.test.js test/logic.test.js test/authz.test.js test/model-load.test.js test/prompt-template.test.js test/business-logic.test.js test/python-sinks.test.js test/phase1-detectors.test.js test/phase2-detectors.test.js test/phase3-v3.test.js test/phase7-extensions.test.js test/phase8-extensions.test.js",
+    "test:posture": "node --test test/material-change.test.js test/drift.test.js test/scorecard.test.js test/mttr.test.js test/license-policy.test.js test/aibom.test.js test/sbom.test.js test/api-inventory.test.js test/iam-policy.test.js test/container.test.js test/container-runtime.test.js test/kev.test.js test/dep-confusion.test.js test/sca-deprecated.test.js test/packs.test.js test/flow-narration.test.js test/regression-test-gen.test.js test/rule-synthesis.test.js test/policy-gate.test.js test/agents-memory.test.js test/cve-lookup.test.js",
+    "test:dataflow": "node --test test/fn-reach.test.js test/deep-taint.test.js test/calibration.test.js test/holdout-eval.test.js test/cross-lang-meta.test.js test/cross-lang-queues.test.js test/phase5-xlang.test.js test/phase5-coverage.test.js test/phase6-taint.test.js test/llm-validator-consistency.test.js",
+    "test:mcp": "node --test test/mcp.test.js test/mcp-audit.test.js test/audit-cli.test.js test/mcp-scratchpad.test.js test/mcp-offload.test.js",
+    "test:report": "node --test test/sarif-ingest.test.js test/junit.test.js test/ci.test.js test/poc-generator.test.js test/verifier.test.js test/verifier-target.test.js test/annotator-errors.test.js test/grader-calibration.test.js",
+    "test:bench-modules": "node --test test/phase4-harness.test.js test/pipeline.test.js",
+    "test:lifecycle": "node --test test/dead-code.test.js test/no-dead-modules.test.js test/stop-hook.test.js test/plugin-self-check.test.js",
     "smoke": "node bin/agentic-security.js scan test/fixtures/vulnerable-js",
     "prebench": "npm run build",
     "bench": "node test/benchmark/bench.js",
@@ -58,6 +68,8 @@
     "bench:realworld": "node test/benchmark/realworld/bench-realworld.js",
     "bench:llm-goats": "node test/benchmark/llm-goats/bench-llm-goats.js",
     "bench:cve-replay": "node ../bench/cve-replay/runner.mjs",
+    "bench:cve-replay:ci": "node ../bench/cve-replay/runner.mjs --ci",
+    "bench:agent-tasks": "node ../bench/agent-tasks/security-fixer/runner.mjs",
     "bench:polyglot": "node ../bench/polyglot/runner.mjs"
   },
   "author": "Ross Young <ross@clearcapabilities.com>",

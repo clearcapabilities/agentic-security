@@ -180,15 +180,55 @@ export function preview(originalContent, newContent, file) {
 //
 // This guarantees the file is never modified without a corresponding
 // recoverable log entry.
+// Harness-engineering note (post-derived): hard step budget. The same
+// stableId / findingId can be attempted at most MAX_ATTEMPTS times before
+// the deterministic layer refuses. This prevents a misbehaving agent (or a
+// rule whose canonical fix is wrong for this codebase) from chewing through
+// turns retrying the same broken patch. Override via env var only — there
+// is no per-call override.
+const MAX_ATTEMPTS_PER_KEY = (() => {
+  const v = parseInt(process.env.AGENTIC_SECURITY_FIX_MAX_ATTEMPTS || '2', 10);
+  return Number.isFinite(v) && v >= 1 ? v : 2;
+})();
+
+export class FixAttemptBudgetExceededError extends Error {
+  constructor(key, attempts, max) {
+    super(`fix attempts for ${key} exceeded budget (${attempts} >= ${max}). The canonical fix is wrong for this codebase; surface to a human.`);
+    this.name = 'FixAttemptBudgetExceededError';
+    this.key = key; this.attempts = attempts; this.max = max;
+  }
+}
+
+function _countPriorAttempts(log, stableId, findingId) {
+  let n = 0;
+  for (const e of log) {
+    if (e.reverted) continue;   // a clean revert resets the count
+    if (stableId && e.stableId === stableId) { n++; continue; }
+    if (findingId && e.findingId === findingId) { n++; }
+  }
+  return n;
+}
+
 export async function applyFix({ scanRoot, file, originalContent, newContent, findingId, ruleId, vuln, stableId }) {
   return _withLogLock(scanRoot, async () => {
     ensure(scanRoot);
     const absFile = path.resolve(scanRoot, file);
     const id = `fix-${Date.now().toString(36)}-${sha(file + findingId).slice(0, 6)}`;
     const bakPath = path.join(historyDir(scanRoot), `${id}.bak`);
+    const resolvedStableId = stableId || _lookupStableId(scanRoot, findingId);
+    // Budget check BEFORE backup, so we don't accumulate dead .bak files
+    // for refused attempts.
+    const priorLog = readLog(scanRoot);
+    const priorAttempts = _countPriorAttempts(priorLog, resolvedStableId, findingId);
+    if (priorAttempts >= MAX_ATTEMPTS_PER_KEY) {
+      throw new FixAttemptBudgetExceededError(
+        resolvedStableId || findingId || '(unknown-key)',
+        priorAttempts,
+        MAX_ATTEMPTS_PER_KEY,
+      );
+    }
     // Phase 1: backup + fsync.
     await _writeAndSync(bakPath, originalContent);
-    const resolvedStableId = stableId || _lookupStableId(scanRoot, findingId);
     const entry = {
       id,
       findingId,
@@ -202,9 +242,10 @@ export async function applyFix({ scanRoot, file, originalContent, newContent, fi
       appliedAt: new Date().toISOString(),
       status: 'pending',
       reverted: false,
+      attemptOrdinal: priorAttempts + 1,
     };
     // Phase 2: log entry marked pending + fsync.
-    const log = readLog(scanRoot);
+    const log = priorLog;
     log.push(entry);
     await _writeLogAndSync(scanRoot, log);
     // Phase 3: write the new content to the target file + fsync.

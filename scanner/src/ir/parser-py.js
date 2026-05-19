@@ -66,13 +66,38 @@ function parseExpr(text) {
     }
     return { kind: 'tpl', parts };
   }
-  // Call: name(args) or name.method(args)
-  const callMatch = /^([A-Za-z_][\w.]*)\s*\(([^()]*)\)$/.exec(text);
-  if (callMatch) {
-    const callee = callMatch[1];
-    const argsText = callMatch[2];
-    const args = _splitArgs(argsText).map(a => parseExpr(a));
-    return { kind: 'call', callee, args };
+  // Call: name(args) or name.method(args) — premortem #14: accept arbitrary
+  // nesting of parens/brackets/braces in args, not just one level. The old
+  // regex `[^()]*` rejected anything with a nested paren, silently dropping
+  // most idiomatic Python (`db.execute(sanitize(x))`, `f(g(y))`).
+  const calleeMatch = /^([A-Za-z_][\w.]*)\s*\(/.exec(text);
+  if (calleeMatch) {
+    const callee = calleeMatch[1];
+    const openIdx = calleeMatch[0].length - 1;
+    // Walk forward from openIdx, tracking balanced (), [], {}, with quote
+    // awareness so a `)` inside a string doesn't close the call.
+    let depth = 1, i = openIdx + 1, inStr = false, q = '';
+    for (; i < text.length; i++) {
+      const c = text[i];
+      if (inStr) {
+        if (c === '\\') { i++; continue; }
+        if (c === q) { inStr = false; }
+        continue;
+      }
+      if (c === '"' || c === "'") { inStr = true; q = c; continue; }
+      if (c === '(' || c === '[' || c === '{') depth++;
+      else if (c === ')' || c === ']' || c === '}') {
+        depth--;
+        if (depth === 0) break;
+      }
+    }
+    // Whole text must end right at the matching close-paren for this to
+    // be a plain call expression; otherwise it's a sub-expression.
+    if (depth === 0 && i === text.length - 1) {
+      const argsText = text.slice(openIdx + 1, i);
+      const args = _splitArgs(argsText).map(a => parseExpr(a));
+      return { kind: 'call', callee, args };
+    }
   }
   // Binary op
   for (const op of [' or ', ' and ', '==', '!=', '<=', '>=', '<', '>', '+', '-', '*', '/', '%']) {
@@ -147,12 +172,28 @@ function extractFunctions(text, file) {
   const fns = [];
   for (let i = 0; i < lines.length; i++) {
     const line = lines[i];
-    const m = /^(\s*)(?:async\s+)?def\s+(\w+)\s*\(([^)]*)\)\s*:/.exec(line);
-    if (!m) continue;
-    const indent = m[1].length;
-    const name = m[2];
-    const paramsText = m[3];
-    const params = paramsText.split(',').map(p => p.trim().split(/[:=]/)[0].trim()).filter(Boolean);
+    // Premortem #14: balanced-paren signature parse to handle default values
+    // that contain parens (e.g. `def f(x=Foo(1, 2)) -> None:`). The old regex
+    // `\(([^)]*)\)` couldn't see past the first ')' and would either miss the
+    // function entirely or capture only the leading args.
+    const head = /^(\s*)(?:async\s+)?def\s+(\w+)\s*\(/.exec(line);
+    if (!head) continue;
+    const indent = head[1].length;
+    const name = head[2];
+    let p = head[0].length, depth = 1, inStr = false, q = '';
+    for (; p < line.length; p++) {
+      const c = line[p];
+      if (inStr) { if (c === '\\') { p++; continue; } if (c === q) inStr = false; continue; }
+      if (c === '"' || c === "'") { inStr = true; q = c; continue; }
+      if (c === '(' || c === '[' || c === '{') depth++;
+      else if (c === ')' || c === ']' || c === '}') { depth--; if (depth === 0) break; }
+    }
+    if (depth !== 0) continue;
+    const paramsText = line.slice(head[0].length, p);
+    // After the close paren, require a `:` (possibly via `-> X:`)
+    const after = line.slice(p + 1);
+    if (!/^\s*(?:->\s*[^:]+)?:\s*(?:#.*)?$/.test(after)) continue;
+    const params = _splitArgs(paramsText).map(s => s.trim().split(/[:=]/)[0].trim()).filter(Boolean);
     // Collect body lines: anything indented strictly more than `indent`
     // until we hit a line with same-or-less indent.
     const body = [];

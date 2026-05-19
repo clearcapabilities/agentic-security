@@ -295,11 +295,106 @@ function pickTemplate(finding) {
   return null;
 }
 
+// Premortem #12: infer the request-body/query/params key the handler reads
+// from the actual finding evidence — NOT a hardcoded 'id'. Sources looked at:
+//   1. finding.source.label (taint engine sets this to e.g. "req.body.host")
+//   2. finding.whyFired.evidence.sourceSnippet (regex parses out req.body.X)
+//   3. finding.snippet (last-resort: regex over the sink line itself)
+// Premortem #12: infer the param key from the actual handler code.
+// Strategy:
+//   1. Re-read a wide window from the file (line-2 .. line+25). This
+//      survives detector snippet misattribution (premortem 2R-D).
+//   2. Find every req.body.X / req.query.X / req.params.X / req.headers.X
+//      AND every request.json["X"]/form.get("X")/args.get("X") match in
+//      the window, with the line on which it appears.
+//   3. Find every "sink" keyword (exec, eval, query, system, spawn,
+//      Runtime.exec, fs.readFile, render, redirect) and its line.
+//   4. Return the param whose line is closest to a sink keyword. Ties
+//      go to body > query > params (HTTP semantics: body is the most
+//      user-controlled vector). If we have nothing, fall back to the
+//      detector's snippet/source.label so we still produce SOMETHING.
+const _SINK_KEYWORDS = /\b(?:exec|eval|spawn|spawnSync|execSync|system|popen|query|raw|readFile|readFileSync|writeFile|redirect|render|innerHTML|setAttribute|location|open|require)\b/;
+const _PARAM_RES = [
+  { re: /\breq(?:uest)?\.body\.([A-Za-z_$][\w$]*)/g, score: 3 },
+  { re: /\breq(?:uest)?\.body\[["']([^"']+)["']\]/g, score: 3 },
+  { re: /\breq(?:uest)?\.query\.([A-Za-z_$][\w$]*)/g, score: 2 },
+  { re: /\breq(?:uest)?\.query\[["']([^"']+)["']\]/g, score: 2 },
+  { re: /\breq(?:uest)?\.params\.([A-Za-z_$][\w$]*)/g, score: 1 },
+  { re: /\breq(?:uest)?\.headers\.([A-Za-z_$][\w$]*)/g, score: 1 },
+  { re: /\brequest\.(?:json|form|args)(?:\.get)?\(["']([^"']+)["']\)/g, score: 3 },
+  { re: /\bctx\.request\.body\.([A-Za-z_$][\w$]*)/g, score: 3 },
+];
+function _inferParamKey(finding, fileContents) {
+  // Premortem #12: some detectors set f.sink.line / f.source.line instead of
+  // f.line. Try all locations so window analysis works regardless of which
+  // detector emitted the finding (PoC runs before the normalizer collapses).
+  const effectiveLine = finding.line || finding.sink?.line || finding.source?.line || 0;
+  const effectiveFile = finding.file || finding.sink?.file || finding.source?.file || null;
+  if (process.env.AGENTIC_SECURITY_POC_DEBUG === '1') {
+    process.stderr.write(`[poc-debug] file=${effectiveFile} line=${effectiveLine} fc=${fileContents ? Object.keys(fileContents).length : 0}\n`);
+  }
+  // First-pass: file-window analysis. This is the most reliable.
+  if (fileContents && effectiveFile && effectiveLine) {
+    const code = fileContents[effectiveFile];
+    if (typeof code === 'string') {
+      const lines = code.split('\n');
+      const idx = (effectiveLine || 1) - 1;
+      const lo = Math.max(0, idx - 2);
+      const hi = Math.min(lines.length, idx + 26);
+      // Find sink keyword lines in window (relative to window start).
+      const sinkLines = [];
+      for (let i = lo; i < hi; i++) {
+        if (_SINK_KEYWORDS.test(lines[i])) sinkLines.push(i);
+      }
+      // Find param matches in window.
+      const matches = []; // { name, score, line }
+      for (let i = lo; i < hi; i++) {
+        const line = lines[i];
+        for (const { re, score } of _PARAM_RES) {
+          re.lastIndex = 0;
+          let m;
+          while ((m = re.exec(line)) !== null) {
+            if (m[1]) matches.push({ name: m[1], score, line: i });
+          }
+        }
+      }
+      if (matches.length) {
+        // Rank by (closest-to-sink, then higher base score, then earliest in
+        // file). When no sink line is detected, fall back to score+order.
+        const distTo = (ln) => sinkLines.length
+          ? Math.min(...sinkLines.map(s => Math.abs(s - ln)))
+          : 999;
+        matches.sort((a, b) => {
+          const da = distTo(a.line), db = distTo(b.line);
+          if (da !== db) return da - db;
+          if (a.score !== b.score) return b.score - a.score;
+          return a.line - b.line;
+        });
+        return matches[0].name;
+      }
+    }
+  }
+  // Fallbacks: snippet / source label (may be misattributed; LAST RESORT).
+  const candidates = [];
+  if (finding.source?.label) candidates.push(String(finding.source.label));
+  const wf = finding.whyFired && finding.whyFired.evidence;
+  if (wf?.sinkSnippet) candidates.push(String(wf.sinkSnippet));
+  if (finding.snippet) candidates.push(String(finding.snippet));
+  for (const c of candidates) {
+    for (const { re } of _PARAM_RES) {
+      re.lastIndex = 0;
+      const m = re.exec(c);
+      if (m && m[1]) return m[1];
+    }
+  }
+  return null;
+}
+
 /**
  * Resolve the HTTP endpoint context for a finding from the project's
  * discovered route list. Returns { url, method, param } or null.
  */
-function endpointFor(finding, routes) {
+function endpointFor(finding, routes, fileContents) {
   if (!Array.isArray(routes) || routes.length === 0) return null;
   // Match by file + line proximity.
   const fp = finding.file || finding.sink?.file;
@@ -313,11 +408,26 @@ function endpointFor(finding, routes) {
     if (dist < bestDist) { bestDist = dist; best = r; }
   }
   if (!best) return null;
+  // Harness-engineering note (post-derived): when the deterministic inference
+  // fails, surface the uncertainty instead of falling back to a generic key.
+  // A PoC that posts to 'input' against a handler that reads 'host' is a
+  // silent failure — the scanner emitted something, the verifier ran it, and
+  // both reported "no exploit demonstrated" when the actual problem was that
+  // we asked the wrong question. Better to mark the PoC as low-confidence so
+  // downstream (verifier, regression-test-gen, reports) can route accordingly.
+  const inferred = _inferParamKey(finding, fileContents);
+  const fromSourceVar = finding.source?.variable;
+  const paramKey = inferred || fromSourceVar || 'input';
+  const paramKeyConfidence =
+      inferred ? 'high'                            // from real file-window analysis
+    : fromSourceVar ? 'medium'                    // detector hinted; might be stale
+    : 'low';                                       // pure default — PoC likely won't fire
   return {
     url: 'http://localhost:3000' + (best.path || '/REPLACE-WITH-ENDPOINT'),
     method: best.method || 'POST',
-    // Best-effort guess at the tainted parameter name from the finding's source.
-    param: finding.source?.variable || 'input',
+    param: paramKey,
+    paramKeyConfidence,
+    paramKeyInferred: !!inferred,
   };
 }
 
@@ -326,10 +436,10 @@ function endpointFor(finding, routes) {
  *   { lang, code, runHint, kind, cwe } when a template matches.
  *   null when no template covers this CWE family in v1.
  */
-export function generatePoc(finding, { routes = [] } = {}) {
+export function generatePoc(finding, { routes = [], fileContents = null } = {}) {
   const t = pickTemplate(finding);
   if (!t) return null;
-  const ctx = endpointFor(finding, routes) || {};
+  const ctx = endpointFor(finding, routes, fileContents) || {};
   let code;
   try { code = t.render(finding, ctx); }
   catch (e) {
@@ -347,6 +457,11 @@ export function generatePoc(finding, { routes = [] } = {}) {
              t.lang === 'java' ? 'javac PoC.java && java PoC' :
              null,
     code,
+    // Surface the deterministic-inference confidence on the emitted PoC so
+    // the verifier and regression-test-gen can refuse to run uncertain ones.
+    paramKey: ctx.param || null,
+    paramKeyConfidence: ctx.paramKeyConfidence || 'low',
+    paramKeyInferred: !!ctx.paramKeyInferred,
   };
 }
 
@@ -358,10 +473,11 @@ export function generatePoc(finding, { routes = [] } = {}) {
  */
 export function annotatePocs(findings, opts = {}) {
   const routes = opts.routes || [];
+  const fileContents = opts.fileContents || null;
   if (!Array.isArray(findings)) return;
   for (const f of findings) {
     if (!f || typeof f !== 'object') continue;
-    f.poc = generatePoc(f, { routes });
+    f.poc = generatePoc(f, { routes, fileContents });
   }
 }
 

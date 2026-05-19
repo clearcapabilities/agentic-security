@@ -11,7 +11,7 @@
     "agentic-security": {
       "command": "node",
       "args": ["${CLAUDE_PLUGIN_ROOT}/scanner/bin/agentic-security-mcp.js", "--root", "${CLAUDE_PROJECT_DIR}"],
-      "description": "agentic-security MCP server (scan_diff, query_taint, explain_finding, apply_fix). Session root is confined to the current project directory; apply_fix requires confirm:true and a valid last-scan.json HMAC signature; shadow findings are never auto-applied.",
+      "description": "agentic-security MCP server (scan_diff, query_taint, explain_finding, find_rule_module, synthesize_fix, verify_fix, apply_fix). Session root is confined to the current project directory; apply_fix requires confirm:true and a valid last-scan.json HMAC signature; shadow findings are never auto-applied.",
       "trust": {
         "writes_files": true,
         "session_scope": "project_directory_only",

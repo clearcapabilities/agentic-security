@@ -36,6 +36,7 @@
 import { matchSource, matchSinkOrSanitizer } from './catalog.js';
 import { accessPathOf, isCoveredBy, addPath, removePathAndDescendants, joinSets as joinAccessSets, setsEqual as accessSetsEqual } from './access-paths.js';
 import { higherOrderTaintFlow } from './higher-order.js';
+import { SummaryCache, entryStateFromCall } from './summaries.js';
 
 function exprTaint(expr, state) {
   // Returns true iff this expression evaluates to a tainted value under the
@@ -69,6 +70,62 @@ function exprTaint(expr, state) {
   }
 }
 
+// Premortem #10: which recorded sources actually reach this expression?
+// Collects the variable / access-path roots referenced by `expr` and returns
+// the _taintSources entries whose varName matches one of those roots. This
+// replaces "first source we ever saw" with "sources tied to this argument."
+function _collectExprVars(expr, out) {
+  if (!expr) return;
+  if (typeof expr === 'string') { out.add(expr); return; }
+  if (expr.kind === 'ident' && expr.name) { out.add(expr.name); return; }
+  if (expr.kind === 'member') {
+    // Capture the access path (e.g. `user.email`) AND its root (`user`).
+    const ap = accessPathOf(expr);
+    if (ap) out.add(ap);
+    if (expr.object) _collectExprVars(expr.object, out);
+    return;
+  }
+  if (expr.kind === 'binary' || expr.kind === 'logical') {
+    _collectExprVars(expr.left, out); _collectExprVars(expr.right, out); return;
+  }
+  if (expr.kind === 'tpl' && Array.isArray(expr.parts)) {
+    for (const p of expr.parts) _collectExprVars(p, out); return;
+  }
+  if (expr.kind === 'union' && Array.isArray(expr.branches)) {
+    for (const b of expr.branches) _collectExprVars(b, out); return;
+  }
+  if (expr.kind === 'object' && Array.isArray(expr.props)) {
+    for (const p of expr.props) _collectExprVars(p.value, out); return;
+  }
+  if (expr.kind === 'array' && Array.isArray(expr.elements)) {
+    for (const e of expr.elements) _collectExprVars(e, out); return;
+  }
+  if (expr.kind === 'call' && Array.isArray(expr.args)) {
+    for (const a of expr.args) _collectExprVars(a, out); return;
+  }
+}
+function _sourcesReachingExpr(expr, _state, taintSources) {
+  if (!Array.isArray(taintSources) || taintSources.length === 0) return [];
+  const vars = new Set();
+  _collectExprVars(expr, vars);
+  if (vars.size === 0) return [];
+  // Match by exact varName OR by access-path prefix (a source recorded for
+  // `user` covers `user.email`, and a source recorded for `user.email`
+  // covers the literal expression `user.email`).
+  const matched = [];
+  for (const s of taintSources) {
+    const v = s.varName;
+    if (!v) continue;
+    if (vars.has(v)) { matched.push(s); continue; }
+    for (const candidate of vars) {
+      if (typeof candidate === 'string' && (candidate === v || candidate.startsWith(v + '.'))) {
+        matched.push(s); break;
+      }
+    }
+  }
+  return matched;
+}
+
 // Heuristic: does this expression read a registered source?
 function exprIsSource(expr) {
   if (!expr) return null;
@@ -100,6 +157,31 @@ function step(node, stateIn, callContext) {
       const src = exprIsSource(node.source);
       const target = typeof node.target === 'string' ? node.target : null;
       let newState = state;
+      // Premortem #7: interprocedural return-taint via SummaryCache. If the
+      // RHS is a call to a known callee whose empty-entry-state summary says
+      // the return is tainted, taint the assignment target. This makes the
+      // simplest cross-function flow (helper reads req.body and returns it)
+      // visible to the engine — the case the cache was built for.
+      const calleeName = node.source && node.source.kind === 'call' && typeof node.source.callee === 'string'
+        ? node.source.callee : null;
+      if (target && calleeName && callContext._summaryCache && callContext._callGraph) {
+        const resolved = callContext._callGraph.resolve ? callContext._callGraph.resolve(calleeName) : null;
+        const qid = resolved && (resolved.qid || resolved); // resolve may return fn or qid
+        if (typeof qid === 'string') {
+          const sum = callContext._summaryCache.get(qid, new Set());
+          if (sum && sum.returnTainted) {
+            newState = addPath(newState, target);
+            callContext._taintSources.push({
+              varName: target,
+              sourceId: `interproc:${qid}`,
+              sourceLabel: `interproc-return:${calleeName}`,
+              provenance: 'interproc',
+              line: node.line,
+            });
+            return { state: newState, findings: [] };
+          }
+        }
+      }
       if (src && target) {
         newState = addPath(newState, target);
         const sourcePath = accessPathOf(node.source);
@@ -136,6 +218,18 @@ function step(node, stateIn, callContext) {
           )) {
             const taintedArgIdx = e.argIndex === 'all'
               ? argTaints.findIndex(Boolean) : e.argIndex;
+            const taintedArgExpr = (node.args || [])[taintedArgIdx];
+            // Premortem #10: attribute the source for THIS sink to the
+            // source(s) that taint the actual argument expression — not the
+            // first source the worklist happened to record. We walk the
+            // expression's free vars / access paths against the recorded
+            // _taintSources and keep entries whose root variable still
+            // covers something in the expression.
+            const reachingSources = _sourcesReachingExpr(taintedArgExpr, state, callContext._taintSources);
+            const traceForThisFinding = reachingSources.length
+              ? reachingSources.slice(0, 5)
+              // Fallback: better to surface "no precise source" than the wrong source.
+              : [];
             findings.push({
               kind: 'taint',
               sinkId: e.id,
@@ -146,13 +240,8 @@ function step(node, stateIn, callContext) {
               line: node.line,
               argIndex: taintedArgIdx,
               callee: node.callee,
-              // P4.6 — stamp source provenance on the finding so downstream
-              // severity scaling can dial up http-body / url-param sources
-              // and dial down env / file-read.
-              sourceProvenance: (callContext._taintSources[0]?.provenance) || null,
-              // The trace is best-effort: we cite the source label from the
-              // first source we saw in this analysis run.
-              trace: callContext._taintSources.slice(0, 5),
+              sourceProvenance: (traceForThisFinding[0]?.provenance) || null,
+              trace: traceForThisFinding,
             });
           }
         }
@@ -293,11 +382,37 @@ export function runTaintEngine(perFileIR, callGraph, opts = {}) {
   const deadlineMs = typeof opts.deadlineMs === 'number' ? opts.deadlineMs : Infinity;
   let n = 0;
 
+  // Premortem #7: instantiate the k=1 SummaryCache and seed it with each
+  // function's empty-entry-state summary (returnTainted bit). The cache is
+  // available to call sites through callContext so the worklist can ask
+  // "does callee F return tainted under this entry state?" before
+  // conservatively assuming it doesn't. This wires the cache that was
+  // exported-but-unused for several releases.
+  const summaryCache = new SummaryCache();
+
   // Deterministic ordering (Sentinel-parity §9.2): sort functions by qid so
   // cache-cold runs produce the same finding sequence run-over-run.
   const fnList = [...callGraph.functions.values()].sort((a, b) =>
     a.qid < b.qid ? -1 : a.qid > b.qid ? 1 : 0
   );
+  // Pre-pass: compute the empty-entry-state summary for every function so
+  // direct-call return-taint queries during the main pass are O(1).
+  for (const fn of fnList) {
+    summaryCache.compute(fn.qid, new Set(), () => {
+      const ctx = {
+        _findings: [], _taintSources: [], _returnTainted: false,
+        _stack: new Set(), deadlineMs,
+        _summaryCache: summaryCache, _callGraph: callGraph,
+      };
+      try { analyzeFunction(fn, new Set(), ctx); } catch {}
+      return {
+        returnTainted: !!ctx._returnTainted,
+        mutatedParams: new Set(),
+        taintedGlobals: new Set(),
+        findings: [],
+      };
+    });
+  }
   for (const fn of fnList) {
     if (++n > fnLimit) break;
     if (Date.now() > deadlineMs) break;  // global timeout
@@ -309,6 +424,8 @@ export function runTaintEngine(perFileIR, callGraph, opts = {}) {
       _returnTainted: false,
       _stack: new Set(),
       deadlineMs,   // honored by the worklist inside analyzeFunction
+      _summaryCache: summaryCache,
+      _callGraph: callGraph,
     };
     try {
       analyzeFunction(fn, new Set(), callContext);

@@ -1,0 +1,24 @@
+{
+  "id": "cmd-injection-execfile",
+  "description": "Replace child_process.exec(shell-string) with execFile(argv). The canonical fix for the most common Node command-injection shape.",
+  "fixture_path": "bench/cve-replay/regression/CVE-2018-1000525-shape/pre",
+  "staged_finding": {
+    "id": "agent-task:cmd-injection-execfile:app.js:7",
+    "stableId": "agent-task-cmd-inj-execfile",
+    "kind": "sast",
+    "severity": "critical",
+    "vuln": "Command Injection",
+    "cwe": "CWE-78",
+    "family": "command-injection",
+    "parser": "AST",
+    "file": "app.js",
+    "line": 7,
+    "snippet": "exec('nslookup ' + target, ...)",
+    "description": "user-controlled string concatenated into a shell call",
+    "remediation": "use execFile with an argv array",
+    "fix": {
+      "description": "Replace shell-string exec() with execFile + argv allow-list.",
+      "replacement": "const express = require('express');\nconst { execFile } = require('child_process');\nconst app = express();\napp.use(express.json());\n\napp.post('/run', (req, res) => {\n  // Fixed: argv array, no shell.\n  const target = String(req.body.target || '');\n  if (!/^[a-zA-Z0-9.-]{1,253}$/.test(target)) return res.status(400).end();\n  execFile('nslookup', [target], (err, stdout) => {\n    if (err) return res.status(500).end();\n    res.type('text/plain').end(stdout);\n  });\n});\n\napp.listen(3000);\n"
+    }
+  }
+}

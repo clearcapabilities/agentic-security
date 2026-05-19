@@ -91,4 +91,25 @@ if (atRisk) {
   const line = formatStreakLine(streak);
   if (line) console.error('🛡️  ' + line);
 }
+
+// Harness-anatomy #2: surface AGENTS.md continual-learning notes (most-recent
+// tail) so subagents can pick up where the last session left off.
+try {
+  const agentsMd = path.join(stateDir, 'AGENTS.md');
+  if (fs.existsSync(agentsMd)) {
+    const body = fs.readFileSync(agentsMd, 'utf8');
+    const limit = 4 * 1024;
+    let slice = body.length <= limit ? body : body.slice(-limit);
+    if (body.length > limit) {
+      const firstSection = slice.indexOf('\n## ');
+      if (firstSection >= 0) slice = slice.slice(firstSection);
+    }
+    if (slice && slice.trim().length) {
+      console.error('');
+      console.error('agentic-security: AGENTS.md (continual-learning notes from prior sessions):');
+      for (const line of slice.split('\n').slice(0, 40)) console.error('  ' + line);
+      if (slice.split('\n').length > 40) console.error('  …(more in .agentic-security/AGENTS.md)');
+    }
+  }
+} catch { /* surface failure is non-fatal */ }
 process.exit(0);

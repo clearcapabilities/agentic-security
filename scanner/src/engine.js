@@ -80,6 +80,7 @@ import { scanRuby } from './sast/ruby.js';
 import { scanPhp } from './sast/php.js';
 // Phase 1 — precision-engineering posture modules.
 import { annotateConfidence } from './posture/confidence.js';
+import { backfillFindingDefaults } from './posture/finding-defaults.js';
 import { annotatePocs } from './posture/poc-generator.js';
 import { annotateVerifierVerdicts } from './posture/verifier.js';
 import { annotateRegressionTests } from './posture/regression-test-gen.js';
@@ -6815,7 +6816,7 @@ async function runFullScan({fileContents={}, depFileContents={}, scanRoot=null},
   let registryInfo=new Map();try{registryInfo=await queryRegistries(components);}catch(_){}
   const dd=(a,k)=>[...new Map(a.map(x=>[k(x),x])).values()];
   // 0.6.0 Feat-1: annotate function-level reachability on SCA findings
-  try{_annotateFunctionReachability(supplyChain,dd(aR,r=>`${r.method}:${r.path}:${r.file}:${r.line}`).map(r=>({...r})),callGraph,fc);}catch(_){}
+  try { _annotateFunctionReachability(supplyChain,dd(aR,r=>`${r.method}:${r.path}:${r.file}:${r.line}`).map(r=>({...r})),callGraph,fc); } catch(_) {}
   // Sort findings: critical first, then structural patterns last within same severity
   aF.sort((a,b)=>({critical:0,high:1,medium:2,low:3}[a.severity]??4)-({critical:0,high:1,medium:2,low:3}[b.severity]??4));
   const vulnsByKey={};for(const sc of supplyChain.filter(s=>s.type==='vulnerable_dep')){const k=`${sc.ecosystem}:${sc.name}:${sc.version}`;if(!vulnsByKey[k])vulnsByKey[k]=[];vulnsByKey[k].push(sc);}
@@ -6914,64 +6915,82 @@ async function runFullScan({fileContents={}, depFileContents={}, scanRoot=null},
   // happens before confidence/exploitability so they see the final severity;
   // active-learning suppression is last (after confidence is set) so the
   // suppressed entries can be re-emitted via --include-suppressed if needed.
-  try { annotateStableIds(finalFindings); } catch(_) {}
-  try { finalFindings = clusterByRootCause(finalFindings); } catch(_) {}
-  try { demoteUnreachable(finalFindings, { routes: aR }); } catch(_) {}
-  try { annotateConfidence(finalFindings); } catch(_) {}
+  //
+  // Harness-engineering note (post-derived): no silent annotator failures.
+  // Every catch in this block writes into _annotatorErrors so the operator
+  // can tell "didn't run" from "ran cleanly." The array is surfaced as
+  // scan.annotatorErrors in the report; an empty array means clean.
+  const _annotatorErrors = [];
+  const _runAnnotator = (phase, fn) => {
+    try { return fn(); }
+    catch (e) {
+      _annotatorErrors.push({ phase, err: String((e && e.message) || e) });
+      return undefined;
+    }
+  };
+  _runAnnotator('annotateStableIds', () => annotateStableIds(finalFindings));
+  _runAnnotator("clusterByRootCause", () => { finalFindings = clusterByRootCause(finalFindings); });
+  _runAnnotator("demoteUnreachable", () => { demoteUnreachable(finalFindings, { routes: aR }); });
+  // Premortem #8: backfill parser/family BEFORE confidence and calibration,
+  // because both consume those fields and silently no-op when they're null.
+  _runAnnotator("backfillFindingDefaults", () => { backfillFindingDefaults(finalFindings); });
+  _runAnnotator("annotateConfidence", () => { annotateConfidence(finalFindings); });
   // Phase-1 next-gen P1.3 (FR-UX-1, FR-UX-2): Brier-calibrated probability +
   // 95% Wilson CI from per-family historical TP/FP. Falls back to null with
   // an explicit `calibration_reason` when N is below the calibration floor.
-  try { annotateCalibratedConfidence(finalFindings, { scanRoot }); } catch(_) {}
+  _runAnnotator("annotateCalibratedConfidence", () => { annotateCalibratedConfidence(finalFindings, { scanRoot }); });
   const _projectCtx = (() => { try { return detectProjectContext(fc, aR); } catch { return {}; } })();
-  try { annotateExploitability(finalFindings, _projectCtx); } catch(_) {}
+  _runAnnotator("annotateExploitability", () => { annotateExploitability(finalFindings, _projectCtx); });
   // v3 next-gen: production-aware context ingest (Pillar 9). Must run BEFORE
   // the mitigation composite, persona prioritization, and final why-fired
   // record so those see the demotion signals.
-  try { annotateWafMitigation(finalFindings, scanRoot); } catch(_) {}
-  try { annotateAuthMitigation(finalFindings, scanRoot); } catch(_) {}
-  try { annotateNetworkMitigation(finalFindings, scanRoot); } catch(_) {}
-  try { annotateTelemetry(finalFindings, scanRoot); } catch(_) {}
-  try { annotateFeatureFlagGating(finalFindings, fc, { scanRoot }); } catch(_) {}
+  _runAnnotator("annotateWafMitigation", () => { annotateWafMitigation(finalFindings, scanRoot); });
+  _runAnnotator("annotateAuthMitigation", () => { annotateAuthMitigation(finalFindings, scanRoot); });
+  _runAnnotator("annotateNetworkMitigation", () => { annotateNetworkMitigation(finalFindings, scanRoot); });
+  _runAnnotator("annotateTelemetry", () => { annotateTelemetry(finalFindings, scanRoot); });
+  _runAnnotator("annotateFeatureFlagGating", () => { annotateFeatureFlagGating(finalFindings, fc, { scanRoot }); });
   // v3 next-gen: composite mitigation verdict consumes every prod signal above.
-  try { annotateMitigationComposite(finalFindings); } catch(_) {}
+  _runAnnotator("annotateMitigationComposite", () => { annotateMitigationComposite(finalFindings); });
   // v3 next-gen: crown-jewel mapping (FR-PROD-5) — score each file/finding by
   // business impact. Must run before persona prioritization (which uses it).
-  try { annotateCrownJewelScores(finalFindings, fc); } catch(_) {}
+  _runAnnotator("annotateCrownJewelScores", () => { annotateCrownJewelScores(finalFindings, fc); });
   // v3 next-gen: clone clusters (FR-SEM-8) + emit clone-outlier infos.
-  try { annotateCloneClusters(finalFindings); } catch(_) {}
+  _runAnnotator("annotateCloneClusters", () => { annotateCloneClusters(finalFindings); });
   try {
     const outliers = findCloneOutliers(finalFindings);
     if (outliers && outliers.length) finalFindings.push(...outliers);
   } catch(_) {}
   // v3 next-gen: AI-generated-code fingerprint (FR-LEARN-10). Property bag tag.
-  try { annotateAiProvenance(finalFindings, fc); } catch(_) {}
+  _runAnnotator("annotateAiProvenance", () => { annotateAiProvenance(finalFindings, fc); });
   // v3 next-gen: whole-program type narrowing (FR-SEM-10) — heuristic
   // confidence dampener on findings rooted in functions whose callers all
   // pass narrowly-typed values.
-  try { annotateTypeNarrowing(finalFindings, fc); } catch(_) {}
+  _runAnnotator("annotateTypeNarrowing", () => { annotateTypeNarrowing(finalFindings, fc); });
   // v3 next-gen: STRIDE classification (FR-LOGIC-10).
-  try { annotateStrideCategory(finalFindings); } catch(_) {}
+  _runAnnotator("annotateStrideCategory", () => { annotateStrideCategory(finalFindings); });
   // v3 next-gen: per-attacker-persona score matrix (FR-ADV-2). Must run AFTER
   // crown-jewels + mitigation composite so it sees those signals.
-  try { annotatePersonaScores(finalFindings); } catch(_) {}
+  _runAnnotator("annotatePersonaScores", () => { annotatePersonaScores(finalFindings); });
   // v3 next-gen: SCA reverse-blast-radius enrichment (FR-ADV-5).
-  try { annotateScaReverseBlast(finalFindings, fc); } catch(_) {}
+  _runAnnotator("annotateScaReverseBlast", () => { annotateScaReverseBlast(finalFindings, fc); });
   // v3 next-gen: bug-bounty payout prediction (FR-ADV-3). Composes with the
   // mitigation composite — gated/unreachable findings get the bounty scaled
   // down rather than zeroed.
-  try { annotateBountyPrediction(finalFindings); } catch(_) {}
+  _runAnnotator("annotateBountyPrediction", () => { annotateBountyPrediction(finalFindings); });
   // v3 next-gen: attack-playbook annotation (FR-ADV-4). Only for high+ findings.
-  try { annotateAttackPlaybooks(finalFindings); } catch(_) {}
+  _runAnnotator("annotateAttackPlaybooks", () => { annotateAttackPlaybooks(finalFindings); });
   // Phase-1 next-gen P1.1 (FR-VER-2): attach a runnable PoC to each finding
   // when a CWE template covers it. Findings without coverage get f.poc=null.
-  try { annotatePocs(finalFindings, { routes: aR }); } catch(_) {}
+  // Premortem #12: pass fileContents so PoC param-key inference can re-read
+  // the actual handler line when detector snippets are misattributed.
+  _runAnnotator("annotatePocs", () => { annotatePocs(finalFindings, { routes: aR, fileContents: fc }); });
   // FR-VER-3: regression-test generator (builds on the PoC artifact).
-  try { annotateRegressionTests(finalFindings); } catch(_) {}
+  _runAnnotator("annotateRegressionTests", () => { annotateRegressionTests(finalFindings); });
   // Phase-1 next-gen P1.2 (FR-VER-3, FR-VER-6, FR-VER-7): per-finding
   // verifier verdict — verified-exploit (live PoC ran), verified-by-llm,
   // verified-sanitizer-absence, unverified-by-design, or cannot-verify.
   // Fail-closed: any error → cannot-verify, never a silent drop.
-  try { annotateVerifierVerdicts(finalFindings, { fileContents: fc }); } catch(_) {}
+  _runAnnotator("annotateVerifierVerdicts", () => { annotateVerifierVerdicts(finalFindings, { fileContents: fc }); });
   // Cross-language taint (Sentinel-parity FR-DET-3) — five boundary types:
   // HTTP/REST via OpenAPI, gRPC via .proto, GraphQL via SDL, SQL/ORM
   // round-trip, and IaC → application-code reachability (FR-DET-4).
@@ -7031,7 +7050,8 @@ async function runFullScan({fileContents={}, depFileContents={}, scanRoot=null},
     if (cc && cc.length) finalFindings.push(...cc);
   } catch(_) {}
   // FR-LOGIC-6: LLM-driven flow narration (template fallback when no LLM endpoint).
-  try { await annotateNarration(finalFindings); } catch(_) {}
+  try { await annotateNarration(finalFindings); }
+  catch (e) { _annotatorErrors.push({ phase: 'annotateNarration', err: String((e && e.message) || e) }); }
   // Phase 3 (Sentinel-parity FR-L1, FR-L2) — IR + interprocedural taint.
   // Opt-in via AGENTIC_SECURITY_DEEP=1 because it's currently breadth-first,
   // not benchmark-tuned. Findings ride through the standard dedup/cluster/
@@ -7130,7 +7150,8 @@ async function runFullScan({fileContents={}, depFileContents={}, scanRoot=null},
   try{finalFindings.forEach(f=>scoreToxicity(f,_toxCtx));}catch(_){}
   for(const sc of supplyChain||[]){try{scoreToxicity(sc,_toxCtx);}catch(_){}}
   // 0.9.0 Feat-18: OSSF Scorecard enrichment (opt-in via AGENTIC_SECURITY_SCORECARD=1)
-  try{await _enrichWithScorecard(annotatedComponents);}catch(_){}
+  try { await _enrichWithScorecard(annotatedComponents); }
+  catch (e) { _annotatorErrors.push({ phase: '_enrichWithScorecard', err: String((e && e.message) || e) }); }
   // 0.8.0 Feat-10: license policy
   try{const lp=loadLicensePolicy(scanRoot);if(lp){const lv=evaluateLicensePolicy(annotatedComponents,lp);aLogic.push(...lv);}}catch(_){}
   // 0.9.0 Feat-15: dep confusion
@@ -7263,14 +7284,14 @@ async function runFullScan({fileContents={}, depFileContents={}, scanRoot=null},
   // v3 next-gen: capture scan-level reports (counterfactual, threat model,
   // trust-boundary diagram, calibration-drift alarms). All best-effort.
   let _v3 = {};
-  try { _v3.counterfactual = runCounterfactual(finalFindings, fc); } catch(_) {}
-  try { _v3.threatModel = buildThreatModel(finalFindings, fc); } catch(_) {}
-  try { _v3.trustBoundaryDiagram = buildTrustBoundaryDiagram(finalFindings, fc); } catch(_) {}
-  try { _v3.calibrationDrift = computeCalibrationDrift(scanRoot); } catch(_) {}
+  _runAnnotator("_v3.counterfactual", () => { _v3.counterfactual = runCounterfactual(finalFindings, fc); });
+  _runAnnotator("_v3.threatModel", () => { _v3.threatModel = buildThreatModel(finalFindings, fc); });
+  _runAnnotator("_v3.trustBoundaryDiagram", () => { _v3.trustBoundaryDiagram = buildTrustBoundaryDiagram(finalFindings, fc); });
+  _runAnnotator("_v3.calibrationDrift", () => { _v3.calibrationDrift = computeCalibrationDrift(scanRoot); });
   // v3 next-gen: why-fired provenance is captured LAST so it reflects the
   // final state of each finding after every other annotator has run.
-  try { annotateWhyFired(finalFindings, {}); } catch(_) {}
-  return{routes:dd(aR,r=>`${r.method}:${r.path}:${r.file}:${r.line}`),findings:finalFindings,sources:aSrc,sinks:aSink,sanitizers:aSan,filesScanned:files.length,crossFileCount:cf.length,logicVulns:aLogic,supplyChain,components:annotatedComponents,secrets:aSecrets,ciphers:{atRest:aCiphersRest,inTransit:aCiphersTransit},pfr,fc,suppressions:_getSuppressions(),_v3,_engineErrors:{cppDataflowParseErrors:_cppDataflowParseErrors.value}};}
+  _runAnnotator("annotateWhyFired", () => { annotateWhyFired(finalFindings, {}); });
+  return{routes:dd(aR,r=>`${r.method}:${r.path}:${r.file}:${r.line}`),findings:finalFindings,sources:aSrc,sinks:aSink,sanitizers:aSan,filesScanned:files.length,crossFileCount:cf.length,logicVulns:aLogic,supplyChain,components:annotatedComponents,secrets:aSecrets,ciphers:{atRest:aCiphersRest,inTransit:aCiphersTransit},pfr,fc,suppressions:_getSuppressions(),_v3,_engineErrors:{cppDataflowParseErrors:_cppDataflowParseErrors.value},annotatorErrors:_annotatorErrors};}
 
 // Post-aggregation classification: every source becomes "unsafe"|"safe"; every sink becomes "confirmed"|"safe".
 // Orphans (no finding linkage) are bucketed by file-local heuristic so the UI shows binary states only.

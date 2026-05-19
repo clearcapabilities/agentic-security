@@ -68,6 +68,9 @@ export function normalizeFindings(scan){
       unvalidated: f.unvalidated === true,
       cross_language: f.cross_language === true,
       family: f.family || null,
+      // Premortem #8: surface the parser field so downstream consumers
+      // (UI, SARIF, calibration) see the value the engine backfilled.
+      parser: f.parser || null,
       // Premortem 3R-6 + 4R-10: audit-provenance fields. Collapse the two
       // bool flags into one tri-state `signatureStatus` so consumers don't
       // have to know that passThroughSigning supersedes unsigned. The legacy
@@ -92,6 +95,11 @@ export function normalizeFindings(scan){
         family: f.poc.family || null,
         runHint: f.poc.runHint || null,
         code: typeof f.poc.code === 'string' ? f.poc.code : null,
+        // Harness-engineering: surface inference confidence so verifiers and
+        // regression-test-gen consumers can refuse to run low-confidence ones.
+        paramKey: f.poc.paramKey || null,
+        paramKeyConfidence: f.poc.paramKeyConfidence || null,
+        paramKeyInferred: typeof f.poc.paramKeyInferred === 'boolean' ? f.poc.paramKeyInferred : null,
       } : null,
       // Phase-1 next-gen P1.3 (FR-UX-1, FR-UX-2): calibrated probability +
       // 95% Wilson CI + sample size. Null when N < MIN_SAMPLES_FOR_CALIBRATION
@@ -159,6 +167,9 @@ export function normalizeFindings(scan){
       masked: s.masked || null,
       fix: s.fix ? { description: s.fix, code: s.code || '' } : null,
       blastRadius: s.blastRadius || null,
+      // Premortem #8: parser/family for downstream confidence + calibration.
+      parser: s.parser || 'SECRETS',
+      family: s.family || 'hardcoded-secret',
     });
   }
   for (const lv of (scan.logicVulns||[])) {
@@ -173,6 +184,9 @@ export function normalizeFindings(scan){
       file: lv.file, line: lv.line, snippet: lv.snippet || '',
       fix: lv.fix ? { description: lv.fix, code: lv.code || '' } : null,
       blastRadius: lv.blastRadius || null,
+      // Premortem #8.
+      parser: lv.parser || 'LOGIC',
+      family: lv.family || null,
     });
   }
   for (const sc of (scan.supplyChain||[])) {
@@ -188,6 +202,9 @@ export function normalizeFindings(scan){
       stride: null,
       file: scFile,
       line: 0,
+      // Premortem #8.
+      parser: 'SCA',
+      family: 'vulnerable-dep',
       ecosystem: sc.ecosystem,
       package: sc.name,
       version: sc.version,
@@ -300,6 +317,11 @@ export function toJSON(scan, meta={}, opts={}){
     // v3 next-gen — scan-level reports (counterfactual SPOF list, threat model
     // summary, trust-boundary Mermaid, calibration-drift alarms).
     _v3: scan._v3 || null,
+    // Harness-engineering (post-derived): annotator-pipeline errors. Empty
+    // array means clean; entries here mean one or more posture annotators
+    // threw and were skipped. The findings still ship; downstream consumers
+    // see the gap.
+    annotatorErrors: Array.isArray(scan.annotatorErrors) ? scan.annotatorErrors : [],
   };
   if (opts.includeSuppressed) out.suppressed = scan.suppressions||[];
   return out;

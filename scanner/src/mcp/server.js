@@ -19,7 +19,21 @@ import { auditCall } from './audit.js';
 
 const PROTOCOL_VERSION = '2025-03-26';
 const SERVER_NAME = 'agentic-security';
-const SERVER_VERSION = '0.39.2';
+
+// Premortem #6: read version from scanner/package.json at module load so the
+// MCP `initialize` response can't silently drift from the shipped package
+// version. A hardcoded constant rotted from 0.39.2 → wrong for every release
+// that followed. Fall back to 'unknown' rather than a stale literal.
+const SERVER_VERSION = (() => {
+  try {
+    const here = path.dirname(fileURLToPath(import.meta.url));
+    // scanner/src/mcp/ → scanner/package.json
+    const pkgPath = path.resolve(here, '..', '..', 'package.json');
+    const pkg = JSON.parse(fs.readFileSync(pkgPath, 'utf8'));
+    if (typeof pkg.version === 'string' && pkg.version.length) return pkg.version;
+  } catch { /* fall through */ }
+  return 'unknown';
+})();
 
 const TOOLS_BY_NAME = Object.fromEntries(ALL_TOOLS.map(t => [t.name, t]));
 

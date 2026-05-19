@@ -1,0 +1,31 @@
+{
+  "$schema": "https://json.schemastore.org/claude-code-settings.json",
+  "_note": "Committed team settings. Per docs/POSITIONING.md and the Claude-Code-at-scale guidance, this file excludes generated and cached artifacts so they don't pollute the context window. Developers can override locally via .claude/settings.local.json (gitignored).",
+  "permissions": {
+    "deny": [
+      "Read(./scanner/dist/agentic-security.mjs)",
+      "Read(./scanner/dist/agentic-security.mjs.sha256)",
+      "Read(./scanner/test/benchmark/realworld/.bench-cache/**)",
+      "Read(./scanner/test/benchmark/**/results/**)",
+      "Read(./.agentic-security/last-scan.json)",
+      "Read(./.agentic-security/last-scan.json.sig)",
+      "Read(./.agentic-security/findings.json)",
+      "Read(./.agentic-security/scan-history.json)",
+      "Read(./.agentic-security/hook-throttle.json)",
+      "Read(./scanner/src/posture/.agentic-security/**)",
+      "Read(./scanner/node_modules/**)",
+      "Read(./data/**)",
+      "Read(./reports/**)",
+      "Read(./bench/cve-replay/results/**)",
+      "Read(./bench/owasp-benchmark-v1.2/**)",
+      "Read(./bench/sard-juliet-java/**)",
+      "Read(./bench/polyglot/**)",
+      "Read(./jetbrains-plugin/build/**)",
+      "Read(./jetbrains-plugin/.gradle/**)",
+      "Read(./vscode/node_modules/**)",
+      "Read(./vscode/out/**)",
+      "Read(./**/__pycache__/**)",
+      "Read(./scripts/__pycache__/**)"
+    ]
+  }
+}

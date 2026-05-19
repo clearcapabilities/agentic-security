@@ -1,0 +1,24 @@
+{
+  "id": "weak-crypto-md5-to-scrypt",
+  "description": "Replace MD5 password hashing with scrypt + salt. Exercises the synth → verify → apply chain on a non-injection finding.",
+  "fixture_path": "bench/cve-replay/regression/weak-crypto-md5-passwords/pre",
+  "staged_finding": {
+    "id": "agent-task:weak-crypto-md5-to-scrypt:auth.js:5",
+    "stableId": "agent-task-weak-crypto-scrypt",
+    "kind": "sast",
+    "severity": "high",
+    "vuln": "Weak Password Hashing",
+    "cwe": "CWE-916",
+    "family": "weak-crypto",
+    "parser": "AST",
+    "file": "auth.js",
+    "line": 5,
+    "snippet": "crypto.createHash('md5').update(plain)",
+    "description": "MD5 is unsuitable for password storage",
+    "remediation": "use scrypt with a per-password salt",
+    "fix": {
+      "description": "Replace MD5 with scrypt + per-password salt.",
+      "replacement": "const crypto = require('crypto');\n\n// Fixed: scrypt with a per-password salt. Memory-hard, GPU-resistant.\nfunction hashPassword(plain) {\n  const salt = crypto.randomBytes(16);\n  const hash = crypto.scryptSync(plain, salt, 64);\n  return salt.toString('hex') + ':' + hash.toString('hex');\n}\n\nmodule.exports = { hashPassword };\n"
+    }
+  }
+}

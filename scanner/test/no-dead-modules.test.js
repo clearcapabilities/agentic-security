@@ -40,12 +40,21 @@ const SCAN_DIRS = [
 // added after v0.46.0 should be wired in (or explicitly allowlisted with a
 // reason) before merge.
 const ALLOWLIST = new Set([
+  // Premortem #16: loadLabeledJsonl is the public file-based API operators
+  // call from their own scripts (Python notebooks, ad-hoc shell). It's
+  // exercised in test via parseLabeledJsonl + fs read; no in-tree caller
+  // wraps it, by design. Remove once a CLI subcommand wraps the file path.
+  'posture/holdout-eval.js::loadLabeledJsonl',
+  // Eval-post recommendation #3: pass^k consistency harness. makeTrialFinding
+  // is a public helper for operators who want to build the trials array
+  // themselves (e.g. seeding from a SARIF file rather than last-scan.json).
+  // Used in test via direct call; no in-tree caller wraps it.
+  'llm-validator/consistency.js::makeTrialFinding',
   // ── Validator internal helpers — kept on the `_internal` export ──────────
   // These are tested directly via `_internal` re-export, not imported by name.
   'llm-validator/index.js::sanitizeReasoning',
   'llm-validator/index.js::parseLastJsonObject',
   'llm-validator/index.js::validateResponse',
-  'llm-validator/index.js::validateOne',
   'path-predicates.js::_internalPredicateNames',
   // ── posture/* future-API surface (kept for API symmetry, no caller yet) ──
   'blast-radius.js::collectProjectSignals',

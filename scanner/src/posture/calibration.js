@@ -161,20 +161,44 @@ export function annotateCalibratedConfidence(findings, opts = {}) {
 
 function round3(x) { return Math.round(x * 1000) / 1000; }
 
-// ─── Brier-against-history convenience ──────────────────────────────────────
-
-export function computeBrierFromHistory(history) {
-  // Treat each family as one observation: prediction = calibrated rate,
-  // actual = empirical rate. With perfect calibration, this is 0. Useful as
-  // a self-consistency check, not a true held-out Brier.
-  const t = buildCalibrationTable(history);
-  const samples = [];
-  for (const row of Object.values(t)) {
-    if (typeof row.calibrated !== 'number') continue;
-    samples.push({ prediction: row.calibrated, actual: row.calibrated });
+// ─── Brier on held-out labels ───────────────────────────────────────────────
+//
+// Premortem #9: the previous `computeBrierFromHistory` was tautological — it
+// fed (prediction = row.calibrated, actual = row.calibrated) into brierScore
+// and always returned 0. That number is unsafe to surface anywhere because
+// readers will interpret it as "calibration is perfect," when it actually
+// measures nothing.
+//
+// The honest computation needs *held-out labels* — verdicts the engine did
+// NOT use to fit the calibration table. We accept those as an array of
+// { family, predicted, actual } where `predicted` is the calibrated rate
+// the model gave (e.g. f.calibrated_confidence) and `actual ∈ {0,1}` is
+// the human/system-confirmed truth.
+//
+// Callers must supply held-out data. There is no fallback that produces
+// a number from the seed corpus alone — that path is what produced the
+// tautology, and it should fail loudly instead.
+export function computeBrierOnHeldOut(samples) {
+  if (!Array.isArray(samples) || samples.length === 0) {
+    return { brier: null, reason: 'no-held-out-samples' };
   }
-  return brierScore(samples);
+  const cleaned = [];
+  for (const s of samples) {
+    if (!s || typeof s !== 'object') continue;
+    const p = typeof s.predicted === 'number' ? Math.max(0, Math.min(1, s.predicted)) : null;
+    const a = typeof s.actual === 'number'
+      ? (s.actual >= 0.5 ? 1 : 0)
+      : (s.actual === true ? 1 : s.actual === false ? 0 : null);
+    if (p === null || a === null) continue;
+    cleaned.push({ prediction: p, actual: a });
+  }
+  if (!cleaned.length) return { brier: null, reason: 'no-valid-samples' };
+  const brier = brierScore(cleaned);
+  return { brier, n: cleaned.length };
 }
+
+// Removed: computeBrierFromHistory. Anyone relying on it for a dashboard
+// number should switch to computeBrierOnHeldOut(samples) with real labels.
 
 // For tests / introspection.
 export const _internals = { MIN_SAMPLES_FOR_CALIBRATION, Z_95, round3 };

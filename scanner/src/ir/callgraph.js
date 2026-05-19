@@ -50,5 +50,24 @@ export function buildCallGraph(perFileIR) {
     if (!callersOf.has(e.callee)) callersOf.set(e.callee, []);
     callersOf.get(e.callee).push(e);
   }
-  return { functions, edges, callersOf };
+  // Premortem #7: expose a name→qid resolver so the taint engine can ask
+  // the call graph for the callee's qid at the assign-from-call site.
+  // Same precedence as the edge resolution above (same-file ident wins,
+  // ClassName.method falls back).
+  function resolve(name) {
+    if (!name || typeof name !== 'string') return null;
+    // Direct ident match — search every file's same-file map.
+    for (const m of byNameInFile.values()) {
+      if (m.has(name)) return m.get(name);
+    }
+    if (classMethods.has(name)) return classMethods.get(name);
+    if (name.includes('.')) {
+      const tail = name.split('.').slice(-1)[0];
+      for (const m of byNameInFile.values()) {
+        if (m.has(tail)) return m.get(tail);
+      }
+    }
+    return null;
+  }
+  return { functions, edges, callersOf, resolve };
 }

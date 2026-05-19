@@ -7,6 +7,11 @@
             "type": "command",
             "command": "node ${CLAUDE_PLUGIN_ROOT}/hooks/session-welcome.js",
             "timeout": 3
+          },
+          {
+            "type": "command",
+            "command": "node ${CLAUDE_PLUGIN_ROOT}/hooks/session-start-self-check.js",
+            "timeout": 3
           }
         ]
       }
@@ -46,6 +51,17 @@
             "type": "command",
             "command": "node ${CLAUDE_PLUGIN_ROOT}/hooks/post-edit-scan.js",
             "timeout": 15
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node ${CLAUDE_PLUGIN_ROOT}/hooks/session-stop-drift-check.js",
+            "timeout": 3
           }
         ]
       }

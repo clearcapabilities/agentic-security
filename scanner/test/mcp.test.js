@@ -56,12 +56,52 @@ test('tools/list exposes the PRD-named tools', async () => {
   const { handleRequest, cleanup } = await makeSession();
   const r = await handleRequest({ jsonrpc: '2.0', id: 2, method: 'tools/list' });
   const names = r.result.tools.map(t => t.name).sort();
-  // Phase-2 additions: verify_fix + synthesize_fix.
-  assert.deepEqual(names, ['apply_fix', 'explain_finding', 'query_taint', 'scan_diff', 'synthesize_fix', 'verify_fix']);
+  // Phase-2: verify_fix + synthesize_fix. C.6: find_rule_module.
+  // Harness-anatomy #4: append/read_scratchpad. #2: AGENTS.md. #8: lookup_cve.
+  assert.deepEqual(names, [
+    'append_agents_memory', 'append_scratchpad', 'apply_fix',
+    'explain_finding', 'find_rule_module', 'lookup_cve',
+    'query_taint', 'read_agents_memory', 'read_scratchpad', 'scan_diff',
+    'synthesize_fix', 'verify_fix',
+  ]);
   for (const t of r.result.tools) {
     assert.equal(t.inputSchema.type, 'object');
     assert.equal(t.inputSchema.additionalProperties, false, `${t.name} schema must reject additional properties`);
   }
+  await cleanup();
+});
+
+test('find_rule_module refuses with no query', async () => {
+  const { handleRequest, cleanup } = await makeSession();
+  const r = await handleRequest({
+    jsonrpc: '2.0', id: 100, method: 'tools/call',
+    params: { name: 'find_rule_module', arguments: {} },
+  });
+  const text = r.result.content[0].text;
+  assert.match(text, /provide cwe.*family/);
+  await cleanup();
+});
+
+test('find_rule_module rejects malformed CWE id', async () => {
+  const { handleRequest, cleanup } = await makeSession();
+  const r = await handleRequest({
+    jsonrpc: '2.0', id: 101, method: 'tools/call',
+    params: { name: 'find_rule_module', arguments: { cwe: 'not-a-cwe' } },
+  });
+  // Handler-level format check (the mini-validator doesn't do `pattern`).
+  const body = JSON.parse(r.result.content[0].text);
+  assert.equal(body.ok, false);
+  assert.match(body.reason, /CWE-\\d/);
+  await cleanup();
+});
+
+test('find_rule_module rejects additionalProperties', async () => {
+  const { handleRequest, cleanup } = await makeSession();
+  const r = await handleRequest({
+    jsonrpc: '2.0', id: 102, method: 'tools/call',
+    params: { name: 'find_rule_module', arguments: { cwe: 'CWE-89', extra: 'rejected' } },
+  });
+  assert.equal(r.result.isError, true);
   await cleanup();
 });
 
@@ -301,7 +341,8 @@ test('stdio: spawned bin handles initialize+tools/list over NDJSON', async () =>
   await new Promise(r => child.on('exit', r));
   const lines = stdout.trim().split('\n').filter(Boolean).map(l => JSON.parse(l));
   assert.equal(lines[0].result.serverInfo.name, SERVER_NAME);
-  assert.equal(lines[1].result.tools.length, 6);
+  // 12 tools: 11 (after #2's AGENTS.md pair) + lookup_cve (harness-anatomy #8).
+  assert.equal(lines[1].result.tools.length, 12);
   await fsp.rm(tmpRoot, { recursive: true, force: true });
 });
 

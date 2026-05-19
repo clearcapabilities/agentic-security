@@ -15,6 +15,7 @@
 import * as fs from 'node:fs';
 import * as fsp from 'node:fs/promises';
 import * as path from 'node:path';
+import * as crypto from 'node:crypto';
 import { runScan } from '../runScan.js';
 import { applyFix as applyFixHistory } from '../posture/fix-history.js';
 import { verifyLastScan } from '../posture/integrity.js';
@@ -29,11 +30,56 @@ const META = { source: 'agentic-security-mcp', untrusted_excerpts: true };
 // OWASP A01 — refuse writes to paths that could subvert the security tool
 // itself or the host's source-control / dependency state. A forged finding
 // could otherwise tell apply_fix to overwrite our own rules.yml, our audit
-// log, a .git/hooks/post-commit payload, or a node_modules package.
+// log, a .git/hooks/post-commit payload, a CI workflow, an IaC file, or a
+// dependency manifest (premortem #3 expansion).
+//
+// Two kinds of guard:
+//   - DIR-prefix matches anywhere under one of these directories
+//   - FILE-suffix matches any path whose basename ends with one of these
 const RESERVED_WRITE_PREFIXES = [
   '.git/',
+  '.github/',
+  '.gitlab/',
+  '.circleci/',
+  '.buildkite/',
   '.agentic-security/',
   'node_modules/',
+  '.terraform/',
+  '.aws/',
+  'k8s/',
+  'kubernetes/',
+];
+const RESERVED_WRITE_BASENAMES = new Set([
+  'Dockerfile',
+  'Jenkinsfile',
+  '.gitlab-ci.yml',
+  '.gitlab-ci.yaml',
+  'package.json',
+  'package-lock.json',
+  'yarn.lock',
+  'pnpm-lock.yaml',
+  'pyproject.toml',
+  'Pipfile',
+  'Pipfile.lock',
+  'poetry.lock',
+  'requirements.txt',
+  'go.mod',
+  'go.sum',
+  'Cargo.toml',
+  'Cargo.lock',
+  'composer.json',
+  'composer.lock',
+  'Gemfile',
+  'Gemfile.lock',
+  'pom.xml',
+  'build.gradle',
+  'build.gradle.kts',
+]);
+const RESERVED_WRITE_SUFFIXES = [
+  '.tf',
+  '.tfvars',
+  'docker-compose.yml',
+  'docker-compose.yaml',
 ];
 function _isReservedWritePath(sessionRoot, absFile) {
   // Resolve sessionRoot symlinks so the relative path is computed against
@@ -42,7 +88,76 @@ function _isReservedWritePath(sessionRoot, absFile) {
   // would contain "../" and the prefix check would miss the reserved path.
   const rootReal = fs.realpathSync(path.resolve(sessionRoot));
   const rel = path.relative(rootReal, absFile).replace(/\\/g, '/');
-  return RESERVED_WRITE_PREFIXES.some(p => rel === p.replace(/\/$/, '') || rel.startsWith(p));
+  if (RESERVED_WRITE_PREFIXES.some(p => rel === p.replace(/\/$/, '') || rel.startsWith(p))) return true;
+  const base = rel.split('/').pop() || '';
+  if (RESERVED_WRITE_BASENAMES.has(base)) return true;
+  if (RESERVED_WRITE_SUFFIXES.some(s => base === s || base.endsWith(s))) return true;
+  return false;
+}
+
+// LangChain harness-anatomy recommendation: the filesystem is the right
+// collaboration / scratchpad surface for subagents. We carve out one writable
+// directory inside the otherwise-reserved `.agentic-security/` tree —
+// `.agentic-security/agent-scratchpad/<agent>/<session>/` — and expose
+// `append_scratchpad` / `read_scratchpad` for in-progress agent state.
+//
+// Confinement rules:
+//   - relative path required (no absolute / no `..`)
+//   - must start with `agent-scratchpad/<agent>/<session>/`
+//   - `<agent>` and `<session>` are restricted to `[A-Za-z0-9_.-]{1,64}`
+//     (no slashes — keeps the prefix exactly three components deep)
+//   - file basename: same charset rules
+//   - max scratchpad bytes per file: SCRATCHPAD_MAX_FILE_BYTES
+const SCRATCHPAD_PREFIX = '.agentic-security/agent-scratchpad/';
+const SCRATCHPAD_NAME_RE = /^[A-Za-z0-9_.-]{1,64}$/;
+const SCRATCHPAD_MAX_FILE_BYTES = 2 * 1024 * 1024;   // 2 MB per file
+const SCRATCHPAD_MAX_TOTAL_BYTES = 50 * 1024 * 1024; // 50 MB per scan root
+
+function _validateScratchpadPath(relPath) {
+  if (typeof relPath !== 'string' || !relPath.length) {
+    return { ok: false, reason: 'path: not a string' };
+  }
+  if (path.isAbsolute(relPath)) return { ok: false, reason: 'path: must be relative' };
+  if (relPath.includes('..')) return { ok: false, reason: 'path: must not contain ..' };
+  const normalized = relPath.replace(/\\/g, '/');
+  if (!normalized.startsWith(SCRATCHPAD_PREFIX)) {
+    return { ok: false, reason: `path: must start with "${SCRATCHPAD_PREFIX}"` };
+  }
+  const rest = normalized.slice(SCRATCHPAD_PREFIX.length);
+  const parts = rest.split('/');
+  if (parts.length < 3) {
+    return { ok: false, reason: 'path: must be agent-scratchpad/<agent>/<session>/<file>' };
+  }
+  const [agent, session, ...fileParts] = parts;
+  if (!SCRATCHPAD_NAME_RE.test(agent)) return { ok: false, reason: `path: agent name "${agent}" not in [A-Za-z0-9_.-]{1,64}` };
+  if (!SCRATCHPAD_NAME_RE.test(session)) return { ok: false, reason: `path: session id "${session}" not in [A-Za-z0-9_.-]{1,64}` };
+  for (const p of fileParts) {
+    if (!SCRATCHPAD_NAME_RE.test(p)) return { ok: false, reason: `path: file part "${p}" not in [A-Za-z0-9_.-]{1,64}` };
+  }
+  return { ok: true, agent, session, fileParts };
+}
+
+function _scratchpadAbs(sessionRoot, relPath) {
+  return path.resolve(sessionRoot, relPath.replace(/\\/g, '/'));
+}
+
+function _scratchpadTotalBytes(sessionRoot) {
+  const base = path.join(sessionRoot, '.agentic-security', 'agent-scratchpad');
+  if (!fs.existsSync(base)) return 0;
+  let total = 0;
+  const walk = (dir) => {
+    let entries;
+    try { entries = fs.readdirSync(dir, { withFileTypes: true }); } catch { return; }
+    for (const e of entries) {
+      const fp = path.join(dir, e.name);
+      try {
+        if (e.isFile()) { total += fs.statSync(fp).size; }
+        else if (e.isDirectory()) walk(fp);
+      } catch { /* skip */ }
+    }
+  };
+  walk(base);
+  return total;
 }
 
 // ─── Path confinement ────────────────────────────────────────────────────────
@@ -113,6 +228,56 @@ function _findById(scan, id) {
       || null;
 }
 
+// ─── Tool-output offloading (harness-anatomy #1) ────────────────────────────
+// LangChain post: "the harness keeps the head and tail tokens of tool outputs
+// above a threshold number of tokens and offloads the full output to the
+// filesystem." We apply this to any MCP tool response whose findings array
+// exceeds OFFLOAD_THRESHOLD entries: write the full list to a scratchpad
+// file, return only head[0..3] + tail[-2..] + total + path. The agent can
+// call `read_scratchpad(path)` to page through the rest.
+//
+// Design choices:
+//   - Threshold is conservative (10) — anything bigger than a casual UI page
+//     gets offloaded. Tunable via $AGENTIC_SECURITY_MCP_OFFLOAD_THRESHOLD.
+//   - Offload location is the agent-scratchpad (not a separate dir) so the
+//     same cleanup + size caps apply.
+//   - File names are deterministic per response (sha256 of JSON.stringify)
+//     so two identical responses share the same offload file.
+//   - The session id is process.pid + boot timestamp short hash — collides
+//     only across restarts within a millisecond, which is fine for cache.
+const OFFLOAD_THRESHOLD = (() => {
+  const v = parseInt(process.env.AGENTIC_SECURITY_MCP_OFFLOAD_THRESHOLD || '10', 10);
+  return Number.isFinite(v) && v >= 1 ? v : 10;
+})();
+const MCP_SESSION_ID = `${process.pid}-${Date.now().toString(36).slice(-6)}`;
+
+function _maybeOffload(sessionRoot, toolName, items) {
+  if (!Array.isArray(items) || items.length <= OFFLOAD_THRESHOLD) {
+    return { offloaded: false, items, total: items.length };
+  }
+  const head = items.slice(0, 3);
+  const tail = items.slice(-2);
+  const json = JSON.stringify({ tool: toolName, total: items.length, items }, null, 2);
+  const hashShort = crypto.createHash('sha256').update(json).digest('hex').slice(0, 10);
+  const rel = `.agentic-security/agent-scratchpad/mcp-offload/${MCP_SESSION_ID}/${toolName}-${hashShort}.json`;
+  const abs = path.resolve(sessionRoot, rel);
+  try {
+    fs.mkdirSync(path.dirname(abs), { recursive: true });
+    fs.writeFileSync(abs, json);
+  } catch (e) {
+    // If we can't write to disk for some reason, fall back to returning
+    // everything — the alternative would be silently dropping data, which
+    // is worse than blowing the context.
+    return { offloaded: false, items, total: items.length, offloadError: e.message };
+  }
+  return {
+    offloaded: true,
+    head, tail, total: items.length,
+    scratchpadPath: rel,
+    pagingHint: `call read_scratchpad({ path: "${rel}", offset, limit }) to page through; the file is { tool, total, items: [...] } JSON`,
+  };
+}
+
 // ─── scan_diff ───────────────────────────────────────────────────────────────
 export const scan_diff = {
   name: 'scan_diff',
@@ -161,6 +326,22 @@ export const scan_diff = {
         title: f.title || f.vuln, cwe: f.cwe,
         description: f.description, remediation: f.remediation,
       }));
+    // Harness-anatomy #1: offload when the result exceeds OFFLOAD_THRESHOLD.
+    // The agent gets a head+tail preview plus a path it can page through;
+    // the full finding list lives on disk. This is the documented fix for
+    // "context rot" — large tool outputs eat the model's attention budget.
+    const off = _maybeOffload(sessionRoot, 'scan_diff', findings);
+    if (off.offloaded) {
+      return {
+        _meta: META,
+        scannedFiles: Object.keys(fileContents).length,
+        findingCount: off.total,
+        offloaded: true,
+        head: off.head, tail: off.tail,
+        scratchpadPath: off.scratchpadPath,
+        pagingHint: off.pagingHint,
+      };
+    }
     return {
       _meta: META,
       scannedFiles: Object.keys(fileContents).length,
@@ -173,27 +354,37 @@ export const scan_diff = {
 // ─── query_taint ─────────────────────────────────────────────────────────────
 export const query_taint = {
   name: 'query_taint',
-  description: 'Query whether the last verified scan found a taint path involving a given source and sink.',
+  description: 'Query whether the last verified scan found a taint path involving a given source and sink. Paginated — returns up to `limit` matches (default 10, max 50) starting at `offset` (default 0); set `truncated:true` and `totalMatches` tell you when to page.',
   inputSchema: {
     type: 'object',
     additionalProperties: false,
     properties: {
       source: { type: 'string', minLength: 1, maxLength: 256 },
       sink: { type: 'string', minLength: 1, maxLength: 256 },
+      limit: { type: 'integer', minimum: 1, maximum: 50 },
+      offset: { type: 'integer', minimum: 0, maximum: 10000 },
     },
     required: ['source', 'sink'],
   },
-  async handler({ source, sink }, ctx) {
+  async handler({ source, sink, limit, offset }, ctx) {
     const { scan, status } = _readLastScanVerified(ctx.sessionRoot, { allowUnsigned: true });
     if (!scan) {
       return { _meta: META, hasResult: false, status, message: `No usable scan state (${status}).` };
     }
+    const lim = Number.isInteger(limit) ? Math.min(50, Math.max(1, limit)) : 10;
+    const off = Number.isInteger(offset) ? Math.max(0, offset) : 0;
     const srcL = String(source).toLowerCase();
     const sinkL = String(sink).toLowerCase();
-    const matches = (scan.findings || []).filter(f => {
+    // Filter first (cheap), then paginate (so totalMatches is accurate).
+    // Harness-engineering note (post-derived): "context window != context
+    // attention." Returning hundreds of matches to the agent in one shot
+    // dilutes its reasoning; the agent receives a bounded slice plus the
+    // cursor to fetch the rest if it wants.
+    const all = (scan.findings || []).filter(f => {
       const hay = [f.description, f.title, f.vuln, f.snippet, JSON.stringify(f.trace || '')].join(' ').toLowerCase();
       return hay.includes(srcL) && hay.includes(sinkL);
-    }).map(f => redactFinding({
+    });
+    const page = all.slice(off, off + lim).map(f => redactFinding({
       id: f.id, severity: f.severity, file: f.file, line: f.line,
       title: f.title || f.vuln, description: f.description,
       trace: f.trace || null,
@@ -203,8 +394,13 @@ export const query_taint = {
       hasResult: true,
       integrity: status,
       scanStartedAt: scan.startedAt || scan.meta?.startedAt || null,
-      matchCount: matches.length,
-      matches,
+      totalMatches: all.length,
+      matchCount: page.length,
+      offset: off,
+      limit: lim,
+      truncated: off + page.length < all.length,
+      nextOffset: off + page.length < all.length ? off + page.length : null,
+      matches: page,
     };
   },
 };
@@ -233,9 +429,28 @@ export const explain_finding = {
       snippet: f.snippet || null,
       trace: f.trace || null,
     });
+    // Harness-anatomy #1: explain_finding's trace is the most-likely-large
+    // field on a single finding. Offload when it crosses the threshold so
+    // the agent gets a head/tail preview, not a 50-step trace dumped into
+    // its context.
+    let traceTrimmed = redacted.trace;
+    let traceMeta = null;
+    if (Array.isArray(redacted.trace) && redacted.trace.length > OFFLOAD_THRESHOLD) {
+      const off = _maybeOffload(ctx.sessionRoot, 'explain_finding-trace', redacted.trace);
+      if (off.offloaded) {
+        traceTrimmed = [...off.head, { _gap: `... ${off.total - off.head.length - off.tail.length} more steps elided; read scratchpad ...` }, ...off.tail];
+        traceMeta = {
+          totalSteps: off.total,
+          scratchpadPath: off.scratchpadPath,
+          pagingHint: off.pagingHint,
+        };
+      }
+    }
     return {
       _meta: META,
       ...redacted,
+      trace: traceTrimmed,
+      traceOffload: traceMeta,
       confidence: f.confidence ?? null,
       hasReplacementFix: typeof f.fix?.replacement === 'string',
       integrity: status,
@@ -271,10 +486,12 @@ export const apply_fix = {
       return { _meta: META, applied: false, reason: 'shadow findings cannot be auto-applied' };
     }
     if (typeof f.fix?.replacement !== 'string') {
+      // Premortem #2: templates are patch-shaped text. Same reasoning as
+      // the replacement path — do NOT pass through redactString here.
       return {
         _meta: META, applied: false,
         reason: 'No full replacement available — only a template. Apply the template manually.',
-        template: redactString(f.fix?.code || ''),
+        template: f.fix?.code || '',
         file: f.file, line: f.line,
       };
     }
@@ -302,17 +519,37 @@ export const apply_fix = {
       };
     }
 
-    const entry = await applyFixHistory({
-      scanRoot: ctx.sessionRoot,
-      file: f.file,
-      originalContent,
-      newContent: f.fix.replacement,
-      findingId: f.id,
-      stableId: f.stableId || null,   // premortem 4R-8
-      ruleId: f.rule || null,
-      vuln: f.vuln || f.title || null,
-    });
-    return { _meta: META, applied: true, historyId: entry.id, file: f.file, backupPath: entry.backupPath, integrity: status };
+    let entry;
+    try {
+      entry = await applyFixHistory({
+        scanRoot: ctx.sessionRoot,
+        file: f.file,
+        originalContent,
+        newContent: f.fix.replacement,
+        findingId: f.id,
+        stableId: f.stableId || null,   // premortem 4R-8
+        ruleId: f.rule || null,
+        vuln: f.vuln || f.title || null,
+      });
+    } catch (e) {
+      // Harness-engineering: step-budget refusal (post-derived). The
+      // deterministic layer enforces at-most-N attempts per stableId. When
+      // exceeded, surface it as a structured `budget-exceeded` outcome the
+      // agent can recognize — not a generic error.
+      if (e && e.name === 'FixAttemptBudgetExceededError') {
+        return {
+          _meta: META,
+          applied: false,
+          reason: `budget-exceeded: ${e.message}`,
+          budgetExceeded: true,
+          attempts: e.attempts,
+          maxAttempts: e.max,
+          key: e.key,
+        };
+      }
+      throw e;
+    }
+    return { _meta: META, applied: true, historyId: entry.id, file: f.file, backupPath: entry.backupPath, integrity: status, attemptOrdinal: entry.attemptOrdinal };
   },
 };
 
@@ -406,6 +643,12 @@ export const synthesize_fix = {
       locDelta = Math.abs(fix.replacement.split('\n').length - orig.split('\n').length);
     }
     const oversized = touchedFiles > 3 || locDelta > 100;
+    // Premortem #2: `replacement` is a *patch* (the code we'll write to disk),
+    // not a finding excerpt. Running it through redactString silently corrupts
+    // valid patches whose content happens to match a secret-shape (e.g. a
+    // placeholder like `password = "loadFromEnv"`). Patches MUST pass through
+    // verbatim. Snippet/description/etc. continue to be redacted in
+    // explain_finding / scan_diff — that's the right surface for redaction.
     return {
       _meta: META,
       ok: true,
@@ -414,8 +657,8 @@ export const synthesize_fix = {
       vuln: f.vuln,
       severity: f.severity,
       hasReplacement,
-      replacement: hasReplacement ? redactString(fix.replacement) : null,
-      template: fix.code ? redactString(fix.code) : null,
+      replacement: hasReplacement ? fix.replacement : null,
+      template: fix.code || null,
       remediation: typeof fix.description === 'string' ? fix.description : (typeof fix === 'string' ? fix : null),
       patchBounds: { touchedFiles, locDelta, oversized },
       recommendsFixPlan: oversized && !hasReplacement,
@@ -423,4 +666,275 @@ export const synthesize_fix = {
   },
 };
 
-export const ALL_TOOLS = [scan_diff, query_taint, explain_finding, apply_fix, verify_fix, synthesize_fix];
+// ─── find_rule_module ───────────────────────────────────────────────────────
+// Codebase-navigation helper (C.6). Answers "which file under scanner/src/
+// implements the detector for CWE-X / family Y" by scanning the SAST and
+// posture sources for `cwe:` / `family:` literals. Cheaper and more reliable
+// than asking the agent to grep — premortem note: "grep for a common function
+// name in a large codebase returns thousands of matches."
+//
+// Read-only; no findings consumed. Output is a list of file paths + the
+// matching literal lines so the agent can verify before editing.
+export const find_rule_module = {
+  name: 'find_rule_module',
+  description: 'Find the file(s) under scanner/src/{sast,posture}/ that emit findings for a given CWE id or family name. Use BEFORE editing a rule — answers "where is the SQL-injection detector?" without grepping the whole tree. Returns at most 20 hits; refine the query if too broad.',
+  inputSchema: {
+    type: 'object',
+    additionalProperties: false,
+    properties: {
+      cwe: { type: 'string', minLength: 5, maxLength: 16 },
+      family: { type: 'string', minLength: 2, maxLength: 64 },
+    },
+  },
+  async handler({ cwe, family }, ctx) {
+    if (!cwe && !family) {
+      return { _meta: META, ok: false, reason: 'provide cwe (e.g. "CWE-89") or family (e.g. "sql-injection")' };
+    }
+    // Pattern enforcement — the mini-schema validator doesn't do `pattern`.
+    if (cwe && !/^CWE-\d+$/.test(cwe)) {
+      return { _meta: META, ok: false, reason: 'cwe must match /^CWE-\\d+$/ (e.g. "CWE-89")' };
+    }
+    if (family && !/^[a-z][a-z0-9-]+$/.test(family)) {
+      return { _meta: META, ok: false, reason: 'family must match /^[a-z][a-z0-9-]+$/ (e.g. "sql-injection")' };
+    }
+    const sessionRoot = ctx.sessionRoot;
+    const roots = [
+      path.join(sessionRoot, 'scanner', 'src', 'sast'),
+      path.join(sessionRoot, 'scanner', 'src', 'posture'),
+    ];
+    const hits = [];
+    const cweLit = cwe ? new RegExp(`['"\`]${cwe.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}['"\`]`) : null;
+    // Family match is broader on purpose: detectors often emit findings
+    // without an explicit `family:` field (it's backfilled by
+    // posture/finding-defaults.js). We match the family literal anywhere in
+    // the file (vuln-name strings, comments, ids) so e.g. searching for "csrf"
+    // surfaces sast/csrf.js even though it doesn't tag findings with the field.
+    const famLit = family ? new RegExp(`\\b${family.replace(/[.*+?^${}()|[\]\\]/g, '\\$&').replace(/-/g, '[-_ ]?')}\\b`, 'i') : null;
+    // Also try a filename-stem match when only family is given.
+    const famFilename = family ? family.toLowerCase() : null;
+    for (const root of roots) {
+      if (!fs.existsSync(root)) continue;
+      let entries;
+      try { entries = fs.readdirSync(root); } catch { continue; }
+      for (const entry of entries) {
+        if (!entry.endsWith('.js')) continue;
+        const abs = path.join(root, entry);
+        let stat;
+        try { stat = fs.statSync(abs); } catch { continue; }
+        if (!stat.isFile() || stat.size > MAX_FILE_BYTES) continue;
+        let body;
+        try { body = fs.readFileSync(abs, 'utf8'); } catch { continue; }
+        const lines = body.split('\n');
+        const matches = [];
+        const stem = entry.replace(/\.js$/, '').toLowerCase();
+        const filenameMatchesFamily = famFilename && (stem === famFilename || stem.includes(famFilename));
+        if (filenameMatchesFamily) {
+          matches.push({ line: 1, text: `<filename "${entry}" matches family>`, kind: 'filename' });
+        }
+        for (let i = 0; i < lines.length; i++) {
+          const line = lines[i];
+          if (cweLit && cweLit.test(line)) matches.push({ line: i + 1, text: line.trim().slice(0, 200), kind: 'cwe' });
+          else if (famLit && famLit.test(line)) matches.push({ line: i + 1, text: line.trim().slice(0, 200), kind: 'family' });
+          if (matches.length >= 5) break;
+        }
+        if (matches.length) {
+          hits.push({
+            file: path.relative(sessionRoot, abs).replace(/\\/g, '/'),
+            matchCount: matches.length,
+            matches,
+          });
+          if (hits.length >= 20) break;
+        }
+      }
+      if (hits.length >= 20) break;
+    }
+    return {
+      _meta: META,
+      ok: true,
+      query: { cwe: cwe || null, family: family || null },
+      hitCount: hits.length,
+      hits,
+      truncated: hits.length >= 20,
+    };
+  },
+};
+
+// ─── append_scratchpad / read_scratchpad ───────────────────────────────────
+// LangChain harness-anatomy: the filesystem is the durable agent scratchpad.
+// These tools expose a tightly-confined slice of the project tree for
+// in-progress agent state: PLAN.md decompositions, offloaded tool outputs,
+// session notes that survive context resets.
+//
+// Confinement (validated in `_validateScratchpadPath`):
+//   ALL paths must start with `.agentic-security/agent-scratchpad/<agent>/<session>/`
+//   and consist of [A-Za-z0-9_.-]{1,64} path components — no `..`, no
+//   absolute paths, no shell metacharacters. This is the ONE place inside
+//   the otherwise-reserved `.agentic-security/` tree where agents can write.
+// Limits:
+//   - 2 MB per file (write attempts beyond this are refused).
+//   - 50 MB total across the scratchpad — protects against runaway agents.
+// Operators who want to clean up: `rm -rf .agentic-security/agent-scratchpad`.
+//
+// The post: "Agents can store intermediate outputs and maintain state that
+// outlasts a single session." This is that mechanism.
+
+export const append_scratchpad = {
+  name: 'append_scratchpad',
+  description: 'Append text to a file under .agentic-security/agent-scratchpad/<agent>/<session>/. The ONLY writable location for in-progress agent state (PLAN.md, notes, offloaded tool outputs, decision logs). Path must start with that prefix; <agent>/<session>/file parts are restricted to [A-Za-z0-9_.-]{1,64}. Caps: 2 MB per file, 50 MB total across the scratchpad.',
+  inputSchema: {
+    type: 'object',
+    additionalProperties: false,
+    properties: {
+      path: { type: 'string', minLength: 1, maxLength: 256 },
+      content: { type: 'string', minLength: 1, maxLength: 256 * 1024 },
+    },
+    required: ['path', 'content'],
+  },
+  async handler({ path: relPath, content }, ctx) {
+    const v = _validateScratchpadPath(relPath);
+    if (!v.ok) return { _meta: META, ok: false, reason: v.reason };
+    const abs = _scratchpadAbs(ctx.sessionRoot, relPath);
+    const total = _scratchpadTotalBytes(ctx.sessionRoot);
+    if (total + content.length > SCRATCHPAD_MAX_TOTAL_BYTES) {
+      return {
+        _meta: META, ok: false,
+        reason: `scratchpad-total-exceeded: ${total} + ${content.length} > ${SCRATCHPAD_MAX_TOTAL_BYTES}. Clean up via "rm -rf .agentic-security/agent-scratchpad" or rotate sessions.`,
+      };
+    }
+    let existing = 0;
+    try { if (fs.existsSync(abs)) existing = fs.statSync(abs).size; } catch {}
+    if (existing + content.length > SCRATCHPAD_MAX_FILE_BYTES) {
+      return {
+        _meta: META, ok: false,
+        reason: `scratchpad-file-exceeded: ${existing} + ${content.length} > ${SCRATCHPAD_MAX_FILE_BYTES}. Start a new file.`,
+      };
+    }
+    try {
+      fs.mkdirSync(path.dirname(abs), { recursive: true });
+      fs.appendFileSync(abs, content);
+      return {
+        _meta: META, ok: true,
+        path: relPath, bytesWritten: content.length, fileSize: existing + content.length,
+        scratchpadTotal: total + content.length,
+      };
+    } catch (e) {
+      return { _meta: META, ok: false, reason: `write-failed: ${e.message}` };
+    }
+  },
+};
+
+export const read_scratchpad = {
+  name: 'read_scratchpad',
+  description: 'Read a file under .agentic-security/agent-scratchpad/<agent>/<session>/. Paginated for large files via `offset` (default 0) and `limit` (default 4096 bytes, max 64 KB). Returns bytesRead, truncated, nextOffset for paging.',
+  inputSchema: {
+    type: 'object',
+    additionalProperties: false,
+    properties: {
+      path: { type: 'string', minLength: 1, maxLength: 256 },
+      offset: { type: 'integer', minimum: 0, maximum: 100 * 1024 * 1024 },
+      limit: { type: 'integer', minimum: 1, maximum: 64 * 1024 },
+    },
+    required: ['path'],
+  },
+  async handler({ path: relPath, offset, limit }, ctx) {
+    const v = _validateScratchpadPath(relPath);
+    if (!v.ok) return { _meta: META, ok: false, reason: v.reason };
+    const abs = _scratchpadAbs(ctx.sessionRoot, relPath);
+    if (!fs.existsSync(abs)) return { _meta: META, ok: false, reason: 'not-found' };
+    let stat;
+    try { stat = fs.statSync(abs); } catch (e) { return { _meta: META, ok: false, reason: `stat-failed: ${e.message}` }; }
+    if (!stat.isFile()) return { _meta: META, ok: false, reason: 'not-a-file' };
+    const off = Number.isInteger(offset) ? Math.max(0, offset) : 0;
+    const lim = Number.isInteger(limit) ? Math.min(64 * 1024, Math.max(1, limit)) : 4096;
+    let buf;
+    try {
+      const fd = fs.openSync(abs, 'r');
+      const tmp = Buffer.alloc(lim);
+      const read = fs.readSync(fd, tmp, 0, lim, off);
+      fs.closeSync(fd);
+      buf = tmp.slice(0, read);
+    } catch (e) { return { _meta: META, ok: false, reason: `read-failed: ${e.message}` }; }
+    const text = buf.toString('utf8');
+    return {
+      _meta: META, ok: true,
+      path: relPath,
+      offset: off, limit: lim, bytesRead: buf.length,
+      totalSize: stat.size,
+      truncated: off + buf.length < stat.size,
+      nextOffset: off + buf.length < stat.size ? off + buf.length : null,
+      content: text,
+    };
+  },
+};
+
+// ─── append_agents_memory / read_agents_memory ─────────────────────────────
+// LangChain harness-anatomy #2: AGENTS.md as continual-learning surface.
+// Lazy-import to keep the MCP module dependency-light.
+import { appendAgentsMemory as _appendAgentsMemory, readAgentsMemory as _readAgentsMemory } from '../posture/agents-memory.js';
+import { lookupCve as _lookupCve } from '../posture/cve-lookup.js';
+
+export const append_agents_memory = {
+  name: 'append_agents_memory',
+  description: 'Append a short narrative entry to AGENTS.md — agent-authored continual-learning notes. Use at session end to record "what worked / what didn\'t / what I\'d try differently next time" so the next agent can pick up the lesson. Bounded: 2 KB per entry, 20 KB total before rotation to AGENTS.md.archive. Use sparingly — narrative, not structured data.',
+  inputSchema: {
+    type: 'object',
+    additionalProperties: false,
+    properties: {
+      agent: { type: 'string', minLength: 1, maxLength: 64 },
+      body: { type: 'string', minLength: 1, maxLength: 4096 },
+    },
+    required: ['agent', 'body'],
+  },
+  async handler({ agent, body }, ctx) {
+    const r = _appendAgentsMemory(ctx.sessionRoot, { agent, body });
+    return { _meta: META, ...r };
+  },
+};
+
+export const read_agents_memory = {
+  name: 'read_agents_memory',
+  description: 'Read the AGENTS.md continual-learning file (and AGENTS.md.archive if needed). Returns the most-recent ~6 KB tail by default; pass `full: true` for everything. The SessionStart hook already surfaces a summary; use this when an agent wants to look up specifics mid-session.',
+  inputSchema: {
+    type: 'object',
+    additionalProperties: false,
+    properties: {
+      full: { type: 'boolean' },
+    },
+  },
+  async handler({ full }, ctx) {
+    const body = _readAgentsMemory(ctx.sessionRoot);
+    if (!body) return { _meta: META, present: false };
+    if (full) return { _meta: META, present: true, length: body.length, content: body };
+    // Tail-only — same logic as summarizeForSession but inlined to avoid a
+    // second import surface.
+    const limit = 6 * 1024;
+    if (body.length <= limit) return { _meta: META, present: true, length: body.length, content: body };
+    const tail = body.slice(-limit);
+    const firstSection = tail.indexOf('\n## ');
+    const slice = firstSection >= 0 ? tail.slice(firstSection) : tail;
+    return { _meta: META, present: true, length: body.length, truncated: true, content: slice };
+  },
+};
+
+// ─── lookup_cve ────────────────────────────────────────────────────────────
+// LangChain harness-anatomy #8: bridge the knowledge-cutoff gap by exposing
+// the local OSV / KEV / EPSS cache as a structured tool. Read-only — never
+// triggers a network fetch from the MCP path.
+export const lookup_cve = {
+  name: 'lookup_cve',
+  description: 'Look up a CVE id in the local OSV / KEV / EPSS caches. Returns staleness-tiered cached data (fresh / recent / stale / very-stale). Read-only — does NOT fetch fresh data; the scan pipeline is the only thing that populates the cache. Use to inform reasoning about an SCA finding without relying on the model\'s training cutoff.',
+  inputSchema: {
+    type: 'object',
+    additionalProperties: false,
+    properties: {
+      cve: { type: 'string', minLength: 9, maxLength: 20 },
+    },
+    required: ['cve'],
+  },
+  async handler({ cve }, _ctx) {
+    const r = _lookupCve(cve);
+    return { _meta: META, ...r };
+  },
+};
+
+export const ALL_TOOLS = [scan_diff, query_taint, explain_finding, apply_fix, verify_fix, synthesize_fix, find_rule_module, append_scratchpad, read_scratchpad, append_agents_memory, read_agents_memory, lookup_cve];

@@ -7,7 +7,7 @@ import {
   brierScore,
   buildCalibrationTable,
   annotateCalibratedConfidence,
-  computeBrierFromHistory,
+  computeBrierOnHeldOut,
   _internals,
 } from '../src/posture/calibration.js';
 
@@ -105,8 +105,23 @@ test('annotateCalibratedConfidence does not throw on null input', () => {
   assert.doesNotThrow(() => annotateCalibratedConfidence([null, undefined, 'string', 42]));
 });
 
-test('computeBrierFromHistory returns null for empty', () => {
-  assert.equal(computeBrierFromHistory({}), null);
+test('computeBrierOnHeldOut returns null for empty', () => {
+  const r = computeBrierOnHeldOut([]);
+  assert.equal(r.brier, null);
+});
+test('computeBrierOnHeldOut scores real predictions vs labels', () => {
+  // Perfect predictions → Brier 0.
+  const r0 = computeBrierOnHeldOut([
+    { family: 'sql', predicted: 1, actual: 1 },
+    { family: 'sql', predicted: 0, actual: 0 },
+  ]);
+  assert.ok(r0.brier !== null && r0.brier < 1e-9);
+  // Always-wrong predictions → Brier 1.
+  const r1 = computeBrierOnHeldOut([
+    { family: 'sql', predicted: 1, actual: 0 },
+    { family: 'sql', predicted: 0, actual: 1 },
+  ]);
+  assert.ok(r1.brier > 0.99);
 });
 
 test('seed corpus loads via loadCalibrationHistory + buildCalibrationTable', async () => {

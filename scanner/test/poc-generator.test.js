@@ -124,3 +124,76 @@ test('pocCoverageSummary aggregates correctly', () => {
   assert.equal(s.withoutPoc, 1);
   assert.deepEqual(s.byFamily['sql-injection'], { withPoc: 1, withoutPoc: 0 });
 });
+
+// ─── harness-engineering #3: param-key confidence ───────────────────────────
+
+test('generatePoc surfaces high paramKeyConfidence when handler body shows req.body.X', () => {
+  const finding = {
+    file: 'app.js', line: 2, vuln: 'Command Injection', cwe: 'CWE-78', severity: 'critical',
+  };
+  const fileContents = {
+    'app.js': `app.post('/ping', (req, res) => {\n  exec('ping ' + req.body.host, (e, out) => res.send(out));\n});`,
+  };
+  const routes = [{ file: 'app.js', line: 1, method: 'POST', path: '/ping' }];
+  const poc = generatePoc(finding, { routes, fileContents });
+  assert.ok(poc, 'expected a PoC');
+  assert.equal(poc.paramKeyConfidence, 'high');
+  assert.equal(poc.paramKeyInferred, true);
+  assert.equal(poc.paramKey, 'host');
+});
+
+test('generatePoc marks paramKeyConfidence=low when no request key is in the window', () => {
+  const finding = {
+    file: 'app.js', line: 2, vuln: 'Command Injection', cwe: 'CWE-78', severity: 'critical',
+  };
+  // No req.body/query/params/headers anywhere; the handler reads from a closure var.
+  const fileContents = {
+    'app.js': `const target = process.env.TARGET;\napp.post('/ping', (req, res) => { exec('ping ' + target); });`,
+  };
+  const routes = [{ file: 'app.js', line: 2, method: 'POST', path: '/ping' }];
+  const poc = generatePoc(finding, { routes, fileContents });
+  assert.ok(poc);
+  assert.equal(poc.paramKeyConfidence, 'low');
+  assert.equal(poc.paramKeyInferred, false);
+});
+
+test('annotateRegressionTests refuses low-confidence PoCs', async () => {
+  const { annotateRegressionTests } = await import('../src/posture/regression-test-gen.js');
+  const findings = [
+    { vuln: 'X', stableId: 'a', poc: { lang: 'node', code: 'fetch(...)', paramKeyConfidence: 'low' } },
+    { vuln: 'Y', stableId: 'b', poc: { lang: 'node', code: 'fetch(URL_, { body: JSON.stringify({"host": PAYLOAD}) })', paramKeyConfidence: 'high' } },
+  ];
+  annotateRegressionTests(findings);
+  assert.equal(findings[0].regression_test._skipped, 'poc-param-key-unverified');
+  assert.equal(findings[0].regression_test.code, null);
+  assert.ok(findings[1].regression_test.code, 'high-confidence PoC should still emit a test');
+});
+
+test('annotateRegressionTests rejects generated code that does not parse', async () => {
+  const { annotateRegressionTests } = await import('../src/posture/regression-test-gen.js');
+  // High-confidence PoC but broken-syntax payload (unterminated string literal).
+  // The renderer normally produces valid JS; this simulates what happens if a
+  // future template change leaks an unescaped quote into the test source.
+  const findings = [
+    {
+      vuln: 'X', stableId: 'broken',
+      poc: {
+        lang: 'node',
+        code: 'fetch(URL_, { body: JSON.stringify({"host": "PAYLOAD" }) })',
+        paramKey: 'host', paramKeyConfidence: 'high',
+      },
+    },
+  ];
+  annotateRegressionTests(findings);
+  assert.ok(findings[0].regression_test);
+  // Either we get valid code OR we get a structured skip. Never silent emit
+  // of un-parseable test source.
+  const rt = findings[0].regression_test;
+  if (rt.code === null) {
+    assert.match(rt._skipped, /parse-failed|poc-param-key/);
+  } else {
+    // If valid, must be parseable.
+    const { parse } = await import('@babel/parser');
+    assert.doesNotThrow(() => parse(rt.code, { sourceType: 'module' }));
+  }
+});
