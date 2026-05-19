@@ -25,10 +25,14 @@
 //     iteration. With k=1 this converges in ≤2 iterations for typical code.
 
 import * as crypto from 'node:crypto';
+import { canonicalize as canonicalizeAccessSet } from './access-paths.js';
 
 function _hashState(taintedParams) {
   if (!taintedParams || taintedParams.size === 0) return 'empty';
-  const sorted = [...taintedParams].sort().join('|');
+  // P1.1: canonicalize the access-path lattice before hashing so equivalent
+  // states (e.g. {"x", "x.y"} and {"x"}) produce the same cache key.
+  const canon = canonicalizeAccessSet(taintedParams);
+  const sorted = [...canon].sort().join('|');
   return crypto.createHash('sha256').update(sorted).digest('hex').slice(0, 12);
 }
 

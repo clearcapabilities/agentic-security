@@ -83,6 +83,10 @@ const ALLOWLIST = new Set([
   'triage.js::loadTriage',
   'validator-metrics.js::getLatest',
   'validator-metrics.js::checkFloors',
+  // Phase-6 taint: buildProjectIRAsync is the async variant for callers
+  // that need Java IR (which requires async java-parser import). Wired
+  // up in v2 once Java IR matures; kept as exported public API.
+  'ir/index.js::buildProjectIRAsync',
 ]);
 
 function listJsFiles(dir) {

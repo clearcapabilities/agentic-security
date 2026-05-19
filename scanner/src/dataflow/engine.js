@@ -34,6 +34,8 @@
 // argument (the call's return value is treated as clean).
 
 import { matchSource, matchSinkOrSanitizer } from './catalog.js';
+import { accessPathOf, isCoveredBy, addPath, removePathAndDescendants, joinSets as joinAccessSets, setsEqual as accessSetsEqual } from './access-paths.js';
+import { higherOrderTaintFlow } from './higher-order.js';
 
 function exprTaint(expr, state) {
   // Returns true iff this expression evaluates to a tainted value under the
@@ -42,22 +44,14 @@ function exprTaint(expr, state) {
   // is tainted because the source resolves at the read site.
   if (expr && expr.kind === 'member' && exprIsSource(expr)) return true;
   if (!expr) return false;
+  // P1.1 — field-sensitive access path: if the expression is a pure
+  // ident/member chain ("x.y.z"), ask the access-path lattice whether any
+  // shorter prefix in the state covers it. This is what makes
+  // `user.password` distinguishable from `user.email`.
+  const ap = accessPathOf(expr);
+  if (ap !== null) return isCoveredBy(state, ap);
   switch (expr.kind) {
     case 'literal':           return false;
-    case 'ident':             return state.has(expr.name);
-    case 'member': {
-      // x.y is tainted if x.y is in state OR x itself is in state and we have
-      // no per-field narrowing (taint propagates through unknown sub-access).
-      const base = (() => {
-        if (!expr.object) return null;
-        if (expr.object.kind === 'ident') return expr.object.name;
-        return null;
-      })();
-      if (!base) return exprTaint(expr.object, state);
-      if (state.has(`${base}.${expr.prop}`)) return true;
-      if (state.has(base)) return true;
-      return false;
-    }
     case 'binary':
     case 'logical':           return exprTaint(expr.left, state) || exprTaint(expr.right, state);
     case 'tpl':               return (expr.parts || []).some(p => exprTaint(p, state));
@@ -104,19 +98,30 @@ function step(node, stateIn, callContext) {
     case 'assign': {
       // Source detection on RHS.
       const src = exprIsSource(node.source);
-      if (src && typeof node.target === 'string') {
-        state.add(node.target);
-        if (node.source && node.source.kind === 'member' && node.source.object?.kind === 'ident') {
-          state.add(`${node.source.object.name}.${node.source.prop}`);
+      const target = typeof node.target === 'string' ? node.target : null;
+      let newState = state;
+      if (src && target) {
+        newState = addPath(newState, target);
+        const sourcePath = accessPathOf(node.source);
+        if (sourcePath) newState = addPath(newState, sourcePath);
+        callContext._taintSources.push({ varName: target, sourceId: src.id, sourceLabel: src.label, line: node.line });
+      } else if (exprTaint(node.source, newState)) {
+        // P1.1: when the source IS a pure access path (e.g., RHS is `obj.foo.bar`),
+        // taint the TARGET as well as transitively propagate the source path so
+        // later uses of the same source remain tainted. The target path
+        // becomes the new tainted location.
+        if (target) {
+          newState = addPath(newState, target);
+          const sourcePath = accessPathOf(node.source);
+          if (sourcePath && !isCoveredBy(newState, sourcePath)) newState = addPath(newState, sourcePath);
         }
-        callContext._taintSources.push({ varName: node.target, sourceId: src.id, sourceLabel: src.label, line: node.line });
-      } else if (exprTaint(node.source, state)) {
-        if (typeof node.target === 'string') state.add(node.target);
       } else {
-        // Re-assigning a previously-tainted var to a clean value clears it.
-        if (typeof node.target === 'string') state.delete(node.target);
+        // Re-assigning a previously-tainted var to a clean value clears it
+        // AND its descendants — P1.1 semantics: assigning `x = clean` kills
+        // `x.foo`, `x.foo.bar`, etc. Sanitization at root level.
+        if (target) newState = removePathAndDescendants(newState, target);
       }
-      return { state, findings };
+      return { state: newState, findings };
     }
 
     case 'call': {
@@ -146,6 +151,42 @@ function step(node, stateIn, callContext) {
               trace: callContext._taintSources.slice(0, 5),
             });
           }
+        }
+      }
+      // 2. P1.3 — higher-order taint flow. When the call is `arr.map(fn)` or
+      //    `promise.then(fn)` and the receiver is tainted, propagate taint
+      //    into the callback's first parameter. v1: we propagate AT THE
+      //    CALLBACK INVOCATION LEVEL by adding the callback's first-arg
+      //    name (when resolvable as a plain ident or function-value) into
+      //    the taint state.
+      const hoFlow = (() => {
+        // Heuristic receiver-tainted check: if the callee string is
+        // "<recv>.<method>", check whether <recv> is in state.
+        const callee = typeof node.callee === 'string' ? node.callee : null;
+        if (!callee) return null;
+        const dot = callee.lastIndexOf('.');
+        if (dot <= 0) return null;
+        const recv = callee.slice(0, dot);
+        const recvTainted = isCoveredBy(state, recv);
+        return higherOrderTaintFlow(node, recvTainted);
+      })();
+      if (hoFlow && hoFlow.taintsCallbackParam === 0) {
+        // The first arg should be the callback. If it's a plain ident or
+        // function-value, the engine's per-callee summary path will pick it
+        // up when the callee is independently analyzed. We don't model the
+        // callback inline here; instead we record on callContext that the
+        // callback was invoked with a tainted first param, so the engine's
+        // call-graph pass can re-run the callback with that entry state.
+        const cb = (node.args || [])[0];
+        if (cb && (cb.kind === 'ident' || cb.kind === 'function-value')) {
+          callContext._higherOrderInvocations = callContext._higherOrderInvocations || [];
+          callContext._higherOrderInvocations.push({
+            callee: cb.kind === 'ident' ? cb.name : (cb.qid || null),
+            paramIndex: 0,
+            taintedParam: true,
+            line: node.line,
+            via: hoFlow.kind,
+          });
         }
       }
       return { state, findings };
@@ -224,18 +265,13 @@ function analyzeFunction(fn, entryState, callContext) {
 }
 
 function mergeStates(a, b) {
-  if (!a && !b) return new Set();
-  if (!a) return new Set(b);
-  if (!b) return new Set(a);
-  const out = new Set(a);
-  for (const x of b) out.add(x);
-  return out;
+  // P1.1: use access-path-aware union that collapses longer descendants
+  // under their shorter-prefix parents.
+  return joinAccessSets(a, b);
 }
 function stateEq(a, b) {
-  if (!a || !b) return a === b;
-  if (a.size !== b.size) return false;
-  for (const x of a) if (!b.has(x)) return false;
-  return true;
+  // P1.1: use access-path-aware set equality (canonicalized).
+  return accessSetsEqual(a, b);
 }
 
 // ── Top-level entry ─────────────────────────────────────────────────────────
