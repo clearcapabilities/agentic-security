@@ -29,6 +29,7 @@ import { scanJavaDeserialization } from './sast/java-deserialization.js';
 import { scanJwtExp } from './sast/jwt-exp.js';
 import { scanZipSlip } from './sast/zip-slip.js';
 import { scanHostHeader } from './sast/host-header.js';
+import { scanPythonSinks } from './sast/python-sinks.js';
 import { scanCSharp } from './sast/csharp.js';
 import { scanCpp } from './sast/cpp.js';
 import { scanJulietShape, applyJulietJavaSuppressions, applyJulietCsSuppressions } from './sast/juliet-shape.js';
@@ -6557,6 +6558,7 @@ async function runFullScan({fileContents={}, depFileContents={}, scanRoot=null},
       aF.push(...scanJwtExp(p,c));
       aF.push(...scanZipSlip(p,c));
       aF.push(...scanHostHeader(p,c));
+      aF.push(...scanPythonSinks(p,c));
       aF.push(...scanCSharp(p,c));
       aF.push(...scanCpp(p,c));
       aF.push(...scanSolidity(p,c));

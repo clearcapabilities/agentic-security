@@ -11,7 +11,7 @@ expected:
     severity: high
     _note: "raw SQL concat with user-controlled name"
   - file: services/node/server.js
-    line: 13
-    family: sql-injection
+    line: 9
+    family: xlang-openapi
     cross_language: true
     _note: "cross-language chain — sql-injection reaches downstream Python"

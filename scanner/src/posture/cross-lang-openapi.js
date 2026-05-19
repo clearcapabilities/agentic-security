@@ -1,3 +1,5 @@
+import { isChainWorthy, familyForBoundary } from './cross-lang-meta.js';
+
 // OpenAPI-aware cross-language taint propagation (Sentinel-parity FR-X-1).
 //
 // First-cut implementation: when an openapi.json / openapi.yaml is present in
@@ -99,8 +101,10 @@ function serverRoutes(fileContents, eps) {
     { lang: 'js', re: /\b(?:app|router|server|fastify)\s*\.\s*(get|post|put|patch|delete)\s*\(\s*([`'"])([^`'"]+)\2/gi },
     // FastAPI
     { lang: 'py', re: /@\w+\s*\.\s*(get|post|put|patch|delete)\s*\(\s*([`'"])([^`'"]+)\2/gi },
-    // Flask
-    { lang: 'py', re: /@(?:app|bp|blueprint)\s*\.\s*route\s*\(\s*([`'"])([^`'"]+)\1[^)]*methods\s*=\s*\[[^\]]*([A-Z]+)/gi },
+    // Flask. The `methods=['POST']` part needs to anchor on the opening quote
+    // of the method literal, otherwise `[^\]]*` greedy-consumes most of it
+    // and only the last letter ends up in the capture group.
+    { lang: 'py', re: /@(?:app|bp|blueprint)\s*\.\s*route\s*\(\s*([`'"])([^`'"]+)\1[^)]*methods\s*=\s*\[\s*['"]([A-Z]+)/gi },
   ];
   const out = [];
   for (const [fp, c] of Object.entries(fileContents || {})) {
@@ -139,11 +143,14 @@ export function scanCrossLangOpenAPI(fileContents, existingFindings) {
   if (handlers.length === 0) return [];
 
   // Index existing findings by file. A handler is "tainted-output" if any
-  // critical/high finding sits in its file — coarse but conservative.
+  // critical/high finding sits in its file AND it's chain-worthy
+  // (FR-CHAIN-FILTER) — CSRF, header-hardening etc. don't propagate across
+  // a service boundary in a useful way.
   const findingsByFile = new Map();
   for (const f of existingFindings || []) {
     if (!f.file) continue;
     if (!/critical|high/i.test(f.severity || '')) continue;
+    if (!isChainWorthy(f)) continue;
     if (!findingsByFile.has(f.file)) findingsByFile.set(f.file, []);
     findingsByFile.get(f.file).push(f);
   }
@@ -165,6 +172,7 @@ export function scanCrossLangOpenAPI(fileContents, existingFindings) {
         snippet: c.snippet,
         remediation: `The server-side handler for ${h.method} ${h.path} (${h.file}:${h.line}) has unaddressed ${seed.severity}-severity findings — specifically "${seed.vuln}". A response from that handler that flows into a client-side sink (innerHTML, eval, exec) propagates the underlying issue. Fix the server-side finding first.`,
         parser: 'XLANG-OPENAPI',
+        family: familyForBoundary('openapi'),   // FR-FAMILY-REGISTRY
         confidence: 0.65,
         cross_language: true,
         chain: [

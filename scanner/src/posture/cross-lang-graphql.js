@@ -1,3 +1,5 @@
+import { isChainWorthy, familyForBoundary } from './cross-lang-meta.js';
+
 // GraphQL resolver-to-resolver cross-language taint (Sentinel-parity FR-DET-3).
 //
 // Parses GraphQL SDL files (.graphql / .gql / .schema.graphql) and detects
@@ -127,6 +129,7 @@ export function scanCrossLangGraphql(fileContents, existingFindings) {
   const findingsByFile = new Map();
   for (const f of existingFindings || []) {
     if (!f.file || !/critical|high/i.test(f.severity || '')) continue;
+    if (!isChainWorthy(f)) continue;   // FR-CHAIN-FILTER
     if (!findingsByFile.has(f.file)) findingsByFile.set(f.file, []);
     findingsByFile.get(f.file).push(f);
   }
@@ -147,6 +150,7 @@ export function scanCrossLangGraphql(fileContents, existingFindings) {
         snippet: c.snippet,
         remediation: `The GraphQL field "${c.query}" is resolved at ${impl.file}:${impl.line} where "${seed.vuln}" was reported. Fix the resolver-side finding first; any client that consumes the response inherits the underlying risk.`,
         parser: 'XLANG-GRAPHQL',
+        family: familyForBoundary('graphql'),   // FR-FAMILY-REGISTRY
         confidence: 0.6,
         cross_language: true,
         chain: [

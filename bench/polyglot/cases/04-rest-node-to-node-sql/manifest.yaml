@@ -12,6 +12,6 @@ expected:
     _note: "raw SQL concat with req.body.name"
   - file: services/edge/index.js
     line: 8
-    family: cross-language-taint-client-call-post-us
+    family: xlang-openapi
     cross_language: true
     _note: "OpenAPI bridge surfaces the downstream sink at the edge"

@@ -1,3 +1,5 @@
+import { isChainWorthy, familyForBoundary } from './cross-lang-meta.js';
+
 // gRPC / .proto cross-language taint propagation (Sentinel-parity FR-DET-3).
 //
 // When a project ships .proto files alongside server impls and client stubs,
@@ -124,10 +126,11 @@ export function scanCrossLangGrpc(fileContents, existingFindings) {
   const servers = findServerImpls(fileContents, services);
   if (servers.length === 0) return [];
 
-  // Index findings by file — high+ only.
+  // Index findings by file — high+ AND chain-worthy only (FR-CHAIN-FILTER).
   const findingsByFile = new Map();
   for (const f of existingFindings || []) {
     if (!f.file || !/critical|high/i.test(f.severity || '')) continue;
+    if (!isChainWorthy(f)) continue;
     if (!findingsByFile.has(f.file)) findingsByFile.set(f.file, []);
     findingsByFile.get(f.file).push(f);
   }
@@ -148,6 +151,7 @@ export function scanCrossLangGrpc(fileContents, existingFindings) {
         snippet: c.snippet,
         remediation: `The gRPC method ${c.method} is implemented in ${impl.file}:${impl.line} where "${seed.vuln}" was reported. Any client that propagates the response into a sensitive sink inherits the underlying risk. Fix the server-side finding first.`,
         parser: 'XLANG-GRPC',
+        family: familyForBoundary('grpc'),   // FR-FAMILY-REGISTRY
         confidence: 0.65,
         cross_language: true,
         chain: [

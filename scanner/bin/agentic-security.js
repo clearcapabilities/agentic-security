@@ -60,6 +60,7 @@ Commands:
   mcp                          Start the MCP stdio server (scan_diff, query_taint, explain_finding, apply_fix)
   validator-cache stats|gc     Inspect / prune .agentic-security/llm-cache/ (use --older-than <days> --dry-run)
   verify [--finding <id>]      Re-run the verifier loop on last-scan findings (use --live --target <url> to execute PoCs)
+  reset [--yes] [--keep ...]   Right-to-delete: wipe accumulated learned state under .agentic-security/ (preserves operator-authored config)
   version                      Print version
 
 Options:
@@ -803,6 +804,92 @@ async function cmdVerify(args) {
   return 0;
 }
 
+// `agentic-security reset [--yes] [--keep <rules|streak|...>]`
+//
+// FR-LEARN-7 right-to-delete: wipes the learned-state files under
+// .agentic-security/ that the engine accumulates across runs:
+//
+//   - validator-metrics.json     (per-CWE TP/FP scorecard)
+//   - triage-feedback.json       (active-learning verdicts)
+//   - llm-cache/*                (LLM validator responses)
+//   - scan-history.json          (security-trend snapshots)
+//   - fix-history/{log,backups}  (auto-fix history)
+//   - last-scan.json[.sig]
+//   - shadow-findings.json
+//   - mcp-audit.log
+//   - hook-throttle.json
+//   - tickets.json               (two-way ticket sync state)
+//
+// Preserves by default:
+//   - rules.yml                  (operator-authored, not learned)
+//   - rules/                     (custom rule files)
+//   - license-policy.yml         (operator-authored)
+//   - trusted-keys.json          (signing trust root)
+//   - ruleset-version.json       (pinning intent)
+//
+// Use --keep <names> (comma-separated) to preserve specific items;
+// --yes to skip the confirmation prompt (for scripted use).
+async function cmdReset(args) {
+  const scanRoot = path.resolve(args.flags.root || '.');
+  const stateDir = path.join(scanRoot, '.agentic-security');
+  if (!fs.existsSync(stateDir)) {
+    console.log(`No state to reset at ${stateDir}`);
+    return 0;
+  }
+  const WIPE = new Set([
+    'validator-metrics.json',
+    'triage-feedback.json',
+    'scan-history.json',
+    'last-scan.json',
+    'last-scan.json.sig',
+    'shadow-findings.json',
+    'mcp-audit.log',
+    'hook-throttle.json',
+    'tickets.json',
+    'streak.json',
+    'findings.json',
+    'findings.sarif',
+    'findings.csv',
+  ]);
+  const WIPE_DIRS = new Set([
+    'llm-cache',
+    'fix-history',
+    'fix-plans',
+  ]);
+  const keep = new Set((args.flags.keep || '').split(',').filter(Boolean));
+  const targets = [];
+  for (const entry of await fsp.readdir(stateDir, { withFileTypes: true })) {
+    if (keep.has(entry.name)) continue;
+    if (WIPE.has(entry.name) || WIPE_DIRS.has(entry.name)) {
+      targets.push({ name: entry.name, dir: entry.isDirectory() });
+    }
+  }
+  if (!targets.length) {
+    console.log(`Nothing to reset under ${stateDir}.`);
+    return 0;
+  }
+  console.log(`agentic-security reset — will remove from ${stateDir}:`);
+  for (const t of targets) console.log(`  ${t.name}${t.dir ? '/' : ''}`);
+  console.log('');
+  console.log('Preserving operator-authored config: rules.yml, rules/, license-policy.yml, trusted-keys.json, ruleset-version.json');
+  if (!args.flags.yes) {
+    console.log('');
+    console.log('Pass --yes to proceed (or --keep <name,name> to spare specific items).');
+    return 0;
+  }
+  for (const t of targets) {
+    const p = path.join(stateDir, t.name);
+    try {
+      if (t.dir) await fsp.rm(p, { recursive: true, force: true });
+      else await fsp.rm(p, { force: true });
+    } catch (e) {
+      console.error(`reset: failed to remove ${p}: ${e.message}`);
+    }
+  }
+  console.log(`Reset ${targets.length} item(s). Operator-authored config preserved.`);
+  return 0;
+}
+
 async function cmdPacks(args) {
   const sub = args._[1] || 'list';
   if (sub !== 'list') { console.error('Usage: agentic-security packs list'); return 4; }
@@ -1074,6 +1161,7 @@ async function main() {
       case 'packs':    process.exit(await cmdPacks(args));
       case 'validator-cache': process.exit(await cmdValidatorCache(args));
       case 'verify':   process.exit(await cmdVerify(args));
+      case 'reset':    process.exit(await cmdReset(args));
       case 'digest':   process.exit(await cmdDigest(args));
       case 'setup':    process.exit(await cmdSetup(args));
       case 'mcp':      {

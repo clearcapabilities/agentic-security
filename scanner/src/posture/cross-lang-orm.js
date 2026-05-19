@@ -1,3 +1,5 @@
+import { isChainWorthy, familyForBoundary } from './cross-lang-meta.js';
+
 // SQL / ORM round-trip taint (Sentinel-parity FR-DET-3).
 //
 // When a tainted value is written to column C of table T via an ORM `create`
@@ -111,6 +113,7 @@ export function scanCrossLangOrm(fileContents, existingFindings) {
     const line = sink.line || f.line;
     if (!file || !line) continue;
     if (!/critical|high|medium/i.test(f.severity || '')) continue;
+    if (!isChainWorthy(f)) continue;   // FR-CHAIN-FILTER
     if (!sinksByFile.has(file)) sinksByFile.set(file, []);
     sinksByFile.get(file).push({ line, vuln: f.vuln, severity: f.severity });
   }
@@ -135,6 +138,7 @@ export function scanCrossLangOrm(fileContents, existingFindings) {
         snippet: `(round-trip via ${w.model}.${w.field})`,
         remediation: `A tainted value is written to ${w.model}.${w.field} at ${w.file}:${w.line} and read at ${r.file}:${r.line}, then flows into "${seed.vuln}". The DB doesn't sanitize — coerce/validate the value on write OR on read, ideally both. For Mongo, ensure the value is a primitive (String(...)) before write; for SQL, parameterize the downstream sink.`,
         parser: 'XLANG-ORM',
+        family: familyForBoundary('orm'),   // FR-FAMILY-REGISTRY
         confidence: 0.55,
         cross_language: true,
         chain: [

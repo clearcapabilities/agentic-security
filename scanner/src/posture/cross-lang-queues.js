@@ -1,3 +1,5 @@
+import { isChainWorthy, familyForBoundary } from './cross-lang-meta.js';
+
 // Cross-language message-queue taint propagation (FR-XSAT-4 — P1.5).
 //
 // When a project ships producer and consumer code for the same message
@@ -135,11 +137,15 @@ function _looksLikeCodeFile(fp) {
 export function scanCrossLangQueues(fileContents, findings) {
   const { producers, consumers } = indexQueueSites(fileContents);
   if (!producers.size || !consumers.size) return [];
-  // Index existing findings by (file, line) for fast lookup.
+  // Index existing findings by (file, line) for fast lookup. Only include
+  // chain-worthy families (FR-CHAIN-FILTER): chaining to a CSRF or
+  // header-hardening finding on the other side of a queue is semantically
+  // meaningless — taint doesn't propagate through those classes.
   const findingsByFile = new Map();
   for (const f of findings || []) {
     if (!f || typeof f !== 'object') continue;
     if (!/critical|high/.test(f.severity || '')) continue;
+    if (!isChainWorthy(f)) continue;
     const file = f.file || f.sink?.file;
     if (!file) continue;
     const list = findingsByFile.get(file) || [];
@@ -180,6 +186,7 @@ function _chainFinding({ origin, target, topic, sourceFinding, dir }) {
     severity: _downgradeSeverity(sourceFinding.severity),
     cwe: sourceFinding.cwe || null,
     parser: 'XLANG-QUEUE',
+    family: familyForBoundary('queue'),       // FR-FAMILY-REGISTRY: canonical name
     cross_language: true,
     boundary: 'queue',
     topic,

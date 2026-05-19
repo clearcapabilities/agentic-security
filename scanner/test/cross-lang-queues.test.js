@@ -103,7 +103,8 @@ test('chain severity is one tier below the source finding', () => {
     'p.js': `producer.send({ topic: 't', messages: [{ value: x }] });`,
     'c.js': `consumer.subscribe({ topics: ['t'] }); consumer.run(...)`,
   };
-  const findings = [{ vuln: 'X', severity: 'critical', cwe: 'CWE-79', file: 'c.js', line: 1 }];
+  // Vuln must be in the chain-worthy set (FR-CHAIN-FILTER) — bare 'X' is not.
+  const findings = [{ vuln: 'XSS', severity: 'critical', cwe: 'CWE-79', file: 'c.js', line: 1 }];
   const chains = scanCrossLangQueues(fc, findings);
   const at = chains.find(c => c.file === 'p.js');
   assert.equal(at.severity, 'high', 'critical source → high chain');
@@ -114,7 +115,8 @@ test('low-severity source produces no high-priority chain', () => {
     'p.js': `producer.send({ topic: 't', messages: [{ value: x }] });`,
     'c.js': `consumer.subscribe({ topics: ['t'] }); consumer.run(...)`,
   };
-  const findings = [{ vuln: 'X', severity: 'low', cwe: 'CWE-1', file: 'c.js', line: 1 }];
+  // Chain-worthy vuln, but low severity → still no chain (severity gate).
+  const findings = [{ vuln: 'XSS', severity: 'low', cwe: 'CWE-79', file: 'c.js', line: 1 }];
   const chains = scanCrossLangQueues(fc, findings);
   assert.equal(chains.length, 0, 'low-severity source should not trigger a cross-language chain (config: only critical|high)');
 });
