@@ -10,6 +10,7 @@ This is the one-command equivalent of:
 2. `/fix --all --low`
 
 ```bash
+node ${CLAUDE_PLUGIN_ROOT}/scanner/dist/agentic-security.mjs banner 2>/dev/null || true
 PATH_ARG="."
 for arg in "$@"; do
   case "$arg" in

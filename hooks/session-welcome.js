@@ -34,14 +34,31 @@ function formatStreakLine(s) {
 const isFirstTime = !fs.existsSync(marker);
 
 if (isFirstTime) {
+  // First-use welcome — lead with the brand line, then the frog lockup,
+  // then the three onboarding paths. The product name and creator MUST be
+  // unambiguous: this is the moment the user learns what they just installed.
+  const useColor = !!process.stderr.isTTY && !process.env.NO_COLOR;
+  const C = useColor ? {
+    BOLD: '\x1b[1m', DIM: '\x1b[2m', RESET: '\x1b[0m',
+    FROG: '\x1b[38;2;255;107;44m', CREAM: '\x1b[38;2;244;239;230m',
+  } : { BOLD:'', DIM:'', RESET:'', FROG:'', CREAM:'' };
   const lines = [
-    lockup(),
-    '   Building an app?            → /scan-all',
-    '   AppSec / security work?     → /security-scan-all',
-    '   Not sure which you are?     → /security-onboard',
     '',
-    '   Hooks: every Edit/Write scans the changed file in <5s.',
-    '   This welcome shows once per project.',
+    `   ${C.BOLD}Welcome to agentic-security${C.RESET}  ${C.DIM}— by Clear Capabilities Inc.${C.RESET}`,
+    `   ${C.DIM}Full ASPM + LLMSecOps for Claude Code · https://clearcapabilities.com${C.RESET}`,
+    '',
+    lockup(),
+    `   ${C.BOLD}Meet Patch.${C.RESET}  Tiny. ${C.FROG}${C.BOLD}Bright.${C.RESET}  Watching every Edit, Write, and Bash.`,
+    '',
+    '   ┌─ How to start ─────────────────────────────────────────────┐',
+    '   │  Building an app?            → /scan-all                   │',
+    '   │  AppSec / security work?     → /security-scan-all          │',
+    '   │  Not sure which you are?     → /security-onboard           │',
+    '   │  See every command           → /help                       │',
+    '   └────────────────────────────────────────────────────────────┘',
+    '',
+    `   ${C.DIM}Hooks: every Edit/Write scans the changed file in <5s.${C.RESET}`,
+    `   ${C.DIM}This welcome shows once per project.${C.RESET}`,
     '',
   ];
   try {

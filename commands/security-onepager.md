@@ -31,6 +31,7 @@ Output is plain markdown — paste into Notion, convert to PDF with `pandoc`, or
 ## Usage
 
 ```bash
+node ${CLAUDE_PLUGIN_ROOT}/scanner/dist/agentic-security.mjs banner 2>/dev/null || true
 # Auto-detect company from cwd name
 /security-onepager
 

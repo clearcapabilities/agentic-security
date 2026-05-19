@@ -6,6 +6,7 @@ argument-hint: "[secret-value-or-finding-id] [--scrub-history]"
 Rotate a leaked secret. Detects which provider the secret belongs to (Stripe, OpenAI, Anthropic, GitHub, Supabase, etc.), finds every file that references it, and gives exact rotation steps for your deployment platform.
 
 ```bash
+node ${CLAUDE_PLUGIN_ROOT}/scanner/dist/agentic-security.mjs banner 2>/dev/null || true
 node -e "
 const fs = require('fs');
 const path = require('path');

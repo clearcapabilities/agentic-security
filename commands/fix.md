@@ -12,6 +12,7 @@ Apply security fixes from `.agentic-security/last-scan.json`.
 Patch a single finding.
 
 ```bash
+node ${CLAUDE_PLUGIN_ROOT}/scanner/dist/agentic-security.mjs banner 2>/dev/null || true
 node ${CLAUDE_PLUGIN_ROOT}/scanner/dist/agentic-security.mjs fix --finding ${2}
 ```
 

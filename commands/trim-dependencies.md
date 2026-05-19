@@ -6,6 +6,7 @@ argument-hint: "[path] [--dry-run] [--include-dev] [--apply]"
 Identify installed packages that are never imported anywhere in source code, measure their on-disk footprint, surface any CVEs they carry, and generate removal commands.
 
 ```bash
+node ${CLAUDE_PLUGIN_ROOT}/scanner/dist/agentic-security.mjs banner 2>/dev/null || true
 PATH_ARG="."
 DRY_RUN=false
 INCLUDE_DEV=false

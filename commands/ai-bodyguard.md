@@ -61,6 +61,7 @@ The full scanner catches everything else (post-edit). The bodyguard is the small
 3. Otherwise, write the config:
 
 ```bash
+node ${CLAUDE_PLUGIN_ROOT}/scanner/dist/agentic-security.mjs banner 2>/dev/null || true
 mkdir -p .agentic-security
 cat > .agentic-security/bodyguard.json <<EOF
 {

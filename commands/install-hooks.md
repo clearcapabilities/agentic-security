@@ -11,6 +11,7 @@ Install client-side git hooks that gate commits and pushes on security findings.
 Pass `--uninstall` to remove the hooks. Pass `--threshold` to change the blocking severity (default: `critical`).
 
 ```bash
+node ${CLAUDE_PLUGIN_ROOT}/scanner/dist/agentic-security.mjs banner 2>/dev/null || true
 node -e "
 const fs = require('fs');
 const path = require('path');

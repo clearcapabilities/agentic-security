@@ -6,6 +6,7 @@ argument-hint: "[--full] [--rebuild]"
 Render the v3 auto-derived threat model. Reads `.agentic-security/last-scan.json`. Pass `--rebuild` to re-run `/scan` first.
 
 ```bash
+node ${CLAUDE_PLUGIN_ROOT}/scanner/dist/agentic-security.mjs banner 2>/dev/null || true
 REBUILD=""
 FULL=""
 for arg in "$@"; do

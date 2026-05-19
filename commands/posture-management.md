@@ -6,6 +6,7 @@ argument-hint: "[--sbom [--format cyclonedx|spdx] [--output <file>]] | [--aibom 
 Run posture management commands against the current project.
 
 ```bash
+node ${CLAUDE_PLUGIN_ROOT}/scanner/dist/agentic-security.mjs banner 2>/dev/null || true
 FLAG=""
 FORMAT=""
 OUTPUT=""

@@ -6,6 +6,7 @@ argument-hint: "--baseline <bin-path> --candidate <bin-path> [--root <dir>] [--f
 Run baseline and candidate scanner binaries against the same target; emit a structured delta of added / removed / changed findings.
 
 ```bash
+node ${CLAUDE_PLUGIN_ROOT}/scanner/dist/agentic-security.mjs banner 2>/dev/null || true
 BASELINE=""
 CANDIDATE=""
 ROOT="."

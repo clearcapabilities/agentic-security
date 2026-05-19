@@ -65,6 +65,7 @@ Append to `extraPatterns` in the config — each entry takes `{name, re, severit
 3. Otherwise write the config:
 
 ```bash
+node ${CLAUDE_PLUGIN_ROOT}/scanner/dist/agentic-security.mjs banner 2>/dev/null || true
 mkdir -p .agentic-security
 cat > .agentic-security/destructive-guard.json <<EOF
 {

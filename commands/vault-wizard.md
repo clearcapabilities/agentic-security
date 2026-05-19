@@ -6,6 +6,7 @@ argument-hint: "[doppler|infisical|vercel|railway]"
 Guide a migration from `.env` files and scattered environment variables to a proper secrets vault. Detects your current secrets, counts them, and gives step-by-step migration commands for your chosen vault.
 
 ```bash
+node ${CLAUDE_PLUGIN_ROOT}/scanner/dist/agentic-security.mjs banner 2>/dev/null || true
 node -e "
 const fs = require('fs');
 const cp = require('child_process');

@@ -5,6 +5,7 @@ description: Generate a plain-English narrative of your app's top attack scenari
 Synthesise the scan findings into a plain-English threat narrative. Instead of a list of finding IDs, you get 3–5 realistic attack stories: what an attacker does, in what order, and what they walk away with.
 
 ```bash
+node ${CLAUDE_PLUGIN_ROOT}/scanner/dist/agentic-security.mjs banner 2>/dev/null || true
 node -e "
 const fs = require('fs');
 const W = (s, c) => process.stdout.isTTY ? \`\x1b[\${c}m\${s}\x1b[0m\` : s;

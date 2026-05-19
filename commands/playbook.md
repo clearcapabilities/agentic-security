@@ -6,6 +6,7 @@ argument-hint: "[--finding <id>] [--cwe <cwe>] [--all]"
 Print attack playbooks the customer can run themselves against staging. Reads `.agentic-security/last-scan.json`.
 
 ```bash
+node ${CLAUDE_PLUGIN_ROOT}/scanner/dist/agentic-security.mjs banner 2>/dev/null || true
 MODE="--all"
 ARG=""
 for arg in "$@"; do

@@ -6,6 +6,7 @@ argument-hint: "[--top <N>] [--web3]"
 Show predicted bounty payouts per finding from the last scan. Useful for prioritizing pentest engagement scope or external validation of finding severity.
 
 ```bash
+node ${CLAUDE_PLUGIN_ROOT}/scanner/dist/agentic-security.mjs banner 2>/dev/null || true
 TOP="20"
 WEB3=""
 for arg in "$@"; do

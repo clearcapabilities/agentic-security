@@ -21,6 +21,7 @@ The page shows: traffic-light state (Green/Yellow/Red), critical/high/medium cou
 ## Usage
 
 ```bash
+node ${CLAUDE_PLUGIN_ROOT}/scanner/dist/agentic-security.mjs banner 2>/dev/null || true
 /trust-page --contact security@myapp.com
 /trust-page --contact security@myapp.com --pgp https://keys.openpgp.org/abc.asc --canonical-url https://myapp.com
 ```

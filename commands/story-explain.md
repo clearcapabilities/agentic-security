@@ -73,6 +73,7 @@ What stops this
 Pro use case: an incident happened (or could have), and you need to brief an exec, a customer, or a board. Pass `--post-mortem` and the story renders in past tense ("Mallory opened…", not "Mallory opens…") and ends with a **"What we shipped"** block listing the remediation commit(s) and the verification artifact (`/validate-findings` PoC or the passing regression test from `/security-tests`). The output is clean enough to paste into Notion or a customer email — no CLI mascot footer.
 
 ```bash
+node ${CLAUDE_PLUGIN_ROOT}/scanner/dist/agentic-security.mjs banner 2>/dev/null || true
 /story-explain CWE-89 --post-mortem
 ```
 

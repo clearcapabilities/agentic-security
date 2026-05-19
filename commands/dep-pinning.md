@@ -6,6 +6,7 @@ argument-hint: "[path] [--fix] [--json]"
 Check every dependency manifest for loose version ranges (`^`, `~`, `>=`, `*`, or no constraint). Unpinned ranges silently pull in new versions on the next install — the exact mechanism used in most supply-chain poisoning attacks. A compromised patch release gets automatically adopted by every project that wrote `^1.0.0` instead of `1.0.1`.
 
 ```bash
+node ${CLAUDE_PLUGIN_ROOT}/scanner/dist/agentic-security.mjs banner 2>/dev/null || true
 PATH_ARG="."
 FIX=false
 JSON_OUT=false

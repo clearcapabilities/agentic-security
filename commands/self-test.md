@@ -6,6 +6,7 @@ argument-hint: "[--fixtures <dir>] [--output <file>]"
 Run the closed-loop self-test. Useful before releasing a new rule pack: every escape is a rule gap that should become a regression fixture.
 
 ```bash
+node ${CLAUDE_PLUGIN_ROOT}/scanner/dist/agentic-security.mjs banner 2>/dev/null || true
 FIXTURES="scanner/test/fixtures"
 OUTPUT="self-test-results.json"
 NEXT=""

@@ -10,6 +10,7 @@ Explain a security finding in plain English. The user can pass:
 - A vuln name fragment (`SQL Injection`)
 
 ```bash
+node ${CLAUDE_PLUGIN_ROOT}/scanner/dist/agentic-security.mjs banner 2>/dev/null || true
 node -e "
 const fs = require('fs');
 const path = require('path');

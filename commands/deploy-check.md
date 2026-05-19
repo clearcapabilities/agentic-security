@@ -5,6 +5,7 @@ description: Platform-specific security checklist for Vercel, Railway, Fly.io, R
 Run a deployment-platform security audit. Detects your hosting platform from config files and checks for platform-specific issues: missing security headers, public preview deployments, no health checks, missing HTTPS redirect, and more.
 
 ```bash
+node ${CLAUDE_PLUGIN_ROOT}/scanner/dist/agentic-security.mjs banner 2>/dev/null || true
 node -e "
 const fs = require('fs');
 const W = (s, c) => process.stdout.isTTY ? \`\x1b[\${c}m\${s}\x1b[0m\` : s;

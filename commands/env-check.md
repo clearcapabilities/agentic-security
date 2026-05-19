@@ -5,6 +5,7 @@ description: Audit environment variable hygiene — NEXT_PUBLIC_ leaks, .env.exa
 Check environment variable hygiene across the project. Detects client-side exposure of secrets via NEXT_PUBLIC_, real credentials in example env files, hardcoded fallback values in source, and .env files not protected by .gitignore.
 
 ```bash
+node ${CLAUDE_PLUGIN_ROOT}/scanner/dist/agentic-security.mjs banner 2>/dev/null || true
 node -e "
 const fs = require('fs');
 const cp = require('child_process');

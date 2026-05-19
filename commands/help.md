@@ -5,6 +5,13 @@ description: List every agentic-security command, ICP-segmented (Vibecoder lane 
 Print the full agentic-security command catalog, segmented by ICP.
 
 ```
+       ╭───╮ ╭───╮
+       │ ◉ │ │ ◉ │        agentic-security  ·  by Clear Capabilities Inc.
+       ╰─┬─╯ ╰─┬─╯        Tiny. Bright. Watching.
+      ╭──┴─────┴──╮       https://clearcapabilities.com
+      │  ·  ⌣  ·  │
+      ╰───────────╯
+
 agentic-security commands
 
 EASY MODE — four commands. The whole product.

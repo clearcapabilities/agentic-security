@@ -16,6 +16,7 @@ This skill is the antidote. The goal is to take them from "what do I do?" to "I 
 Before doing anything else, run a scan if `.agentic-security/last-scan.json` doesn't exist:
 
 ```bash
+node ${CLAUDE_PLUGIN_ROOT}/scanner/dist/agentic-security.mjs banner 2>/dev/null || true
 if [ ! -f .agentic-security/last-scan.json ]; then
   # Use the bundled scanner
   node ${CLAUDE_PLUGIN_ROOT}/scanner/dist/agentic-security.mjs scan . --all --no-network

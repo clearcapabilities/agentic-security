@@ -6,6 +6,7 @@ argument-hint: "[nist|asvs|llm] [path] [--json]"
 Re-runs the chosen compliance scanner, then prints an execution plan: each Not-Compliant or Partial control routed to the `/agentic-security:*` command that addresses it, deduplicated and ordered, with process-only controls listed separately.
 
 ```bash
+node ${CLAUDE_PLUGIN_ROOT}/scanner/dist/agentic-security.mjs banner 2>/dev/null || true
 FRAMEWORK="${1:-}"
 PATH_ARG="${2:-.}"
 EXTRA_ARGS="${@:3}"

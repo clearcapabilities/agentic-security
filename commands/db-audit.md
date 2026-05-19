@@ -5,6 +5,7 @@ description: Audit database security — Supabase RLS, raw SQL injection, expose
 Run a targeted database security audit. Covers Supabase Row-Level Security, service-role key exposure, admin API misuse, raw PostgreSQL connections that bypass RLS, and SQL files with tables that lack RLS policies.
 
 ```bash
+node ${CLAUDE_PLUGIN_ROOT}/scanner/dist/agentic-security.mjs banner 2>/dev/null || true
 node -e "
 const fs = require('fs');
 const path = require('path');

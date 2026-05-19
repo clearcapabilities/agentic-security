@@ -5,6 +5,7 @@ description: Find API endpoints missing rate limiting — auth, AI generation, p
 Audit all API endpoints for missing rate limiting. Checks auth (brute-force risk), AI generation (cost explosion risk), payment (card-testing risk), and contact/form (spam risk) endpoints.
 
 ```bash
+node ${CLAUDE_PLUGIN_ROOT}/scanner/dist/agentic-security.mjs banner 2>/dev/null || true
 node -e "
 const fs = require('fs');
 const path = require('path');

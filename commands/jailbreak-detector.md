@@ -6,6 +6,7 @@ argument-hint: "--endpoint URL [--api-key KEY] [--families dan,base64,role-play,
 Focused subset of `/llm-redteam` — only runs known jailbreak families against one canonical "harmful" base prompt per category. Faster than full red-team, gives a binary verdict per attack family.
 
 ```bash
+node ${CLAUDE_PLUGIN_ROOT}/scanner/dist/agentic-security.mjs banner 2>/dev/null || true
 ENDPOINT=""
 API_KEY=""
 FAMILIES="dan,base64,role-play,authority,hypothetical,chained"

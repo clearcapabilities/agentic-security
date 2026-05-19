@@ -6,6 +6,7 @@ argument-hint: "[path] [--json]"
 Detect third-party libraries that have been copied directly into the codebase rather than declared as package manager dependencies. Vendored code is the "dark matter" of supply-chain risk: it carries CVEs indefinitely, is invisible to `npm audit` and OSV scans, and often accumulates for years without anyone noticing. Common forms: minified JS files in `static/`, copied Python modules in `lib/`, a bundled version of jQuery in a `vendor/` directory.
 
 ```bash
+node ${CLAUDE_PLUGIN_ROOT}/scanner/dist/agentic-security.mjs banner 2>/dev/null || true
 PATH_ARG="."
 JSON_OUT=false
 

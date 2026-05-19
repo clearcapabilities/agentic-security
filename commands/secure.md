@@ -6,6 +6,7 @@ argument-hint: "[path] [--launch]"
 Smart router for security work. Picks the right next step from project state — vibecoders don't have to choose between `/scan`, `/fix`, `/launch-check`, `/report-card`, `/find-and-fix-everything`.
 
 ```bash
+node ${CLAUDE_PLUGIN_ROOT}/scanner/dist/agentic-security.mjs banner 2>/dev/null || true
 node ${CLAUDE_PLUGIN_ROOT}/scanner/dist/agentic-security.mjs secure ${1:-.} ${@:2}
 ```
 

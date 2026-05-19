@@ -5,6 +5,7 @@ description: Deep-audit your auth provider configuration — Clerk, NextAuth, Au
 Audit the authentication layer for provider-specific misconfigurations. Covers: dangerous email account linking, trustHost CSRF bypass, missing NEXTAUTH_SECRET, weak session secrets, hardcoded OAuth client secrets, Clerk public route misconfig, and insecure cookie flags.
 
 ```bash
+node ${CLAUDE_PLUGIN_ROOT}/scanner/dist/agentic-security.mjs banner 2>/dev/null || true
 node -e "
 const fs = require('fs');
 const W = (s, c) => process.stdout.isTTY ? \`\x1b[\${c}m\${s}\x1b[0m\` : s;

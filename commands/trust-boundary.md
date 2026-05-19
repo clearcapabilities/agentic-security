@@ -6,6 +6,7 @@ argument-hint: "[--output <file.svg|file.md>] [--inline]"
 Render the v3 trust-boundary diagram. Default: write Markdown with embedded Mermaid to `reports/trust-boundary-<timestamp>.md` and open it. Pass `--inline` to dump the Mermaid source to stdout.
 
 ```bash
+node ${CLAUDE_PLUGIN_ROOT}/scanner/dist/agentic-security.mjs banner 2>/dev/null || true
 INLINE=""
 OUT=""
 for arg in "$@"; do

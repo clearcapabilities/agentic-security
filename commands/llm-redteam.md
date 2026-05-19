@@ -9,6 +9,7 @@ Two modes:
 - **`--endpoint URL`**: active red-team — sends the prompt corpus through the endpoint and judges responses against expected-rejection patterns.
 
 ```bash
+node ${CLAUDE_PLUGIN_ROOT}/scanner/dist/agentic-security.mjs banner 2>/dev/null || true
 ENDPOINT=""
 API_KEY=""
 CATEGORIES=""

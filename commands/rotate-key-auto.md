@@ -32,6 +32,7 @@ You leaked an API key. The clock is running. Every hour it sits in your repo is 
 ## Usage
 
 ```bash
+node ${CLAUDE_PLUGIN_ROOT}/scanner/dist/agentic-security.mjs banner 2>/dev/null || true
 # Single key (paste the leaked value)
 /rotate-key-auto sk-AbCdEf...
 

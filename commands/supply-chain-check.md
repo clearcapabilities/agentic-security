@@ -10,6 +10,7 @@ The six dep commands (`/dep-pinning`, `/dep-freshness`, `/install-script-audit`,
 It runs the SCA scan plus the five precision-loss-zero dep audits, then prints one verdict. No new detection — pure orchestration.
 
 ```bash
+node ${CLAUDE_PLUGIN_ROOT}/scanner/dist/agentic-security.mjs banner 2>/dev/null || true
 PATH_ARG="${1:-.}"
 STRICT=""
 DO_FIX=""

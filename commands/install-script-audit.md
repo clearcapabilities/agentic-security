@@ -6,6 +6,7 @@ argument-hint: "[path] [--transitive] [--json]"
 Identify all npm packages that run arbitrary shell commands at install time via `preinstall`, `install`, `postinstall`, or `prepare` lifecycle hooks. These scripts execute with full filesystem and network access the moment anyone runs `npm install`, making them the most direct supply-chain attack surface in the npm ecosystem.
 
 ```bash
+node ${CLAUDE_PLUGIN_ROOT}/scanner/dist/agentic-security.mjs banner 2>/dev/null || true
 PATH_ARG="."
 INCLUDE_TRANSITIVE=false
 JSON_OUT=false

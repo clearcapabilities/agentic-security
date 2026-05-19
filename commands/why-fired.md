@@ -6,6 +6,7 @@ argument-hint: "--finding <id-or-stableId>"
 Print the v3 `whyFired` provenance record for a finding. Every finding shipped by the scanner carries this record so a security engineer can understand *exactly* why the engine emitted it.
 
 ```bash
+node ${CLAUDE_PLUGIN_ROOT}/scanner/dist/agentic-security.mjs banner 2>/dev/null || true
 ID=""
 for arg in "$@"; do
   case "$arg" in

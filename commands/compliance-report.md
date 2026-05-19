@@ -6,6 +6,7 @@ argument-hint: "[nist|asvs|llm] [path] [--format md|csv|json] [--output <file>]"
 Run the compliance attestation scanner for the chosen framework.
 
 ```bash
+node ${CLAUDE_PLUGIN_ROOT}/scanner/dist/agentic-security.mjs banner 2>/dev/null || true
 FRAMEWORK="${1:-}"
 PATH_ARG="${2:-.}"
 FORMAT="${FORMAT:-md}"

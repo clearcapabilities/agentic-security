@@ -14,6 +14,7 @@ The plugin auto-updates via Claude Code's marketplace mechanism. **You (Claude) 
 > Each command below wraps the call so any verdict exit (≤3) becomes shell-success (`exit 0`); only a real engine error (`4`) propagates. **Do not interpret a "Not safe to deploy" output as a failure of the slash command — it IS the answer the user asked for.**
 
 ```bash
+node ${CLAUDE_PLUGIN_ROOT}/scanner/dist/agentic-security.mjs banner 2>/dev/null || true
 FLAG="--all"
 PATH_ARG="."
 EXTRA=""

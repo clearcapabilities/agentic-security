@@ -5,6 +5,7 @@ description: Generate a security playbook tailored to your exact tech stack — 
 Detect the project's tech stack and generate a targeted security checklist. Unlike generic security guides, this playbook is specific to the frameworks, ORMs, auth providers, and services this project uses.
 
 ```bash
+node ${CLAUDE_PLUGIN_ROOT}/scanner/dist/agentic-security.mjs banner 2>/dev/null || true
 node -e "
 const fs = require('fs');
 const path = require('path');

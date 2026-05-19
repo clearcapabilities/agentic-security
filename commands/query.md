@@ -42,6 +42,7 @@ When the user invokes `/query <input>`:
 2. Otherwise: read the natural-language description, draft the YAML, show it to the user, and ask "save?". On yes, write to `.agentic-security/rules/<slug>.yml` and run `/scan --quick` so they see whether it fires.
 
 ```bash
+node ${CLAUDE_PLUGIN_ROOT}/scanner/dist/agentic-security.mjs banner 2>/dev/null || true
 node -e "
 const fs = require('fs');
 const path = require('path');

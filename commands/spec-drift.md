@@ -6,6 +6,7 @@ argument-hint: "[path]"
 Run the scanner with the v3 specification-mining detector and show only `family: 'spec-drift'` findings.
 
 ```bash
+node ${CLAUDE_PLUGIN_ROOT}/scanner/dist/agentic-security.mjs banner 2>/dev/null || true
 PATH_ARG="."
 for arg in "$@"; do
   [ "${arg:0:1}" != "-" ] && PATH_ARG="$arg"

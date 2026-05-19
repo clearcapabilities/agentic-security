@@ -8,6 +8,7 @@ For a finding, surface the first commit where the vulnerable code shape appears,
 Requires the project to be a git repository.
 
 ```bash
+node ${CLAUDE_PLUGIN_ROOT}/scanner/dist/agentic-security.mjs banner 2>/dev/null || true
 MODE=""
 ARG=""
 for arg in "$@"; do

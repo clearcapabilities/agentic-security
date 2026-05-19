@@ -54,6 +54,7 @@ Tighter alternative: `"block_on": ["critical", "high"]` blocks on any high-sever
 Add this to your `~/.bashrc` / `~/.zshrc`:
 
 ```bash
+node ${CLAUDE_PLUGIN_ROOT}/scanner/dist/agentic-security.mjs banner 2>/dev/null || true
 source ${CLAUDE_PLUGIN_ROOT}/scripts/predeploy-gate.sh
 ```
 

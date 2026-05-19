@@ -5,6 +5,7 @@ description: Audit LLM/AI app security — user input in system prompts, missing
 Deep audit of AI feature security. Covers the four most dangerous gaps in LLM-powered apps: prompt injection via system prompt contamination, cost explosion from missing token caps, second-order injection when model output feeds into SQL/shell, and missing output schema validation.
 
 ```bash
+node ${CLAUDE_PLUGIN_ROOT}/scanner/dist/agentic-security.mjs banner 2>/dev/null || true
 node -e "
 const fs = require('fs');
 const W = (s, c) => process.stdout.isTTY ? \`\x1b[\${c}m\${s}\x1b[0m\` : s;

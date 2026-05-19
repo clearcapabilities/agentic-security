@@ -6,6 +6,7 @@ argument-hint: "[twitter|linkedin|discord|recap|all]"
 Print copy-paste posts about your project's current security state.
 
 ```bash
+node ${CLAUDE_PLUGIN_ROOT}/scanner/dist/agentic-security.mjs banner 2>/dev/null || true
 node -e "
 const fs = require('fs');
 

@@ -5,6 +5,7 @@ description: Single letter-grade snapshot (A–F) of your project's security pos
 Compute and print a project-wide security letter grade from the last scan.
 
 ```bash
+node ${CLAUDE_PLUGIN_ROOT}/scanner/dist/agentic-security.mjs banner 2>/dev/null || true
 node -e "
 const fs = require('fs');
 let scan = null;

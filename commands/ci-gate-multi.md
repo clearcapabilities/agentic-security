@@ -14,6 +14,7 @@ Detection rules:
 - pass `--provider` to force a specific output
 
 ```bash
+node ${CLAUDE_PLUGIN_ROOT}/scanner/dist/agentic-security.mjs banner 2>/dev/null || true
 node -e "
 const fs = require('fs');
 const path = require('path');

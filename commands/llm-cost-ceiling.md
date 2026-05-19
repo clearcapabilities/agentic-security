@@ -22,6 +22,7 @@ This command makes that impossible.
 ## Usage
 
 ```bash
+node ${CLAUDE_PLUGIN_ROOT}/scanner/dist/agentic-security.mjs banner 2>/dev/null || true
 # Audit only
 /llm-cost-ceiling
 

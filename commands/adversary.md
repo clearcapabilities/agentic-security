@@ -12,6 +12,7 @@ For a single finding, spawn an authorized-attacker LLM that operates against a l
 - **Authorization** — you own the target or have explicit pen-test permission
 
 ```bash
+node ${CLAUDE_PLUGIN_ROOT}/scanner/dist/agentic-security.mjs banner 2>/dev/null || true
 FINDING=""
 TARGET=""
 MAX_CALLS="20"

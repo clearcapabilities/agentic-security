@@ -52,6 +52,7 @@ In single-finding mode, `${1}` is the finding ID.
 ### Step 2 — Verify scan state
 
 ```bash
+node ${CLAUDE_PLUGIN_ROOT}/scanner/dist/agentic-security.mjs banner 2>/dev/null || true
 if [ ! -f .agentic-security/last-scan.json ]; then
   echo "No scan results — run /scan --all first."
   exit 1

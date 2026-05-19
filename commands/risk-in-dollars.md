@@ -49,6 +49,7 @@ Anything not covered falls back to a conservative default band.
 ## Usage
 
 ```bash
+node ${CLAUDE_PLUGIN_ROOT}/scanner/dist/agentic-security.mjs banner 2>/dev/null || true
 /risk-in-dollars              # full table
 /risk-in-dollars --top 5      # top 5 by worst-case
 /risk-in-dollars --json       # machine-readable for board decks

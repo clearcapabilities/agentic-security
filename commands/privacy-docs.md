@@ -27,6 +27,7 @@ This command generates a privacy-policy template that's accurate to your actual 
 ## Usage
 
 ```bash
+node ${CLAUDE_PLUGIN_ROOT}/scanner/dist/agentic-security.mjs banner 2>/dev/null || true
 # Just generate the policy
 /privacy-docs --company "Acme Inc." --contact privacy@acme.com --jurisdiction US-CA
 

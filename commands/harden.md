@@ -5,6 +5,7 @@ description: One-command security hardening — automatically applies safe infra
 Apply a curated set of safe, automated security improvements to the project. Unlike `/fix` (which patches specific findings), `/harden` proactively adds best-practice scaffolding that isn't a finding yet: security headers, environment protection, and CI hooks.
 
 ```bash
+node ${CLAUDE_PLUGIN_ROOT}/scanner/dist/agentic-security.mjs banner 2>/dev/null || true
 node -e "
 const fs = require('fs');
 const path = require('path');

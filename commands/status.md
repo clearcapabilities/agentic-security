@@ -5,6 +5,7 @@ description: Print a one-screen project & plugin health snapshot — version, la
 Print the agentic-security project health snapshot.
 
 ```bash
+node ${CLAUDE_PLUGIN_ROOT}/scanner/dist/agentic-security.mjs banner 2>/dev/null || true
 node -e "
 const fs = require('fs');
 const os = require('os');

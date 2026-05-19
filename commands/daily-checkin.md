@@ -26,6 +26,7 @@ You don't open security dashboards. You DO open Slack and Discord. This command 
 ## Setup
 
 ```bash
+node ${CLAUDE_PLUGIN_ROOT}/scanner/dist/agentic-security.mjs banner 2>/dev/null || true
 # Interactive — prompts you for Slack/Discord webhooks
 /daily-checkin --setup
 

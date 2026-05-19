@@ -5,6 +5,7 @@ description: Generate exact Content-Security-Policy and CORS headers for your st
 Generate a working Content-Security-Policy and CORS configuration tailored to this project's actual stack and domains.
 
 ```bash
+node ${CLAUDE_PLUGIN_ROOT}/scanner/dist/agentic-security.mjs banner 2>/dev/null || true
 node -e "
 const fs = require('fs');
 const path = require('path');

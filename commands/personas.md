@@ -6,6 +6,7 @@ argument-hint: "[--persona <name>] [--top <N>]"
 Show findings ranked per attacker persona. Each finding carries a 5-persona severity matrix; this command pivots the view so you see "what would a $PERSONA target?" instead of CVSS-flat severity.
 
 ```bash
+node ${CLAUDE_PLUGIN_ROOT}/scanner/dist/agentic-security.mjs banner 2>/dev/null || true
 PERSONA=""
 TOP="5"
 for arg in "$@"; do

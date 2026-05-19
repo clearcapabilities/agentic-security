@@ -6,6 +6,7 @@ argument-hint: "[--endpoint URL] [--out promptfoo.yaml] [--corpus full|jailbreak
 Writes a promptfoo-compatible YAML eval file (the corpus is also runnable directly via our `/llm-redteam` command). Use this when you want to integrate with existing promptfoo tooling, or commit the eval suite as a regression gate in CI.
 
 ```bash
+node ${CLAUDE_PLUGIN_ROOT}/scanner/dist/agentic-security.mjs banner 2>/dev/null || true
 ENDPOINT="${1:-http://localhost:8000/chat}"
 OUT="${OUT:-promptfoo.yaml}"
 CORPUS="${CORPUS:-full}"

@@ -6,6 +6,7 @@ argument-hint: "[--finding <id>] | [--all] | [--critical]"
 Generate security regression tests — code you commit to the test suite that proves a vulnerability exists (failing) and proves your fix works (passing).
 
 ```bash
+node ${CLAUDE_PLUGIN_ROOT}/scanner/dist/agentic-security.mjs banner 2>/dev/null || true
 node -e "
 const fs = require('fs');
 const W = (s, c) => process.stdout.isTTY ? \`\x1b[\${c}m\${s}\x1b[0m\` : s;

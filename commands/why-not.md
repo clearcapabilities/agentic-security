@@ -6,6 +6,7 @@ argument-hint: "<CWE> (e.g. CWE-89, or just 89, or 'sql-injection')"
 For a CWE the user *expects* the scanner to flag but didn't, this command opens the books: it shows which sources, sinks, and sanitizers from that CWE's family the engine considered, and explains why nothing fired. Useful when chasing recall gaps.
 
 ```bash
+node ${CLAUDE_PLUGIN_ROOT}/scanner/dist/agentic-security.mjs banner 2>/dev/null || true
 node -e "
 const fs = require('fs');
 

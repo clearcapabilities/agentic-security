@@ -5,6 +5,7 @@ description: Audit all webhook handlers for missing signature verification — S
 Find webhook endpoint handlers that process payloads without verifying the provider's cryptographic signature. An unverified webhook endpoint accepts requests from anyone who knows the URL.
 
 ```bash
+node ${CLAUDE_PLUGIN_ROOT}/scanner/dist/agentic-security.mjs banner 2>/dev/null || true
 node -e "
 const fs = require('fs');
 const W = (s, c) => process.stdout.isTTY ? \`\x1b[\${c}m\${s}\x1b[0m\` : s;

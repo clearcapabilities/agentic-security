@@ -6,6 +6,7 @@ argument-hint: "[--threshold <N>]"
 Show the v3 counterfactual report. Each entry is a defensive control whose removal would expose ≥ 3 high+ findings — the brittlest pieces of your defense-in-depth.
 
 ```bash
+node ${CLAUDE_PLUGIN_ROOT}/scanner/dist/agentic-security.mjs banner 2>/dev/null || true
 THRESHOLD="3"
 for arg in "$@"; do
   case "$arg" in

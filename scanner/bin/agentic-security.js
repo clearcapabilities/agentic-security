@@ -63,6 +63,7 @@ Commands:
   reset [--yes] [--keep ...]   Right-to-delete: wipe accumulated learned state under .agentic-security/ (preserves operator-authored config)
   rule-synth [--dry-run]       Auto-synthesise suppression rules from repeated FP verdicts (proposes — does not activate)
   version                      Print version
+  banner [--full]              Print the Patch-the-frog mascot + brand lockup
 
 Options:
   --profile vibecoder|pro      Override profile for this run
@@ -115,6 +116,47 @@ function loadPersonaProfile(scanRoot, args) {
 }
 
 // Compute confidence threshold from profile + flags.
+// `agentic-security banner [--full|--compact]` — Patch the frog mascot +
+// brand line. `--compact` (default) prints a single coloured frog face beside
+// the wordmark. `--full` prints the seven-line lockup mirroring the SVG.
+// Colour is suppressed under NO_COLOR or non-TTY stderr.
+function printBanner(args) {
+  const useColor = !!process.stderr.isTTY && !process.env.NO_COLOR;
+  const C = useColor ? {
+    FROG:  '\x1b[38;2;255;107;44m',
+    DEEP:  '\x1b[38;2;201;52;20m',
+    CREAM: '\x1b[38;2;244;239;230m',
+    DIM:   '\x1b[2m',
+    BOLD:  '\x1b[1m',
+    RESET: '\x1b[0m',
+  } : { FROG:'', DEEP:'', CREAM:'', DIM:'', BOLD:'', RESET:'' };
+  const v = '0.55.0';
+  const compact = !args.flags.full;
+  if (compact) {
+    const lines = [
+      '',
+      `  ${C.FROG}╭─╮╭─╮${C.RESET}  ${C.BOLD}agentic-security${C.RESET}  ${C.DIM}·${C.RESET}  ${C.CREAM}by Clear Capabilities${C.RESET}  ${C.DIM}· v${v}${C.RESET}`,
+      `  ${C.FROG}│${C.BOLD}◉${C.RESET}${C.FROG}││${C.BOLD}◉${C.RESET}${C.FROG}│${C.RESET}  ${C.DIM}Tiny.${C.RESET} ${C.FROG}${C.BOLD}Bright.${C.RESET} ${C.DIM}Watching.${C.RESET}`,
+      `  ${C.FROG}╰─╯╰─╯${C.RESET}`,
+      '',
+    ];
+    process.stdout.write(lines.join('\n'));
+    return;
+  }
+  // Full lockup — mirrors hooks/mascot.js lockup() for first-run / banner output.
+  const lines = [
+    '',
+    `       ${C.FROG}╭───╮ ╭───╮${C.RESET}`,
+    `       ${C.FROG}│ ${C.BOLD}◉${C.RESET}${C.FROG} │ │ ${C.BOLD}◉${C.RESET}${C.FROG} │${C.RESET}        ${C.BOLD}agentic-security${C.RESET}`,
+    `       ${C.FROG}╰─┬─╯ ╰─┬─╯${C.RESET}        ${C.DIM}─────────────────${C.RESET}`,
+    `      ${C.FROG}╭──┴─────┴──╮${C.RESET}       ${C.CREAM}Tiny. ${C.FROG}${C.BOLD}Bright.${C.RESET}${C.CREAM} Watching.${C.RESET}`,
+    `      ${C.FROG}│  ${C.DEEP}·${C.FROG}  ${C.BOLD}⌣${C.RESET}${C.FROG}  ${C.DEEP}·${C.FROG}  │${C.RESET}       ${C.CREAM}by Clear Capabilities Inc.${C.RESET}  ${C.DIM}· v${v}${C.RESET}`,
+    `      ${C.FROG}╰───────────╯${C.RESET}       ${C.DIM}https://clearcapabilities.com${C.RESET}`,
+    '',
+  ];
+  process.stdout.write(lines.join('\n'));
+}
+
 function effectiveConfidence(profile, args) {
   if (args.flags['firehose']) return 0.0;
   if (args.flags['honest']) return 0.9;
@@ -1367,7 +1409,8 @@ async function main() {
         runStdio({ sessionRoot: path.resolve(root) });
         return;
       }
-      case 'version':  console.log('agentic-security 0.54.0  ·  created by ClearCapabilities.Com'); process.exit(0);
+      case 'version':  console.log('agentic-security 0.55.0  ·  created by ClearCapabilities.Com'); process.exit(0);
+      case 'banner':   { printBanner(args); process.exit(0); }
       case 'help': case '--help': case '-h': case undefined:
         console.log(USAGE); process.exit(cmd ? 0 : 1);
       default:

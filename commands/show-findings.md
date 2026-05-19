@@ -30,6 +30,7 @@ Print a brief summary: `Triage: N reviewed — X true positives, Y suppressed as
 Parse flags and dispatch:
 
 ```bash
+node ${CLAUDE_PLUGIN_ROOT}/scanner/dist/agentic-security.mjs banner 2>/dev/null || true
 MODE="--all"
 SEVERITY="high"
 THREAT_MODE="--stride"

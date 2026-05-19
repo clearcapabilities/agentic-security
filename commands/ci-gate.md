@@ -6,6 +6,7 @@ argument-hint: "[--severity critical|high|medium] [--comment] [--apply]"
 Generate a `.github/workflows/security.yml` that integrates the scanner into your CI pipeline. PRs with critical findings fail the build before merge.
 
 ```bash
+node ${CLAUDE_PLUGIN_ROOT}/scanner/dist/agentic-security.mjs banner 2>/dev/null || true
 node -e "
 const fs = require('fs');
 const path = require('path');

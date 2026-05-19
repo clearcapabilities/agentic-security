@@ -6,6 +6,7 @@ argument-hint: "[path] [--json] [--ecosystem npm|pip|cargo|gem|pub|packagist]"
 Check every direct dependency against its registry to determine how far behind the latest version it is. Stale dependencies accumulate unpatched CVEs over time: a package that was safe when pinned may have had several security releases since. This command makes staleness visible so you can prioritize which deps to update.
 
 ```bash
+node ${CLAUDE_PLUGIN_ROOT}/scanner/dist/agentic-security.mjs banner 2>/dev/null || true
 PATH_ARG="."
 JSON_OUT=false
 ECOSYSTEM_FILTER=""

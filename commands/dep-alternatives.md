@@ -6,6 +6,7 @@ argument-hint: "[path] [--json]"
 Match your installed dependencies against a curated catalog of packages that have well-established safer or lighter alternatives. Each substitution removes one or more packages from your supply chain entirely — reducing CVE exposure, install-time attack surface, and bundle size. The catalog covers packages where a native browser/runtime API, a purpose-built successor, or a significantly smaller library covers the same use case.
 
 ```bash
+node ${CLAUDE_PLUGIN_ROOT}/scanner/dist/agentic-security.mjs banner 2>/dev/null || true
 PATH_ARG="."
 JSON_OUT=false
 

@@ -8,6 +8,7 @@ Interactive triage. By default cycles through every finding in the last scan ran
 The user's verdicts are persisted to `.agentic-security/triage-feedback.json` and read by the engine's active-learning loop on the next scan (FR-PREC-4): findings whose `stableId` was previously marked `fp` are suppressed; findings marked `tp` get a confidence boost.
 
 ```bash
+node ${CLAUDE_PLUGIN_ROOT}/scanner/dist/agentic-security.mjs banner 2>/dev/null || true
 node -e "
 const fs = require('fs');
 const path = require('path');

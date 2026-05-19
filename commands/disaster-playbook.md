@@ -32,6 +32,7 @@ Each section uses your actual env var names where possible (e.g., `SUPABASE_SERV
 ## Usage
 
 ```bash
+node ${CLAUDE_PLUGIN_ROOT}/scanner/dist/agentic-security.mjs banner 2>/dev/null || true
 # Auto-detect stack, write DISASTER.md in the repo root
 /disaster-playbook
 

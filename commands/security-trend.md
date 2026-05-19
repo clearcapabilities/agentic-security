@@ -5,6 +5,7 @@ description: Security regression scorecard — shows finding counts over time, w
 Show a trend line of your security posture across scans. Tracks what was fixed, what was introduced, and whether you're improving or regressing.
 
 ```bash
+node ${CLAUDE_PLUGIN_ROOT}/scanner/dist/agentic-security.mjs banner 2>/dev/null || true
 node -e "
 const fs = require('fs');
 const path = require('path');
