@@ -2644,11 +2644,11 @@ const JAVA_FAMILY_RULES = [
       if (resolved) {
         return !isWeak(resolved);  // strong → suppress; weak → fire
       }
-      // 2) OWASP Benchmark fallback. The benchmark.properties file lives
-      //    outside the typical scanRoot. Without a project-index hit, fall
-      //    back to OWASP's published key→algo mapping for the standard
-      //    cryptoAlg<N> / hashAlg<N> keys used across the benchmark.
-      const OWASP_BENCH_PROPS = {
+      // 2) OWASP Benchmark fallback — hardcoded answer-key for OWASP's own
+      //    benchmark.properties file. Pure label leakage; disabled under
+      //    blind bench so the F1 reflects the production engine alone.
+      const _blindHere = process.env.AGENTIC_SECURITY_BLIND_BENCH === '1';
+      const OWASP_BENCH_PROPS = _blindHere ? {} : {
         cryptoAlg1: 'DES/ECB/PKCS5Padding',
         cryptoAlg2: 'AES/CCM/NoPadding',
         hashAlg1: 'MD5',
@@ -3820,14 +3820,13 @@ function _buildJavaTaintMap(cleaned, lines) {
   // on the next iteration.
   //
   // includeMethodParams: also mark Vector<String>/List/Map method parameters
-  // as tainted-collection. Gated to files with strong tainted-data markers:
-  // Juliet test packages, network sources, or canonical Juliet method names
-  // (badSink/badSource/goodG2B/goodB2G). All three are unambiguous signals
-  // that the file deals with attacker-controlled data flowing through
-  // collection arguments — the variant-72/73/74/.../82 cross-file shapes.
+  // as tainted-collection. Network context is a legitimate production signal.
+  // The Juliet package/method-name signals are answer-key leakage and are
+  // disabled under AGENTIC_SECURITY_BLIND_BENCH=1.
+  const _BLIND = process.env.AGENTIC_SECURITY_BLIND_BENCH === '1';
   const _includeParamColls = _JAVA_NETWORK_CONTEXT_RE.test(cleaned)
-    || /\bjuliet\.(?:testcases|support)\b/.test(cleaned)
-    || /\b(?:badSink|badSource|goodG2B|goodB2G)\s*\(/.test(cleaned);
+    || (!_BLIND && /\bjuliet\.(?:testcases|support)\b/.test(cleaned))
+    || (!_BLIND && /\b(?:badSink|badSource|goodG2B|goodB2G)\s*\(/.test(cleaned));
   let taintedCollections = findTaintedCollections(cleaned, tainted, { includeMethodParams: _includeParamColls });
 
   // OWASP Benchmark convention: `param` is almost always the user-controlled
@@ -4093,7 +4092,8 @@ function scanJavaSAST(fp, raw) {
   // 72/73/74/.../82 where the receiving file has no local source — the
   // tainted Vector/List/Map arrives via a method parameter from a sibling
   // file. Gated tightly to avoid FPs on real apps.
-  if (!hasSource) {
+  if (!hasSource && process.env.AGENTIC_SECURITY_BLIND_BENCH !== '1') {
+    // Juliet-shape signal — disabled under blind bench (answer-key leakage).
     const _isJulietShape = /\bjuliet\.(?:testcases|support)\b/.test(cleaned)
       || /\b(?:badSink|badSource|goodG2B|goodB2G)\s*\(/.test(cleaned);
     if (_isJulietShape && /\b(?:Vector|ArrayList|LinkedList|List|Set|HashSet|Map|HashMap|Hashtable|Properties|Queue|Deque|Stack|Optional)\s*<[^>]*>\s+[A-Za-z_]\w*\s*[,)]/.test(cleaned)) {
@@ -4111,7 +4111,12 @@ function scanJavaSAST(fp, raw) {
   if (!hasWeakAlgoLiteral) {
     const propUseRe = /\bgetProperty\s*\(\s*"([A-Za-z_][\w.]*)"/g;
     let pm;
-    const OWASP_BENCH_PROPS = {
+    // OWASP_BENCH_PROPS is the OWASP Benchmark answer-key for its own
+    // benchmark.properties file (hashAlg1 → MD5, cryptoAlg1 → DES/ECB). Pure
+    // label leakage. Disabled under blind bench; real apps use the
+    // properties index loaded from the filesystem instead.
+    const _blindHere = process.env.AGENTIC_SECURITY_BLIND_BENCH === '1';
+    const OWASP_BENCH_PROPS = _blindHere ? {} : {
       cryptoAlg1: 'DES/ECB/PKCS5Padding',
       cryptoAlg2: 'AES/CCM/NoPadding',
       hashAlg1: 'MD5',
