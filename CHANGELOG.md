@@ -1,5 +1,68 @@
 # Changelog
 
+## 0.50.0 — next-gen SAST Phase 1 complete (5 of 5 units)
+
+Closes Phase 1 of `docs/PRD-next-gen-sast-phase1.md`. The two units queued
+from v0.49.0 (P1.2 verifier sandbox, P1.4 polyglot bench) are now wired.
+
+### Shipped & wired
+
+- **P1.2 — Verifier sandbox loop (FR-VER-3, FR-VER-6, FR-VER-7).** New
+  module `scanner/src/posture/verifier.js`. Consumes the `f.poc` artifacts
+  from P1.1 and assigns a per-finding `verifier_verdict`:
+  - `verified-exploit` — PoC ran against a live target and exited 0
+  - `verified-by-llm` — Layer-3 LLM accepted the finding
+  - `verified-sanitizer-absence` — pattern-based proof that no sanitizer
+    appears in a ±10 line window around the sink (9 vuln families covered)
+  - `unverified-by-design` — CWE family where v1 explicitly doesn't ship a PoC
+  - `cannot-verify` — sandbox error, missing target, PoC validation failed
+
+  PoC static validation refuses destructive shell payloads, hardcoded cloud
+  metadata IPs, runaway-length code, and Node PoCs without a deterministic
+  `process.exit(...)`. Sandbox execution mode (opt-in via
+  `AGENTIC_SECURITY_VERIFY_LIVE=1` + `AGENTIC_SECURITY_VERIFY_TARGET=<url>`)
+  runs each PoC under Docker with `--cap-drop=ALL --memory=256m --read-only
+  --user=nobody`; falls back to subprocess with `ulimit` when Docker isn't
+  available. Fail-closed: any error → `cannot-verify`, never silent drop.
+  New CLI subcommand `agentic-security verify [--finding <id>] [--live
+  --target <url>]` re-runs the verifier loop on `last-scan.json` and
+  persists the verdicts. Smoke on `vulnerable-js` fixture: 7 findings get
+  `verified-sanitizer-absence` static proofs; 2 get `unverified-by-design`;
+  the rest are `cannot-verify` pending live execution.
+
+- **P1.4 — Cross-language polyglot benchmark (G3).** New `bench/polyglot/`
+  with a tiny dependency-free YAML parser, the runner `runner.mjs`, and 4
+  starter cases:
+  - 01 HTTP→Python SQL (canonical Phase-2 detector gap — Python SAST)
+  - 02 Queue→Python cmd (same gap; queue chain detected; sink not yet)
+  - 03 ORM round-trip (Node-only; mass-assignment + data-exposure TPs)
+  - 04 HTTP→Node SQL (clean end-to-end test of the OpenAPI cross-asset bridge)
+
+  Default mode `recall-only` measures "does the chain fire where it
+  should?" rather than penalizing incidental findings (header-hardening,
+  CSRF on test routes, body-parser DoS warnings). Set `mode: strict` in a
+  manifest for full-precision scoring. Current overall F1 = 72.7%; PRD G3
+  target is 85%; the 27pp gap is Python-side detector coverage (Phase 2).
+  New `npm run bench:polyglot`.
+
+### Tests, bench, integrity
+
+- 19 new tests in `test/verifier.test.js` (validation, sanitizer proofs,
+  verdict assignment, batch annotation, fail-closed defense-in-depth).
+- All 218 + 26 + 2 unit tests pass.
+- Synthetic-bench F1 still 100%.
+- Polyglot bench F1 72.7% (above 30% v1 floor; below 85% G3 target — the
+  gap is documented in `bench/polyglot/README.md`).
+- No new dead exports.
+
+### Honesty correction
+
+The PRD's G2 target ("≥80% of high+/critical findings ship with a verified
+PoC") is not measured yet — that requires a labeled run-against-target,
+which the v1 verifier supports via `--live --target` but we haven't built
+a target harness. v1 ships the framework; the labeled measurement is
+Phase 5 work.
+
 ## 0.49.0 — next-gen SAST Phase 1 (3 of 5 units)
 
 Implements 3 of the 5 Phase-1 shippable units from

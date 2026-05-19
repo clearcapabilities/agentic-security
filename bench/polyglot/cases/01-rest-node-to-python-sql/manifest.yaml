@@ -1,0 +1,17 @@
+case: "01-rest-node-to-python-sql"
+description: "Node Express receives request, forwards to Python Flask via HTTP, Python query concatenates user input into SQL."
+flow:
+  entry: services/node/server.js
+  sink: services/python/app.py
+  boundary: openapi
+expected:
+  - file: services/python/app.py
+    line: 14
+    family: sql-injection
+    severity: high
+    _note: "raw SQL concat with user-controlled name"
+  - file: services/node/server.js
+    line: 13
+    family: sql-injection
+    cross_language: true
+    _note: "cross-language chain — sql-injection reaches downstream Python"

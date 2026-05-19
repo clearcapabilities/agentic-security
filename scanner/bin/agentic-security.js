@@ -59,6 +59,7 @@ Commands:
   digest --slack <webhook>     Vibecoder: send daily digest to Slack
   mcp                          Start the MCP stdio server (scan_diff, query_taint, explain_finding, apply_fix)
   validator-cache stats|gc     Inspect / prune .agentic-security/llm-cache/ (use --older-than <days> --dry-run)
+  verify [--finding <id>]      Re-run the verifier loop on last-scan findings (use --live --target <url> to execute PoCs)
   version                      Print version
 
 Options:
@@ -734,6 +735,74 @@ async function cmdValidatorCache(args) {
   return 4;
 }
 
+// `agentic-security verify [--finding <id>] [--target <url>] [--live]`
+//
+// Re-runs the verifier loop over the most-recent scan. Without --live, it
+// validates each finding's PoC (refuses destructive payloads, hardcoded
+// metadata IPs, runaway lengths) and assigns a static verdict. With --live
+// AND --target, it actually executes each PoC in a Docker sandbox (or
+// subprocess fallback) against the supplied URL.
+//
+// FR-VER-7 fail-closed: any error → cannot-verify, never silent drop.
+async function cmdVerify(args) {
+  const scanRoot = path.resolve(args.flags.root || '.');
+  const lastScanPath = path.join(scanRoot, '.agentic-security', 'last-scan.json');
+  if (!fs.existsSync(lastScanPath)) {
+    console.error(`No prior scan found at ${lastScanPath}. Run \`agentic-security scan\` first.`);
+    return 4;
+  }
+  const last = JSON.parse(await fsp.readFile(lastScanPath, 'utf8'));
+  const findings = last.findings || [];
+  const targetFlag = args.flags.target || process.env.AGENTIC_SECURITY_VERIFY_TARGET || null;
+  const liveFlag = !!args.flags.live || process.env.AGENTIC_SECURITY_VERIFY_LIVE === '1';
+  if (liveFlag && !targetFlag) {
+    console.error('--live requires --target <url> (or AGENTIC_SECURITY_VERIFY_TARGET).');
+    return 4;
+  }
+  if (liveFlag) {
+    // Set the env so verifier.js picks it up. We don't permanently mutate
+    // process.env beyond this run.
+    process.env.AGENTIC_SECURITY_VERIFY_LIVE = '1';
+    process.env.AGENTIC_SECURITY_VERIFY_TARGET = targetFlag;
+  }
+  const { annotateVerifierVerdicts, verifierCoverageSummary } = await import('../src/posture/verifier.js');
+  const filter = args.flags.finding ? findings.filter(f => f.id === args.flags.finding || f.stableId === args.flags.finding) : findings;
+  if (!filter.length) {
+    console.error(`No matching findings (use --finding <id>).`);
+    return 4;
+  }
+  // Load file contents so sanitizer-absence proofs can run. Only load the
+  // files referenced by the findings being verified, to keep this fast even
+  // on large projects.
+  const fileContents = {};
+  const fileSet = new Set();
+  for (const f of filter) {
+    const fp = f.file || f.sink?.file;
+    if (fp) fileSet.add(fp);
+  }
+  for (const rel of fileSet) {
+    try {
+      const abs = path.resolve(scanRoot, rel);
+      const st = fs.statSync(abs);
+      if (st.size <= 500_000) fileContents[rel] = fs.readFileSync(abs, 'utf8');
+    } catch { /* file missing or unreadable; skip */ }
+  }
+  annotateVerifierVerdicts(filter, { target: targetFlag, fileContents });
+  const sum = verifierCoverageSummary(filter);
+  console.log(`Verified ${filter.length} finding(s):`);
+  for (const [k, v] of Object.entries(sum)) console.log(`  ${k}: ${v}`);
+  if (args.flags.verbose || args.flags.finding) {
+    for (const f of filter) {
+      console.log(`  ${f.file}:${f.line}  ${f.vuln}`);
+      console.log(`    → ${f.verifier_verdict || 'none'} (${f.verifier_reason || 'no-reason'})${f.verifier_runner ? ' [' + f.verifier_runner + ']' : ''}`);
+    }
+  }
+  // Persist back to last-scan.json so downstream tools see the verdicts.
+  last.findings = findings;
+  await fsp.writeFile(lastScanPath, JSON.stringify(last, null, 2));
+  return 0;
+}
+
 async function cmdPacks(args) {
   const sub = args._[1] || 'list';
   if (sub !== 'list') { console.error('Usage: agentic-security packs list'); return 4; }
@@ -1004,6 +1073,7 @@ async function main() {
       case 'secure':   process.exit(await cmdSecure(args));
       case 'packs':    process.exit(await cmdPacks(args));
       case 'validator-cache': process.exit(await cmdValidatorCache(args));
+      case 'verify':   process.exit(await cmdVerify(args));
       case 'digest':   process.exit(await cmdDigest(args));
       case 'setup':    process.exit(await cmdSetup(args));
       case 'mcp':      {
@@ -1012,7 +1082,7 @@ async function main() {
         runStdio({ sessionRoot: path.resolve(root) });
         return;
       }
-      case 'version':  console.log('agentic-security 0.49.0  ·  created by ClearCapabilities.Com'); process.exit(0);
+      case 'version':  console.log('agentic-security 0.50.0  ·  created by ClearCapabilities.Com'); process.exit(0);
       case 'help': case '--help': case '-h': case undefined:
         console.log(USAGE); process.exit(cmd ? 0 : 1);
       default:

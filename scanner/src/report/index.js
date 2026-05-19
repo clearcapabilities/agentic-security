@@ -93,6 +93,10 @@ export function normalizeFindings(scan){
       calibrated_confidence_ci: Array.isArray(f.calibrated_confidence_ci) ? f.calibrated_confidence_ci : null,
       calibrated_n: typeof f.calibrated_n === 'number' ? f.calibrated_n : 0,
       calibration_reason: f.calibration_reason || null,
+      // Phase-1 next-gen P1.2 (FR-VER-6): verifier verdict.
+      verifier_verdict: f.verifier_verdict || null,
+      verifier_reason: f.verifier_reason || null,
+      verifier_runner: f.verifier_runner || null,
     });
   }
   for (const s of (scan.secrets||[])) {

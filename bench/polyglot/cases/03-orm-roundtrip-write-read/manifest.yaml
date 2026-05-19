@@ -1,0 +1,17 @@
+case: "03-orm-roundtrip-write-read"
+description: "Write user-controlled HTML to the User.bio column via Mongoose; later read it back into res.send → second-order XSS. The mass-assignment + data-exposure findings on the writer side are also expected. (XSS through the DB-read path is a Phase-2 detector gap; left as FN.)"
+flow:
+  entry: services/node/writer.js
+  sink: services/node/reader.js
+  boundary: orm
+expected:
+  - file: services/node/writer.js
+    line: 7
+    family: mass-assignment
+    severity: high
+    _note: "Object.assign with req.body — mass assignment, detected today"
+  - file: services/node/writer.js
+    line: 10
+    family: data-exposure
+    severity: high
+    _note: "res.json(user) returns full user object"

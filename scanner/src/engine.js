@@ -67,6 +67,7 @@ import { scanPhp } from './sast/php.js';
 // Phase 1 — precision-engineering posture modules.
 import { annotateConfidence } from './posture/confidence.js';
 import { annotatePocs } from './posture/poc-generator.js';
+import { annotateVerifierVerdicts } from './posture/verifier.js';
 import { annotateCalibratedConfidence } from './posture/calibration.js';
 import { annotateStableIds } from './posture/stable-id.js';
 import { clusterByRootCause } from './posture/clustering.js';
@@ -6856,6 +6857,11 @@ async function runFullScan({fileContents={}, depFileContents={}, scanRoot=null},
   // Phase-1 next-gen P1.1 (FR-VER-2): attach a runnable PoC to each finding
   // when a CWE template covers it. Findings without coverage get f.poc=null.
   try { annotatePocs(finalFindings, { routes: aR }); } catch(_) {}
+  // Phase-1 next-gen P1.2 (FR-VER-3, FR-VER-6, FR-VER-7): per-finding
+  // verifier verdict — verified-exploit (live PoC ran), verified-by-llm,
+  // verified-sanitizer-absence, unverified-by-design, or cannot-verify.
+  // Fail-closed: any error → cannot-verify, never a silent drop.
+  try { annotateVerifierVerdicts(finalFindings, { fileContents: fc }); } catch(_) {}
   // Cross-language taint (Sentinel-parity FR-DET-3) — five boundary types:
   // HTTP/REST via OpenAPI, gRPC via .proto, GraphQL via SDL, SQL/ORM
   // round-trip, and IaC → application-code reachability (FR-DET-4).

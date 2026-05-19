@@ -1,0 +1,12 @@
+case: "02-queue-node-to-python-cmd"
+description: "Node Express publishes to Kafka topic; Python consumer feeds the message body into os.system. The queue producer/consumer pair IS detected (see cross-language chain at worker.py); the Python os.system sink is a Phase-2 detector gap so the command-injection finding at worker.py:12 is currently an FN."
+flow:
+  entry: services/node/producer.js
+  sink: services/python/worker.py
+  boundary: queue
+expected:
+  - file: services/python/worker.py
+    line: 12
+    family: command-injection
+    severity: critical
+    _note: "Phase-2 detector gap: Python os.system with bare variable not yet implemented. Counted as FN until detector lands."

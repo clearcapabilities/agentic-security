@@ -1,0 +1,21 @@
+openapi: 3.0.3
+info:
+  title: python-svc
+  version: 0.1.0
+paths:
+  /lookup:
+    post:
+      summary: Look up users by name (SQL injection sink — for benchmark)
+      operationId: lookup
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+      responses:
+        '200':
+          description: OK

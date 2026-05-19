@@ -1,0 +1,17 @@
+case: "04-rest-node-to-node-sql"
+description: "Node → Node via OpenAPI; SQL injection sink at the second-hop Node service. Tests the cross-language OpenAPI bridge with both sides covered by today's Node SAST."
+flow:
+  entry: services/edge/index.js
+  sink: services/db-svc/handler.js
+  boundary: openapi
+expected:
+  - file: services/db-svc/handler.js
+    line: 8
+    family: sql-injection
+    severity: critical
+    _note: "raw SQL concat with req.body.name"
+  - file: services/edge/index.js
+    line: 8
+    family: cross-language-taint-client-call-post-us
+    cross_language: true
+    _note: "OpenAPI bridge surfaces the downstream sink at the edge"

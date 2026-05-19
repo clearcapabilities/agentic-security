@@ -1,0 +1,19 @@
+openapi: 3.0.3
+info:
+  title: db-svc
+  version: 0.1.0
+paths:
+  /users/lookup:
+    post:
+      operationId: usersLookup
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+      responses:
+        '200': { description: OK }
