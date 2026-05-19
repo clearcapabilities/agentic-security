@@ -53,7 +53,13 @@ const _BLIND_RAW = flag('--blind');
 // the default --blind, which only redacts known answer-key markers.
 // Forces --blind on when used.
 const STRIP_ALL_COMMENTS = flag('--strip-all-comments');
-const BLIND = _BLIND_RAW || STRIP_ALL_COMMENTS;
+// --scramble-identifiers: also rewrite Juliet/OWASP-specific identifiers
+// (bad, goodG2B, juliet.testcases, hashAlg1, ...) inside source files
+// to opaque names. Strictly stronger than --strip-all-comments. Forces
+// --blind on. Uses a separate cache directory so the previous variants
+// can't leak in.
+const SCRAMBLE_IDENTIFIERS = flag('--scramble-identifiers');
+const BLIND = _BLIND_RAW || STRIP_ALL_COMMENTS || SCRAMBLE_IDENTIFIERS;
 
 if (!ALL && !APP) {
   console.error('Usage: bench-realworld.js [--all | --app <name>] [--refresh-cache] [--json] [--verbose] [--no-wildcards] [--blind] [--strip-all-comments]');
@@ -125,6 +131,40 @@ function _blindTransform(text, opts = {}) {
   if (opts.stripAllComments) {
     out = blankComments(out, opts.lang);
   }
+  // --scramble-identifiers: rename every Juliet/OWASP-specific identifier
+  // INSIDE the source so the scanner cannot key on them even if it ignores
+  // its own bench-shape gates. Method names, package paths, and the OWASP
+  // property keys are all rewritten in place. File paths are NOT renamed,
+  // so the GT (which keys on path) still binds correctly.
+  if (opts.scrambleIdentifiers) {
+    out = out
+      // Juliet method names → opaque.
+      .replace(/\bbadSink\b/g, 'op0Sink')
+      .replace(/\bbadSource\b/g, 'op0Source')
+      .replace(/\bgoodG2BSink\b/g, 'op1G2BSink')
+      .replace(/\bgoodG2BSource\b/g, 'op1G2BSource')
+      .replace(/\bgoodB2GSink\b/g, 'op1B2GSink')
+      .replace(/\bgoodB2GSource\b/g, 'op1B2GSource')
+      .replace(/\bgoodG2B\b/g, 'op1G2B')
+      .replace(/\bgoodB2G\b/g, 'op1B2G')
+      .replace(/\bgoodSink\b/g, 'op1Sink')
+      .replace(/\bgoodSource\b/g, 'op1Source')
+      // The literal method names `bad()` and `good()` — only as method-decl shapes,
+      // not as substrings of identifiers we already replaced (use lookbehind/ahead).
+      .replace(/\b(?<!op0)bad(?=\s*\()/g, 'op0')
+      .replace(/\b(?<!op1)good(?=\s*\()/g, 'op1')
+      // Juliet packages.
+      .replace(/\bjuliet\.testcases\b/g, 'app.code')
+      .replace(/\bjuliet\.support\b/g, 'app.lib')
+      // OWASP Benchmark answer-key property names.
+      .replace(/\bcryptoAlg1\b/g, 'xa1')
+      .replace(/\bcryptoAlg2\b/g, 'xa2')
+      .replace(/\bhashAlg1\b/g, 'xb1')
+      .replace(/\bhashAlg2\b/g, 'xb2')
+      // OWASP test class literal name (as a String reference; class declaration
+      // is in the filename which we don't touch).
+      .replace(/"BenchmarkTest\d+"/g, '"AppX"');
+  }
   return out;
 }
 
@@ -140,7 +180,10 @@ async function _materializeBlinded(srcRoot, dstRoot, opts = {}) {
   const marker = path.join(dstRoot, '.blinded.ok');
   // The marker records the transform variant — if the caller asks for a
   // different variant than was cached, we re-blind into a fresh dir.
-  const expectedMarker = `mode=${opts.stripAllComments ? 'strip-all-comments' : 'markers-only'}\n`;
+  const mode = opts.scrambleIdentifiers ? 'scramble-identifiers'
+             : opts.stripAllComments ? 'strip-all-comments'
+             : 'markers-only';
+  const expectedMarker = `mode=${mode}\n`;
   try {
     const existing = await fs.readFile(marker, 'utf8');
     if (existing.startsWith(expectedMarker)) return;
@@ -179,6 +222,7 @@ async function _materializeBlinded(srcRoot, dstRoot, opts = {}) {
         await fs.mkdir(path.dirname(dstPath), { recursive: true });
         await fs.writeFile(dstPath, _blindTransform(raw, {
           stripAllComments: opts.stripAllComments,
+          scrambleIdentifiers: opts.scrambleIdentifiers,
           lang: _langFor(e.name),
         }));
       } else {
@@ -190,8 +234,10 @@ async function _materializeBlinded(srcRoot, dstRoot, opts = {}) {
   }
   console.error(`  blinding ${srcRoot} → ${dstRoot} (stripping FLAW / OWASP markers)`);
   await walk('.');
-  const modeLine = `mode=${opts.stripAllComments ? 'strip-all-comments' : 'markers-only'}\n`;
-  await fs.writeFile(marker, modeLine + `copied=${copied} files\n`);
+  const _mode = opts.scrambleIdentifiers ? 'scramble-identifiers'
+              : opts.stripAllComments ? 'strip-all-comments'
+              : 'markers-only';
+  await fs.writeFile(marker, `mode=${_mode}\ncopied=${copied} files\n`);
 }
 
 async function ensureClone(name, repo, sha) {
@@ -929,9 +975,14 @@ async function runOne(name, app, vulnFamilyMap) {
   // ensures: every comparison the scorer makes is in blinded path space.
   let repoRoot = originalRoot;
   if (BLIND) {
-    const variantSuffix = STRIP_ALL_COMMENTS ? '-blinded-nocomment' : '-blinded';
+    const variantSuffix = SCRAMBLE_IDENTIFIERS ? '-blinded-scrambled'
+                       : STRIP_ALL_COMMENTS ? '-blinded-nocomment'
+                       : '-blinded';
     const blindedRoot = path.join(CACHE_ROOT, `${name}-${app.sha}${variantSuffix}`);
-    await _materializeBlinded(originalRoot, blindedRoot, { stripAllComments: STRIP_ALL_COMMENTS });
+    await _materializeBlinded(originalRoot, blindedRoot, {
+      stripAllComments: STRIP_ALL_COMMENTS || SCRAMBLE_IDENTIFIERS,
+      scrambleIdentifiers: SCRAMBLE_IDENTIFIERS,
+    });
     repoRoot = blindedRoot;
   }
   let scanRoot = path.join(repoRoot, app.scanRoot || '.');
