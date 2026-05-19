@@ -85,11 +85,18 @@ export function findCloneOutliers(findings) {
   const out = [];
   const SEV = { critical: 0, high: 1, medium: 2, low: 3, info: 4 };
   for (const [hash, group] of buckets) {
-    if (group.length < 2) continue;
+    if (group.length < 3) continue;             // benchmark fixtures cluster as pairs constantly — require 3+
     const sevs = new Set(group.map(g => g.severity));
     if (sevs.size < 2) continue;                // homogeneous cluster, not an outlier
     group.sort((a, b) => (SEV[a.severity] ?? 9) - (SEV[b.severity] ?? 9));
     const worst = group[0];
+    const worstRank = SEV[worst.severity] ?? 9;
+    const bestRank = SEV[group[group.length - 1].severity] ?? 9;
+    // Require: worst is high+/critical AND spread ≥ 2 severity tiers. This
+    // narrows the rule to genuine "3 sanitizers, 1 is broken" cases and
+    // suppresses benchmark-shape clones that vary only by safe/unsafe label.
+    if (worstRank > 1) continue;                 // worst must be at least 'high'
+    if (bestRank - worstRank < 2) continue;     // need a real gap
     out.push({
       id: `clone-outlier:${hash}`,
       file: worst.file,

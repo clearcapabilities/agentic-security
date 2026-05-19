@@ -18,6 +18,7 @@ import * as fs from 'node:fs/promises';
 import * as cp from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 import { runScan } from '../../../src/runScan.js';
+import { blankComments } from '../../../src/sast/_comment-strip.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const MANIFEST = path.join(__dirname, 'manifest.json');
@@ -45,10 +46,17 @@ const NO_WILDCARDS = flag('--no-wildcards');
 // The blinder strips /* FLAW */ / /* POTENTIAL FLAW */ comments and OWASP
 // template marker comments from every file before scanning. What's left
 // is what the engine itself can detect — no label leakage.
-const BLIND = flag('--blind');
+const _BLIND_RAW = flag('--blind');
+// --strip-all-comments: in addition to the answer-key marker stripping
+// applied by --blind, also blank EVERY comment in the source. The scanner
+// never sees comment text — only executable code. Strictly stronger than
+// the default --blind, which only redacts known answer-key markers.
+// Forces --blind on when used.
+const STRIP_ALL_COMMENTS = flag('--strip-all-comments');
+const BLIND = _BLIND_RAW || STRIP_ALL_COMMENTS;
 
 if (!ALL && !APP) {
-  console.error('Usage: bench-realworld.js [--all | --app <name>] [--refresh-cache] [--json] [--verbose] [--no-wildcards] [--blind]');
+  console.error('Usage: bench-realworld.js [--all | --app <name>] [--refresh-cache] [--json] [--verbose] [--no-wildcards] [--blind] [--strip-all-comments]');
   process.exit(2);
 }
 
@@ -101,7 +109,7 @@ const _BLIND_MARKER_PATTERNS = [
   /(@WebServlet\s*\(\s*(?:value\s*=\s*)?["'])(?:[^"'/]*\/)?\w+?-\d+\//g,
 ];
 
-function _blindTransform(text) {
+function _blindTransform(text, opts = {}) {
   if (!text || typeof text !== 'string') return text;
   let out = text;
   for (let i = 0; i < _BLIND_MARKER_PATTERNS.length - 1; i++) {
@@ -110,15 +118,35 @@ function _blindTransform(text) {
   // The @WebServlet substitution preserves the leading `@WebServlet("` so the
   // annotation still parses; only the category prefix is opaqued.
   out = out.replace(_BLIND_MARKER_PATTERNS[_BLIND_MARKER_PATTERNS.length - 1], '$1__opaque__/');
+  // --strip-all-comments: pass the file through blankComments() so every
+  // remaining comment becomes whitespace. The lang flag matters only for
+  // Python (treats `#` as a line comment); every other language uses // and
+  // /* */ which blankComments handles by default.
+  if (opts.stripAllComments) {
+    out = blankComments(out, opts.lang);
+  }
   return out;
+}
+
+function _langFor(filename) {
+  if (/\.py$/i.test(filename)) return 'py';
+  return null;
 }
 
 // Recursively materialize a blinded copy of `srcRoot` under `dstRoot`.
 // Skips dirs/files larger than 5 MB and a small skip list. Re-runs are
 // idempotent: a `.blinded.ok` marker file inside dstRoot causes skip.
-async function _materializeBlinded(srcRoot, dstRoot) {
+async function _materializeBlinded(srcRoot, dstRoot, opts = {}) {
   const marker = path.join(dstRoot, '.blinded.ok');
-  try { await fs.access(marker); return; } catch { /* not yet */ }
+  // The marker records the transform variant — if the caller asks for a
+  // different variant than was cached, we re-blind into a fresh dir.
+  const expectedMarker = `mode=${opts.stripAllComments ? 'strip-all-comments' : 'markers-only'}\n`;
+  try {
+    const existing = await fs.readFile(marker, 'utf8');
+    if (existing.startsWith(expectedMarker)) return;
+    // Cached blind dir is the wrong variant — wipe it.
+    await fs.rm(dstRoot, { recursive: true, force: true });
+  } catch { /* not yet */ }
   await fs.mkdir(dstRoot, { recursive: true });
   const skipDirs = new Set(['.git', 'node_modules', '.gradle', 'build', 'dist', 'out', '.bench-cache', '.idea', 'target']);
   let copied = 0;
@@ -149,7 +177,10 @@ async function _materializeBlinded(srcRoot, dstRoot) {
         let raw;
         try { raw = await fs.readFile(srcPath, 'utf8'); } catch { continue; }
         await fs.mkdir(path.dirname(dstPath), { recursive: true });
-        await fs.writeFile(dstPath, _blindTransform(raw));
+        await fs.writeFile(dstPath, _blindTransform(raw, {
+          stripAllComments: opts.stripAllComments,
+          lang: _langFor(e.name),
+        }));
       } else {
         await fs.mkdir(path.dirname(dstPath), { recursive: true });
         try { await fs.copyFile(srcPath, dstPath); } catch { /* binary or perm; skip */ }
@@ -159,7 +190,8 @@ async function _materializeBlinded(srcRoot, dstRoot) {
   }
   console.error(`  blinding ${srcRoot} → ${dstRoot} (stripping FLAW / OWASP markers)`);
   await walk('.');
-  await fs.writeFile(marker, `copied=${copied} files\n`);
+  const modeLine = `mode=${opts.stripAllComments ? 'strip-all-comments' : 'markers-only'}\n`;
+  await fs.writeFile(marker, modeLine + `copied=${copied} files\n`);
 }
 
 async function ensureClone(name, repo, sha) {
@@ -885,7 +917,11 @@ function f1(p, r) { return p+r === 0 ? 0 : (2*p*r)/(p+r); }
 function pad(s, n) { s = String(s); return s.length >= n ? s : s + ' '.repeat(n - s.length); }
 
 async function runOne(name, app, vulnFamilyMap) {
-  console.error(`\n=== ${name} (${app.language})${BLIND ? ' [BLIND]' : ''} ===`);
+  // --strip-all-comments implies --blind. The "blind" label in stderr is
+  // augmented so the user can tell the strictest mode apart from
+  // markers-only blind.
+  const blindLabel = BLIND ? (STRIP_ALL_COMMENTS ? ' [BLIND+STRIP-ALL-COMMENTS]' : ' [BLIND]') : '';
+  console.error(`\n=== ${name} (${app.language})${blindLabel} ===`);
   const originalRoot = await ensureClone(name, app.repo, app.sha);
   // In blind mode, materialize a sanitized copy with answer-key markers
   // stripped, then point repoRoot at the blinded copy. The GT builders
@@ -893,8 +929,9 @@ async function runOne(name, app, vulnFamilyMap) {
   // ensures: every comparison the scorer makes is in blinded path space.
   let repoRoot = originalRoot;
   if (BLIND) {
-    const blindedRoot = path.join(CACHE_ROOT, `${name}-${app.sha}-blinded`);
-    await _materializeBlinded(originalRoot, blindedRoot);
+    const variantSuffix = STRIP_ALL_COMMENTS ? '-blinded-nocomment' : '-blinded';
+    const blindedRoot = path.join(CACHE_ROOT, `${name}-${app.sha}${variantSuffix}`);
+    await _materializeBlinded(originalRoot, blindedRoot, { stripAllComments: STRIP_ALL_COMMENTS });
     repoRoot = blindedRoot;
   }
   let scanRoot = path.join(repoRoot, app.scanRoot || '.');

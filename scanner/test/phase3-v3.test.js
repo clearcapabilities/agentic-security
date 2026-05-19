@@ -41,18 +41,28 @@ test('semantic-clone: shapeHash returns null on tiny snippets, hex on real code'
   assert.match(h, /^[0-9a-f]{16}$/);
 });
 
-test('semantic-clone: cluster + outlier surfacing', () => {
+test('semantic-clone: cluster + outlier surfacing (requires 3+ members with severity gap ≥2)', () => {
   const code = 'function fn(req, res) { return res.send(req.query.q + "!"); }';
+  // Three members, severity range high..info — meets the new threshold:
+  // 3+ members AND worst severity is high+/critical AND tier-gap ≥ 2.
   const findings = [
     { file: 'a.js', line: 1, severity: 'high', snippet: code },
     { file: 'b.js', line: 1, severity: 'low',  snippet: code },
-    { file: 'c.js', line: 1, severity: 'info', snippet: 'unrelated stuff here for sure' },
+    { file: 'c.js', line: 1, severity: 'info', snippet: code },
   ];
   annotateCloneClusters(findings);
-  assert.equal(findings[0].cloneClusterSize, 2);
+  assert.equal(findings[0].cloneClusterSize, 3);
   const outliers = findCloneOutliers(findings);
   assert.equal(outliers.length, 1);
   assert.equal(outliers[0].family, 'clone-outlier');
+  // Pair-only cluster with medium↔low gap shouldn't fire (benchmark-shape noise).
+  const pair = [
+    { file: 'd.js', line: 1, severity: 'medium', snippet: code },
+    { file: 'e.js', line: 1, severity: 'low',    snippet: code },
+  ];
+  annotateCloneClusters(pair);
+  const noOutlier = findCloneOutliers(pair);
+  assert.equal(noOutlier.length, 0);
 });
 
 // ── FR-LEARN-10 ──────────────────────────────────────────────────────────
