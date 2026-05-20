@@ -137,7 +137,7 @@ function printBanner(args) {
     BOLD:  '\x1b[1m',
     RESET: '\x1b[0m',
   } : { FROG:'', DEEP:'', CREAM:'', DIM:'', BOLD:'', RESET:'' };
-  const v = '0.64.0';
+  const v = '0.65.0';
   const compact = !args.flags.full;
   if (compact) {
     const lines = [
@@ -1514,7 +1514,28 @@ async function main() {
         runStdio({ sessionRoot: path.resolve(root) });
         return;
       }
-      case 'version':  console.log('agentic-security 0.64.0  ·  created by ClearCapabilities.Com'); process.exit(0);
+      case 'cve-watch': {
+        // Continuous CVE-watch daemon (one-shot). Polls OSV for the project's
+        // dependency tree, fires the configured webhook on each new advisory.
+        // Designed to be invoked from cron or a GitHub Action; the state file
+        // (.agentic-security/cve-alerts-state.json) deduplicates across runs.
+        const { runOnce } = await import('../src/posture/cve-alert-daemon.js');
+        const root = args.flags.root || process.cwd();
+        const r = await runOnce(path.resolve(root), {
+          alertUrl:    args.flags['alert-url'],
+          alertType:   args.flags['alert-type'],
+          minSeverity: args.flags['min-severity'],
+          dryRun:      args.flags['dry-run'] === true,
+        });
+        if (args.flags.json) {
+          // Stringify Set/etc. safely.
+          console.log(JSON.stringify(r, null, 2));
+        } else if (!r.ok) {
+          console.error(`cve-watch: ${r.reason || 'failed'}`);
+        }
+        process.exit(r.ok ? 0 : 1);
+      }
+      case 'version':  console.log('agentic-security 0.65.0  ·  created by ClearCapabilities.Com'); process.exit(0);
       case 'banner':   { printBanner(args); process.exit(0); }
       case 'harness':  process.exit(await cmdHarness(args));
       case 'scan-baseline': process.exit(await cmdScanBaseline(args));

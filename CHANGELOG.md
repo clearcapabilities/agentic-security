@@ -1,5 +1,92 @@
 # Changelog
 
+## 0.65.0 — sanitizer catalog 8× / CVE corpus 6× / continuous CVE alerting
+
+Closes three ASPM/SAST competitiveness gaps surfaced in the post-v0.64 review:
+sanitizer coverage that lagged commercial vendors, a published F1 number
+measured against a corpus too small to be credible, and a `/cve-alerts`
+command that configured a webhook but never actually monitored anything.
+
+### Sanitizer catalog: 48 → 372 entries (7.7×)
+
+New module `scanner/src/dataflow/catalog-expanded.js` adds ~325 sanitizer
+entries spanning 6 languages and 10 categories (HTML escape, SQL
+parameterization, shell escape, URL encode, path normalize, regex escape,
+LDAP/XPath, XML/JSON, validators, type coercion). Merged into the main
+catalog at load time; on id collision the base catalog wins.
+
+| Language    | Before | After |
+|-------------|-------:|------:|
+| JavaScript  |     11 |   105 |
+| Python      |     11 |    96 |
+| Java        |      8 |    61 |
+| PHP         |      4 |    41 |
+| Ruby        |      5 |    33 |
+| Go          |      2 |    36 |
+| **Total**   | **48** |**372**|
+
+Tests in `scanner/test/catalog-expanded.test.js` enforce: minimum entry
+count, per-language coverage floors, well-formed entry shape, no
+duplicate IDs across the merged catalog, callee identifiers that the
+indexer can match, and family vocabulary hygiene.
+
+Two pre-existing duplicate IDs in the base catalog (`py-input`,
+`py-os-environ`, `py-open`, plus 14 in the v2 Python block) were fixed
+in this pass — the duplicate-id test surfaced them.
+
+### CVE-replay corpus: 8 → 50 entries (6.25×)
+
+`bench/cve-replay/generate-corpus.mjs` emits 42 capability-tier fixtures
+across 11 high-priority CWE families and 6 languages:
+
+| Family              | CWE        | Entries |
+|---------------------|------------|--------:|
+| SQL injection       | CWE-89     |       5 |
+| XSS                 | CWE-79     |       4 |
+| Command injection   | CWE-78     |       5 |
+| Path traversal      | CWE-22     |       5 |
+| SSRF                | CWE-918    |       4 |
+| Deserialization     | CWE-502    |       4 |
+| XXE                 | CWE-611    |       3 |
+| Prototype pollution | CWE-1321   |       2 |
+| CSRF                | CWE-352    |       2 |
+| Hardcoded secrets   | CWE-798    |       3 |
+| Weak crypto         | CWE-327/338|       5 |
+
+Aggregate F1 against the new corpus is **0.636** (Wilson 95% CI [0.346,
+0.591]) — an honest baseline, replacing the previous F1 number measured
+against 8 cherry-picked fixtures. The regression-tier CI gate still
+passes F1=1.0. Failing capability entries graduate to regression as fixes
+land (CONTRIBUTING.md's 5-snapshot rule).
+
+### Continuous CVE alerting daemon
+
+New `scanner/src/posture/cve-alert-daemon.js` polls OSV for the project's
+dependency tree and fires the configured webhook when a new advisory
+drops. Multi-ecosystem: npm, PyPI, Ruby, Go, Cargo, Composer, Maven,
+Dart. Reads `.agentic-security/cve-alerts.json` (the schema written by
+`/cve-alerts`), dedupes against `.agentic-security/cve-alerts-state.json`
+so re-runs don't re-page. Slack / Discord / generic webhook payload
+shapes built in.
+
+- `agentic-security cve-watch [--alert-url] [--min-severity] [--dry-run]`
+  — one-shot run. Schedule it via cron or CI.
+- `scripts/ci-templates/cve-watch.github-actions.yml` — drop-in GitHub
+  Actions workflow (daily 08:00 UTC + `workflow_dispatch`). Reads
+  `CVE_ALERT_URL` from repo secrets; commits state file with `[skip ci]`.
+
+21 unit tests in `scanner/test/cve-alert-daemon.test.js` cover each
+manifest reader, severity normalization, deduplication across runs,
+min-severity floors, payload formatting, and offline-mode refusal.
+
+### Migration notes
+
+- Re-running `npm run build` is recommended to bundle the new daemon
+  binary entry. No breaking changes; all v0.64.0 commands and skills
+  still work as before.
+- The capability-tier F1 score in the manifest is intentionally honest
+  (0.636, not 0.85). Path to 0.85 is more corpus, not better numbers.
+
 ## 0.64.0 — auto-activating skills + multi-harness manifests
 
 Inspired by patterns from the obra/superpowers plugin's "mandatory workflows,

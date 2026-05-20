@@ -6,21 +6,37 @@
   },
   "metadata": {
     "description": "Clear Capabilities security plugins for Claude Code.",
-    "version": "0.64.0"
+    "version": "0.65.0"
   },
   "plugins": [
     {
       "name": "agentic-security",
       "source": "./",
       "description": "Agentic-Security is a powerful Claude Code plugin that automatically performs Application Security Testing (SAST, SCA, secrets detection, and more). Think of it as the easy button for making your Claude-generated code safe and secure.",
-      "version": "0.64.0",
+      "version": "0.65.0",
       "author": {
         "name": "Ross Young",
         "email": "ross@clearcapabilities.com"
       },
       "homepage": "https://github.com/Clear-Capabilities/agentic-security",
       "license": "PolyForm-Internal-Use-1.0.0",
-      "keywords": ["security", "sast", "sca", "secrets", "iac", "cve", "osv", "kev", "appsec", "vulnerability", "aspm", "sbom", "compliance", "mcp-security", "authz"],
+      "keywords": [
+        "security",
+        "sast",
+        "sca",
+        "secrets",
+        "iac",
+        "cve",
+        "osv",
+        "kev",
+        "appsec",
+        "vulnerability",
+        "aspm",
+        "sbom",
+        "compliance",
+        "mcp-security",
+        "authz"
+      ],
       "category": "security"
     }
   ]

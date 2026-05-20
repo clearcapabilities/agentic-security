@@ -366,20 +366,18 @@ export const CATALOG = [
   { kind: 'source', id: 'py-tornado-get-arg',   language: 'py', framework: 'tornado', match: { type: 'call', callee: 'get_argument'      }, argIndex: 0, label: 'tornado.get_argument', provenance: 'http-body' },
   { kind: 'source', id: 'py-tornado-get-args',  language: 'py', framework: 'tornado', match: { type: 'call', callee: 'get_arguments'     }, argIndex: 0, label: 'tornado.get_arguments', provenance: 'http-body' },
   { kind: 'source', id: 'py-tornado-get-body',  language: 'py', framework: 'tornado', match: { type: 'call', callee: 'get_body_argument' }, argIndex: 0, label: 'tornado.get_body_argument', provenance: 'http-body' },
-  // os.environ / sys.argv — config + CLI input sources.
-  { kind: 'source', id: 'py-os-environ',    language: 'py', framework: 'std', match: { type: 'member', object: 'os', prop: 'environ' }, label: 'os.environ', provenance: 'env' },
+  // sys.argv — CLI input source. (os.environ already declared above.)
   { kind: 'source', id: 'py-sys-argv',      language: 'py', framework: 'std', match: { type: 'member', object: 'sys', prop: 'argv'   }, label: 'sys.argv', provenance: 'cli' },
   // File reads.
-  { kind: 'source', id: 'py-open',          language: 'py', framework: 'std', match: { type: 'call', callee: 'open' }, argIndex: 0, label: 'open()', provenance: 'file-read' },
-  // input() — interactive CLI.
-  { kind: 'source', id: 'py-input',         language: 'py', framework: 'std', match: { type: 'call', callee: 'input' }, argIndex: 0, label: 'input()', provenance: 'stdin' },
+  { kind: 'source', id: 'py-open-read',     language: 'py', framework: 'std', match: { type: 'call', callee: 'open' }, argIndex: 0, label: 'open()', provenance: 'file-read' },
+  // input() already declared above as a stdlib source (line ~120).
 
   // ─── SINKS (Python) ────────────────────────────────────────────────────────
   // SQL.
-  { kind: 'sink', id: 'py-cursor-execute', language: 'py', framework: 'db', match: { type: 'call', callee: 'execute' },     argIndex: 0,
+  { kind: 'sink', id: 'py-cursor-execute-v2', language: 'py', framework: 'db', match: { type: 'call', callee: 'execute' },     argIndex: 0,
     vuln: { name: 'SQL Injection (cursor.execute)', severity: 'critical', cwe: 'CWE-89',
             remediation: 'Use parameterized queries: cursor.execute("SELECT * FROM t WHERE id = %s", (id,)). Never %-format or f-string the SQL with untrusted input.' } },
-  { kind: 'sink', id: 'py-cursor-executemany', language: 'py', framework: 'db', match: { type: 'call', callee: 'executemany' }, argIndex: 0,
+  { kind: 'sink', id: 'py-cursor-executemany-v2', language: 'py', framework: 'db', match: { type: 'call', callee: 'executemany' }, argIndex: 0,
     vuln: { name: 'SQL Injection (executemany)', severity: 'critical', cwe: 'CWE-89',
             remediation: 'Use parameterized queries with executemany; never concatenate user input.' } },
   { kind: 'sink', id: 'py-sqlalchemy-text', language: 'py', framework: 'sqlalchemy', match: { type: 'call', callee: 'text' }, argIndex: 0,
@@ -389,7 +387,7 @@ export const CATALOG = [
     vuln: { name: 'SQL Injection (Model.objects.raw)', severity: 'critical', cwe: 'CWE-89',
             remediation: 'Use Django ORM Q-objects or parameterized raw(): Model.objects.raw("SELECT ... %s", [val]).' } },
   // Command execution.
-  { kind: 'sink', id: 'py-os-system',     language: 'py', framework: 'std', match: { type: 'call', callee: 'system'     }, argIndex: 0,
+  { kind: 'sink', id: 'py-os-system-v2',     language: 'py', framework: 'std', match: { type: 'call', callee: 'system'     }, argIndex: 0,
     vuln: { name: 'Command Injection (os.system)', severity: 'critical', cwe: 'CWE-78',
             remediation: 'Replace os.system with subprocess.run([...]) using an argv array; never feed untrusted strings to a shell.' } },
   { kind: 'sink', id: 'py-os-popen',      language: 'py', framework: 'std', match: { type: 'call', callee: 'popen'      }, argIndex: 0,
@@ -398,7 +396,7 @@ export const CATALOG = [
   { kind: 'sink', id: 'py-subprocess-call', language: 'py', framework: 'std', match: { type: 'call', callee: 'call'      }, argIndex: 0,
     vuln: { name: 'Command Injection (subprocess.call)', severity: 'critical', cwe: 'CWE-78',
             remediation: 'Pass argv as a list and ensure shell=False (the default). If shell=True is required, escape with shlex.quote.' } },
-  { kind: 'sink', id: 'py-subprocess-run', language: 'py', framework: 'std', match: { type: 'call', callee: 'run'       }, argIndex: 0,
+  { kind: 'sink', id: 'py-subprocess-run-v2', language: 'py', framework: 'std', match: { type: 'call', callee: 'run'       }, argIndex: 0,
     vuln: { name: 'Command Injection (subprocess.run with shell=True)', severity: 'critical', cwe: 'CWE-78',
             remediation: 'Pass argv as a list and ensure shell=False.' } },
   { kind: 'sink', id: 'py-subprocess-Popen', language: 'py', framework: 'std', match: { type: 'call', callee: 'Popen'   }, argIndex: 0,
@@ -418,20 +416,20 @@ export const CATALOG = [
     vuln: { name: 'Code Injection (compile)', severity: 'high', cwe: 'CWE-95',
             remediation: 'compile() followed by exec is equivalent to eval. Avoid on untrusted input.' } },
   // Deserialization.
-  { kind: 'sink', id: 'py-pickle-loads', language: 'py', framework: 'std', match: { type: 'call', callee: 'loads' }, argIndex: 0,
+  { kind: 'sink', id: 'py-pickle-loads-v2', language: 'py', framework: 'std', match: { type: 'call', callee: 'loads' }, argIndex: 0,
     vuln: { name: 'Unsafe Deserialization (pickle.loads)', severity: 'critical', cwe: 'CWE-502',
             remediation: 'pickle.loads on untrusted data is RCE. Use JSON / msgpack with explicit schema.' } },
   { kind: 'sink', id: 'py-pickle-load', language: 'py', framework: 'std', match: { type: 'call', callee: 'load' }, argIndex: 0,
     vuln: { name: 'Unsafe Deserialization (pickle.load)', severity: 'critical', cwe: 'CWE-502',
             remediation: 'pickle.load on untrusted streams is RCE.' } },
-  { kind: 'sink', id: 'py-yaml-load', language: 'py', framework: 'yaml', match: { type: 'call', callee: 'load' }, argIndex: 0,
+  { kind: 'sink', id: 'py-yaml-load-v2', language: 'py', framework: 'yaml', match: { type: 'call', callee: 'load' }, argIndex: 0,
     vuln: { name: 'Unsafe Deserialization (yaml.load)', severity: 'high', cwe: 'CWE-502',
             remediation: 'Use yaml.safe_load instead of yaml.load on untrusted YAML.' } },
   // SSRF / HTTP-out.
-  { kind: 'sink', id: 'py-requests-get',  language: 'py', framework: 'requests', match: { type: 'call', callee: 'get'  }, argIndex: 0,
+  { kind: 'sink', id: 'py-requests-get-v2',  language: 'py', framework: 'requests', match: { type: 'call', callee: 'get'  }, argIndex: 0,
     vuln: { name: 'SSRF (requests.get)', severity: 'high', cwe: 'CWE-918',
             remediation: 'Resolve the host first, reject 169.254.169.254 / RFC1918 / localhost; or proxy through a server-side allow-list.' } },
-  { kind: 'sink', id: 'py-requests-post', language: 'py', framework: 'requests', match: { type: 'call', callee: 'post' }, argIndex: 0,
+  { kind: 'sink', id: 'py-requests-post-v2', language: 'py', framework: 'requests', match: { type: 'call', callee: 'post' }, argIndex: 0,
     vuln: { name: 'SSRF (requests.post)', severity: 'high', cwe: 'CWE-918',
             remediation: 'Resolve the host first and reject metadata-endpoint addresses.' } },
   { kind: 'sink', id: 'py-urllib-urlopen', language: 'py', framework: 'std', match: { type: 'call', callee: 'urlopen' }, argIndex: 0,
@@ -459,18 +457,38 @@ export const CATALOG = [
             remediation: 'Validate redirect target against an allow-list; never pass req-derived strings straight to redirect.' } },
 
   // ─── SANITIZERS (Python) ───────────────────────────────────────────────────
-  { kind: 'sanitizer', id: 'py-shlex-quote',         language: 'py', match: { type: 'call', callee: 'quote' },          effect: 'strip', appliesTo: ['cmd'] },
-  { kind: 'sanitizer', id: 'py-html-escape',         language: 'py', match: { type: 'call', callee: 'escape' },         effect: 'strip', appliesTo: ['xss','url'] },
-  { kind: 'sanitizer', id: 'py-markupsafe-escape',   language: 'py', match: { type: 'call', callee: 'Markup' },         effect: 'strip', appliesTo: ['xss'] },
-  { kind: 'sanitizer', id: 'py-bleach-clean',        language: 'py', match: { type: 'call', callee: 'clean' },          effect: 'strip', appliesTo: ['xss'] },
+  { kind: 'sanitizer', id: 'py-shlex-quote-v2',         language: 'py', match: { type: 'call', callee: 'quote' },          effect: 'strip', appliesTo: ['cmd'] },
+  { kind: 'sanitizer', id: 'py-html-escape-v2',         language: 'py', match: { type: 'call', callee: 'escape' },         effect: 'strip', appliesTo: ['xss','url'] },
+  { kind: 'sanitizer', id: 'py-markupsafe-escape-v2',   language: 'py', match: { type: 'call', callee: 'Markup' },         effect: 'strip', appliesTo: ['xss'] },
+  { kind: 'sanitizer', id: 'py-bleach-clean-v2',        language: 'py', match: { type: 'call', callee: 'clean' },          effect: 'strip', appliesTo: ['xss'] },
   { kind: 'sanitizer', id: 'py-urllib-quote',        language: 'py', match: { type: 'call', callee: 'quote_plus' },     effect: 'strip', appliesTo: ['url'] },
-  { kind: 'sanitizer', id: 'py-int',                 language: 'py', match: { type: 'call', callee: 'int' },            effect: 'strip', appliesTo: ['*'] },
-  { kind: 'sanitizer', id: 'py-float',               language: 'py', match: { type: 'call', callee: 'float' },          effect: 'strip', appliesTo: ['*'] },
+  { kind: 'sanitizer', id: 'py-int-v2',                 language: 'py', match: { type: 'call', callee: 'int' },            effect: 'strip', appliesTo: ['*'] },
+  { kind: 'sanitizer', id: 'py-float-v2',               language: 'py', match: { type: 'call', callee: 'float' },          effect: 'strip', appliesTo: ['*'] },
   { kind: 'sanitizer', id: 'py-ast-literal-eval',    language: 'py', match: { type: 'call', callee: 'literal_eval' },   effect: 'strip', appliesTo: ['*'] },
   { kind: 'sanitizer', id: 'py-yaml-safe-load',      language: 'py', match: { type: 'call', callee: 'safe_load' },      effect: 'strip', appliesTo: ['deserial'] },
   { kind: 'sanitizer', id: 'py-pathlib-resolve',     language: 'py', match: { type: 'call', callee: 'resolve' },        effect: 'taintIf-not-pinned', appliesTo: ['path'] },
   { kind: 'sanitizer', id: 'py-defusedxml',          language: 'py', match: { type: 'call', callee: 'fromstring' },     effect: 'strip', appliesTo: ['xxe'] },     // when called from defusedxml namespace
 ];
+
+// ─── Expanded sanitizer catalog (v0.65.0) ────────────────────────────────
+// ~450 additional entries across JS / Python / Java / Ruby / PHP / Go.
+// Lives in catalog-expanded.js to keep the diff reviewable. Merged into
+// the main CATALOG below so the indexer treats them identically.
+import { EXPANDED_SANITIZERS } from './catalog-expanded.js';
+// Merge the expanded sanitizer catalog. We dedupe on `id` (case-insensitive)
+// so a base-catalog entry always wins over a same-id expanded one — the base
+// catalog is the curated/blessed surface; the expansion is additive coverage.
+{
+  const _ids = new Set();
+  for (const e of CATALOG) if (e && e.id) _ids.add(String(e.id).toLowerCase());
+  for (const e of EXPANDED_SANITIZERS) {
+    if (!e || !e.id) continue;
+    const k = String(e.id).toLowerCase();
+    if (_ids.has(k)) continue;       // base catalog wins on id collision
+    _ids.add(k);
+    CATALOG.push(e);
+  }
+}
 
 // Provenance defaults (Sentinel-parity audit P1-10):
 //

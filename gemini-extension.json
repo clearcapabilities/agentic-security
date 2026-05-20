@@ -1,8 +1,11 @@
 {
   "name": "agentic-security",
-  "version": "0.64.0",
+  "version": "0.65.0",
   "description": "Agentic-Security scanner + MCP server for Gemini CLI. Provides 12 MCP tools the Gemini agent can call directly: scan, query taint, explain finding, find rule module, look up CVE, synthesize / verify / apply fix, append / read scratchpad, append / read AGENTS.md memory.",
-  "author": { "name": "Ross Young", "email": "ross@clearcapabilities.com" },
+  "author": {
+    "name": "Ross Young",
+    "email": "ross@clearcapabilities.com"
+  },
   "vendor": "Clear Capabilities Inc.",
   "homepage": "https://github.com/Clear-Capabilities/agentic-security",
   "license": "PolyForm-Internal-Use-1.0.0",
@@ -10,12 +13,18 @@
   "mcpServers": {
     "agentic-security": {
       "command": "node",
-      "args": ["scanner/bin/agentic-security-mcp.js", "--root", "${PWD}"],
+      "args": [
+        "scanner/bin/agentic-security-mcp.js",
+        "--root",
+        "${PWD}"
+      ],
       "description": "agentic-security MCP server. Session root confined to the current project directory; apply_fix requires confirm:true and a valid last-scan.json HMAC signature; shadow findings are never auto-applied.",
       "trust": {
         "writes_files": true,
         "session_scope": "project_directory_only",
-        "requires_confirm_for": ["apply_fix"]
+        "requires_confirm_for": [
+          "apply_fix"
+        ]
       }
     }
   },
