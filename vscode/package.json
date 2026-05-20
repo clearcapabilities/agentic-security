@@ -6,7 +6,7 @@
   "publisher": "clearcapabilities",
   "repository": "https://github.com/Clear-Capabilities/agentic-security",
   "license": "PolyForm-Internal-Use-1.0.0",
-  "engines": { "vscode": "^1.85.0" },
+  "engines": { "vscode": "^1.95.0" },
   "categories": ["Linters", "Other"],
   "main": "./dist/extension.js",
   "activationEvents": [
@@ -49,8 +49,8 @@
     "package": "vsce package"
   },
   "devDependencies": {
-    "@types/node": "^20.0.0",
-    "@types/vscode": "^1.85.0",
+    "@types/node": "^24.0.0",
+    "@types/vscode": "^1.95.0",
     "@vscode/vsce": "^3.9.1",
     "esbuild": "^0.25.0"
   }

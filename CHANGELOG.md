@@ -1,5 +1,42 @@
 # Changelog
 
+## 0.71.1 — dependency hygiene + CodeQL ignore-list for scanner/
+
+Patch release. No behavior change.
+
+### Dependency bumps
+- `@types/node`: `^20.0.0` → `^24.0.0` (scanner + vscode). Node 20 reached
+  EOL in 2026-04; tracking the current LTS.
+- `scanner/package.json` `engines.node`: `>=20.0.0` → `>=22.0.0`.
+- `vscode/package.json` `@types/vscode` + `engines.vscode`: `^1.85.0` →
+  `^1.95.0` (the engine pair stays consistent so VSCE doesn't warn).
+
+Other deps already current and unchanged: `@babel/*` 7.x, `@vercel/ncc`
+0.38.x, `js-yaml` 4.x, `safe-regex` 2.x, `fast-glob` 3.x, `esbuild` 0.25.x,
+`@vscode/vsce` 3.x. GitHub Actions in workflows already on v5/v8.
+
+### CodeQL ignore-list
+
+The scanner directory contains the taint engine itself — full of SAST
+patterns, hardcoded fixture credentials, eval() shapes, raw SQL strings.
+Any other SAST (including GitHub CodeQL) flags these as vulnerabilities,
+producing noise that drowns out real findings.
+
+Two new files:
+- `.github/codeql/codeql-config.yml` — 15-entry `paths-ignore` covering
+  `scanner/**`, `bench/**`, `vscode/dist/**`, all test fixtures, the
+  `.bench-cache/**` tree, and generated bundles.
+- `.github/workflows/codeql.yml` — advanced-setup CodeQL workflow on
+  push/PR + weekly cron, references the config above. Uses
+  `security-extended` query suite.
+
+**To activate**: switch the repo from default to advanced code-scanning
+setup at Settings → Code security → Code scanning → Set up → Advanced.
+The workflow will then run and honor the paths-ignore list.
+
+### Test totals
+**792 scanner tests pass / 0 fail** (unchanged from 0.71.0).
+
 ## 0.71.0 — taint engine frontier release (final 2 of 10 — IFDS + symbolic exploit proofs)
 
 Third and final release in the v0.69 → v0.71 taint-engine arc. v0.71

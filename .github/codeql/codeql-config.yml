@@ -1,0 +1,53 @@
+## GitHub Code Scanning (CodeQL) configuration.
+##
+## The `scanner/` directory contains the agentic-security taint engine
+## itself — a SAST tool whose source intentionally references injection
+## patterns, hardcoded fixture credentials, eval() shapes, raw SQL strings,
+## and other constructs that look like vulnerabilities to ANY SAST. We
+## explicitly ignore that tree (and its test fixtures) so CodeQL output
+## stays signal, not noise.
+##
+## Also excluded:
+##   - bench/cve-replay/        — CVE replay corpus, intentionally full of
+##                                disclosed-shape pre/post vulnerability pairs
+##   - vscode/dist/             — bundled extension output, not source
+##   - test fixtures            — synthetic vulnerable code
+##   - generated bundles        — minified, not human-edited
+##
+## This file is honored by the **advanced** code-scanning setup. If your
+## repository uses the **default** setup, switch to advanced (Settings →
+## Code security → Code scanning → CodeQL → Set up → Advanced) so this
+## config is picked up. The companion workflow at
+## .github/workflows/codeql.yml runs this configuration on push + PR.
+
+name: "agentic-security"
+
+paths-ignore:
+  # The taint engine itself — full of intentional SAST-pattern references.
+  - "scanner/**"
+  # CVE replay corpus + benchmark fixtures.
+  - "bench/**"
+  # Built extension output.
+  - "vscode/dist/**"
+  # Markdown command files in the plugin surface (no executable code).
+  - "commands/**"
+  - "agents/**"
+  - "skills/**"
+  # Test fixtures (synthetic vulnerable code).
+  - "**/test/fixtures/**"
+  - "**/test/benchmark/**"
+  - "**/__fixtures__/**"
+  - "**/.bench-cache/**"
+  # Generated artifacts.
+  - "**/*.min.js"
+  - "**/dist/**"
+  - "**/build/**"
+  # Runtime state (never source).
+  - ".agentic-security/**"
+  - "**/.agentic-security/**"
+
+# Use the default CodeQL query suite. The agentic-security scanner is the
+# primary SAST surface; CodeQL acts as a secondary check on the bits we
+# don't ignore (workflows, scripts, top-level docs).
+queries:
+  - uses: security-extended

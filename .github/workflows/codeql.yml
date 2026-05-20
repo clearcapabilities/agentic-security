@@ -1,0 +1,50 @@
+## GitHub CodeQL — advanced setup.
+##
+## Runs CodeQL on push to main + every PR. The `paths-ignore` list in
+## .github/codeql/codeql-config.yml excludes the scanner/, bench/, and
+## test-fixture trees so CodeQL output stays signal, not noise.
+##
+## IMPORTANT: if the repository has Code Scanning configured via "default
+## setup", that overrides this workflow. Switch to advanced setup at
+## Settings → Code security → Code scanning → Set up → Advanced for this
+## file (and the config it references) to take effect.
+
+name: codeql
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  schedule:
+    # Weekly sweep so out-of-band CVE rules still surface.
+    - cron: "0 8 * * 1"
+
+permissions:
+  contents: read
+  security-events: write
+  actions: read
+
+jobs:
+  analyze:
+    name: analyze (${{ matrix.language }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        language: ["javascript-typescript"]
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Initialize CodeQL
+        uses: github/codeql-action/init@v3
+        with:
+          languages: ${{ matrix.language }}
+          config-file: ./.github/codeql/codeql-config.yml
+
+      - name: Perform CodeQL Analysis
+        uses: github/codeql-action/analyze@v3
+        with:
+          category: "/language:${{ matrix.language }}"
