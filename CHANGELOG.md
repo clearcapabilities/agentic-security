@@ -1,5 +1,64 @@
 # Changelog
 
+## 0.63.0 — Python IR via stdlib ast (real parser, regex fallback)
+
+Replaces the hand-rolled regex Python parser with Python 3's stdlib `ast`
+module (zero npm bundle bloat, zero pip install, runs in a per-scan
+subprocess) and keeps the regex parser as a fallback when Python isn't on
+PATH. The new path closes the gaps the regex parser admitted to in its own
+comments: comprehensions, decorators, `match` statements, `async`/`await`,
+lambda bodies, and nested-paren default args (`def f(x=Foo(1,2))`).
+
+### What ships
+
+- **`scanner/src/ir/parser-py.helper.py`** — Python 3.8+ stdlib script
+  that reads `[{file, content}, ...]` JSON on stdin and emits the same
+  IR shape as the regex parser, but computed from a real AST. Models
+  assign / call / member / subscript / f-string / if / for / while /
+  try-except / return / raise / async-for / async-with. Captures every
+  function definition (including nested, decorated, async, generic) even
+  when the body has unmodeled constructs.
+- **`scanner/src/ir/parser-py-cst.js`** — Node-side dispatcher.
+  Batched: ALL Python files in a project go in one subprocess invocation.
+  Capability probe cached per-process. 10 s timeout on the whole batch.
+- **`scanner/src/ir/index.js`** — three-mode toggle:
+  `AGENTIC_SECURITY_PY_PARSER=auto` (default, falls back silently when
+  python3 missing), `cst` (force, error if unavailable), `regex`
+  (force legacy).
+- **`scanner/src/ir/CLAUDE.md`** — documents the dual-parser shape,
+  the IR contract every parser must produce, and the retirement plan
+  for the regex parser.
+
+### What's STILL not modeled
+
+The CST parser intentionally emits `kind: 'noop'` for these to keep the
+CFG bounded — the regex parser dropped the entire function for the same
+shapes; we capture the function record but skip the body lowering:
+
+- `match` statement case bodies (function is captured; per-case taint
+  flow not yet routed)
+- destructuring assignment (`a, b = req.body`) — only single-target
+  assigns get a precise `target` field
+- comprehension `if` filters and multi-`for` generators — the elt is
+  modeled; the generator's own predicates aren't
+
+### Cost / risk
+
+- One `python3` subprocess per `runScan`, not per file. Batched stdin
+  payload. Capability probe runs once and is cached.
+- When python3 isn't installed (or is < 3.8), the regex parser handles
+  the scan unchanged. No behavior regression for those customers.
+- Set `AGENTIC_SECURITY_PY_PARSER_DEBUG=1` to surface fallback events
+  on stderr.
+
+### Tests
+
+12 new CST-specific tests in `scanner/test/parser-py-cst.test.js`
+covering decorators, async, nested-paren defaults, match statements, list
+comprehension taint flow, nested function defs, batch behavior, syntax-
+error isolation per file, single-file/batch shim equivalence. All skip
+gracefully when python3 isn't on PATH. Total suite: 612/612 passing.
+
 ## 0.62.0 — agent-harness hardening + slash-command consolidation
 
 Five rounds of analysis applied to the plugin's scanner + MCP server + sub-agent

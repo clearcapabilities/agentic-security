@@ -4,22 +4,76 @@
 // build the cross-file call graph on top.
 
 import { parseJsFile } from './parser-js.js';
-import { parsePythonFile } from './parser-py.js';
+import { parsePythonFile as parsePythonFileRegex } from './parser-py.js';
+import {
+  parsePythonFile as parsePythonFileCst,
+  parsePythonFilesBatch as parsePythonFilesBatchCst,
+  probePythonAvailable,
+} from './parser-py-cst.js';
 import { parseJavaFile } from './parser-java.js';
 import { buildCallGraph } from './callgraph.js';
 import { buildClassHierarchy } from './class-hierarchy.js';
 import { computeSSA, isSSAEnabled } from './ssa.js';
+
+// Pick the Python parser based on env + capability probe.
+//   AGENTIC_SECURITY_PY_PARSER=cst   — force AST parser; error if unavailable
+//   AGENTIC_SECURITY_PY_PARSER=regex — force the legacy regex parser
+//   AGENTIC_SECURITY_PY_PARSER=auto (default) — try CST, fall back silently
+//
+// The default is `auto` for one minor release so we can validate the CST
+// path in real-world deployments without regressing customers who don't
+// have python3 on PATH. Flip the default to `cst` once the equivalence
+// corpus has run clean for two consecutive releases.
+function _chooseParser() {
+  const choice = (process.env.AGENTIC_SECURITY_PY_PARSER || 'auto').toLowerCase();
+  if (choice === 'regex') return { parser: 'regex' };
+  if (choice === 'cst') {
+    const cap = probePythonAvailable();
+    if (!cap.ok) {
+      throw new Error(`AGENTIC_SECURITY_PY_PARSER=cst but Python is unavailable: ${cap.reason}`);
+    }
+    return { parser: 'cst' };
+  }
+  // auto: prefer cst when capability is present.
+  const cap = probePythonAvailable();
+  return { parser: cap.ok ? 'cst' : 'regex' };
+}
+
+function _parsePythonFiles(pyEntries) {
+  // pyEntries: [{ file, content }, ...]
+  const choice = _chooseParser();
+  if (choice.parser === 'cst') {
+    const batch = parsePythonFilesBatchCst(pyEntries);
+    if (batch !== null) return batch;
+    // Silent fall-through to regex when the CST path failed mid-run (e.g.
+    // helper crashed). Operators see this in stderr when debugging is on.
+    if (process.env.AGENTIC_SECURITY_PY_PARSER_DEBUG === '1') {
+      process.stderr.write('parser-py-cst: batch failed; falling back to regex parser\n');
+    }
+  }
+  // Regex per-file parse — matches the old behavior exactly.
+  return pyEntries.map(({ file, content }) => parsePythonFileRegex(file, content)).filter(Boolean);
+}
 
 // Synchronous default — JS/TS + Python only. Engine.js calls this directly.
 // Java IR requires async import of java-parser; callers who want it can use
 // buildProjectIRAsync instead.
 export function buildProjectIR(fileContents) {
   const perFile = {};
+  const pyBatch = [];
   for (const [file, code] of Object.entries(fileContents || {})) {
-    let ir = null;
-    if (/\.(?:js|jsx|ts|tsx|mjs|cjs)$/i.test(file)) ir = parseJsFile(file, code);
-    else if (/\.py$/i.test(file)) ir = parsePythonFile(file, code);
-    if (ir) perFile[file] = ir;
+    if (/\.(?:js|jsx|ts|tsx|mjs|cjs)$/i.test(file)) {
+      const ir = parseJsFile(file, code);
+      if (ir) perFile[file] = ir;
+    } else if (/\.py$/i.test(file)) {
+      // Defer Python files to a single batched subprocess call.
+      pyBatch.push({ file, content: code });
+    }
+  }
+  if (pyBatch.length) {
+    for (const ir of _parsePythonFiles(pyBatch)) {
+      if (ir && ir.file) perFile[ir.file] = ir;
+    }
   }
   if (isSSAEnabled()) {
     for (const ir of Object.values(perFile)) {
@@ -36,14 +90,24 @@ export function buildProjectIR(fileContents) {
 // Async variant — includes Java IR via java-parser.
 export async function buildProjectIRAsync(fileContents) {
   const perFile = {};
+  const pyBatch = [];
   for (const [file, code] of Object.entries(fileContents || {})) {
-    let ir = null;
-    if (/\.(?:js|jsx|ts|tsx|mjs|cjs)$/i.test(file)) ir = parseJsFile(file, code);
-    else if (/\.py$/i.test(file)) ir = parsePythonFile(file, code);
-    else if (/\.java$/i.test(file)) {
-      try { ir = await parseJavaFile(file, code); } catch { ir = null; }
+    if (/\.(?:js|jsx|ts|tsx|mjs|cjs)$/i.test(file)) {
+      const ir = parseJsFile(file, code);
+      if (ir) perFile[file] = ir;
+    } else if (/\.py$/i.test(file)) {
+      pyBatch.push({ file, content: code });
+    } else if (/\.java$/i.test(file)) {
+      try {
+        const ir = await parseJavaFile(file, code);
+        if (ir) perFile[file] = ir;
+      } catch { /* skip */ }
     }
-    if (ir) perFile[file] = ir;
+  }
+  if (pyBatch.length) {
+    for (const ir of _parsePythonFiles(pyBatch)) {
+      if (ir && ir.file) perFile[ir.file] = ir;
+    }
   }
   if (isSSAEnabled()) {
     for (const ir of Object.values(perFile)) {
@@ -57,4 +121,18 @@ export async function buildProjectIRAsync(fileContents) {
   return { perFile, callGraph: cg, cha };
 }
 
-export { parseJsFile, parsePythonFile, parseJavaFile, buildCallGraph, buildClassHierarchy, computeSSA, isSSAEnabled };
+// `parsePythonFile` is the single-file shim. We re-export the dispatcher
+// so existing imports (e.g. tests that import { parsePythonFile } from
+// './ir/index.js') keep working. The dispatcher routes to CST or regex
+// according to the same rules as the batch path.
+export function parsePythonFile(file, code) {
+  if (!file || typeof code !== 'string') return null;
+  const choice = _chooseParser();
+  if (choice.parser === 'cst') {
+    const r = parsePythonFileCst(file, code);
+    if (r) return r;
+  }
+  return parsePythonFileRegex(file, code);
+}
+
+export { parseJsFile, parseJavaFile, buildCallGraph, buildClassHierarchy, computeSSA, isSSAEnabled, probePythonAvailable };
