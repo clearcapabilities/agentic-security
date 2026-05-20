@@ -8,7 +8,7 @@
 
 [![License](https://img.shields.io/badge/license-PolyForm--Internal--Use-blue)](./LICENSE)
 [![Bundle](https://img.shields.io/badge/bundle-2.30MB-orange)]()
-[![Version](https://img.shields.io/badge/version-0.63.0-blue)]()
+[![Version](https://img.shields.io/badge/version-0.64.0-blue)]()
 
 ---
 
@@ -47,6 +47,24 @@ npx @clearcapabilities/agentic-security-scanner secure .
 ```
 
 Same engine. No accounts.
+
+### Other harnesses
+
+The MCP server is harness-agnostic — same binary, different manifest:
+
+| Harness        | Manifest                          | Install path |
+|----------------|-----------------------------------|--------------|
+| **Claude Code**| `.claude-plugin/plugin.json`      | `/plugin marketplace add https://github.com/Clear-Capabilities/agentic-security` |
+| **Codex CLI**  | `.codex-plugin/plugin.json`       | search Codex marketplace for `agentic-security`, then `codex plugin install` (validated against MCP spec; not yet against a live Codex install) |
+| **Cursor**     | `.cursor-plugin/plugin.json`      | clone repo + point Cursor's MCP config at `scanner/bin/agentic-security-mcp.js` |
+| **Gemini CLI** | `gemini-extension.json` (root)    | `gemini extensions install https://github.com/Clear-Capabilities/agentic-security` |
+
+What you get per harness:
+
+- **Claude Code**: full surface — 12 MCP tools, 77 slash commands (60+ after the recent consolidation), 9 auto-activating skills, 5 hooks, 8 subagents, the full audit log + scratchpad + AGENTS.md continual-learning ladder.
+- **Codex / Cursor / Gemini**: the 12 MCP tools (deterministic write toolchain, scan, find, lookup) wired directly into the harness's agent. Slash commands + skill activation are Claude-Code-specific today; the underlying MCP behavior is identical across all four harnesses.
+
+If you want a harness not listed here, the MCP server speaks the standard JSON-RPC-over-NDJSON protocol — any MCP-aware client can use it.
 
 ---
 

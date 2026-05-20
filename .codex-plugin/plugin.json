@@ -1,0 +1,23 @@
+{
+  "name": "agentic-security",
+  "version": "0.64.0",
+  "description": "Agentic-Security: SAST + SCA + secrets + IaC + LLM-sec scanner with deterministic fix toolchain. Exposes a Model Context Protocol (MCP) server with 12 tools that Codex CLI can call directly.",
+  "author": { "name": "Ross Young", "email": "ross@clearcapabilities.com" },
+  "vendor": "Clear Capabilities Inc.",
+  "homepage": "https://github.com/Clear-Capabilities/agentic-security",
+  "license": "PolyForm-Internal-Use-1.0.0",
+  "harness": "codex",
+  "mcpServers": {
+    "agentic-security": {
+      "command": "node",
+      "args": ["${CODEX_PLUGIN_ROOT}/scanner/bin/agentic-security-mcp.js", "--root", "${CODEX_PROJECT_DIR:-${PWD}}"],
+      "description": "agentic-security MCP server (12 tools: scan_diff, query_taint, explain_finding, find_rule_module, lookup_cve, synthesize_fix, verify_fix, apply_fix, append_scratchpad, read_scratchpad, append_agents_memory, read_agents_memory). Session root confined to the current project directory; apply_fix requires confirm:true and a valid last-scan.json HMAC signature; shadow findings are never auto-applied.",
+      "trust": {
+        "writes_files": true,
+        "session_scope": "project_directory_only",
+        "requires_confirm_for": ["apply_fix"]
+      }
+    }
+  },
+  "notes": "Codex CLI support: validated against the protocol spec; not yet validated against a live Codex install. Report issues at https://github.com/Clear-Capabilities/agentic-security/issues."
+}

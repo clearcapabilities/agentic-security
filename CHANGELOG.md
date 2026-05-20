@@ -1,5 +1,71 @@
 # Changelog
 
+## 0.64.0 — auto-activating skills + multi-harness manifests
+
+Inspired by patterns from the obra/superpowers plugin's "mandatory workflows,
+not suggestions" stance: the agent shouldn't wait for the user to type
+`/scan` or `/fix` before doing the security thing. Nine new auto-activating
+skills cover the common security/privacy moments where the agent should
+intervene before damage lands. Plus Codex / Cursor / Gemini manifests so the
+12 MCP tools work in those harnesses too.
+
+### Auto-activating skills (9 new)
+
+Each lives at `skills/<slug>/SKILL.md`. The `description:` frontmatter is
+the activation cue Claude Code's skill router reads. All ≤120 chars,
+enforced by `npm run test:lifecycle`.
+
+- **`security-explain-cve`** — fires when user mentions CVE-id / GHSA / asks "what is this vuln". Routes to `lookup_cve` MCP tool + `/explain`.
+- **`security-scan-on-deploy`** — fires on "ship / deploy / launch / is this safe?" intent. Checks `last-scan.json` mtime, runs a fresh scan if stale, renders a verdict (not a wall of findings).
+- **`security-fix-finding`** — fires when user references a finding and asks to fix. Enforces the deterministic toolchain (`synthesize_fix → verify_fix → apply_fix`); refuses raw `Edit`.
+- **`security-weak-crypto`** — fires **before** the agent writes md5/sha1 for passwords, DES/3DES/RC4, static IVs, `Math.random` for tokens, or JWT with `none` algorithm. Refuses the write, proposes the right primitive with literal code.
+- **`security-rotate-leak`** — fires when a leaked secret is mentioned. Masks the value, detects the provider, prints the revoke URL, estimates blast radius BEFORE rotating, refuses to print the value back.
+- **`security-eval-warn`** — fires before `eval()` / `new Function()` / `setTimeout(string,…)` / `pickle.loads` / `eval($x)` / `class_eval`. Diagnoses what the user actually wants, proposes the structured alternative.
+- **`security-sql-injection-warn`** — fires before template-literal queries / `+`-concat into SQL / NoSQL operator injection / LDAP/XPath concat. Shows the literal parameterized form for the user's specific DB driver.
+- **`threat-model-first`** — fires **before** the agent writes new auth / secret / external-API / file-upload / OAuth / deserialization code. Walks STRIDE per touch-point (one sentence per row, no skipping); writes `TM.md` to `.agentic-security/agent-scratchpad/threat-model/<session>/` via `append_scratchpad`. Then proposes implementation with each defensive measure citing its STRIDE row in a code comment.
+- **`privacy-data-flow`** — fires **before** the agent writes code touching PII / PHI / PCI / GDPR-special / confidential data shapes. Classifies the data, traces the destination (storage tier / encryption / third-party processors / logging / retention / backups / replication), maps to jurisdiction (GDPR / HIPAA / CCPA / PCI-DSS), writes `DATA_FLOW.md` to the scratchpad. Refuses hard violations (logging full PAN, sending PHI to non-BAA processor, storing CVV after auth).
+
+### Skills-registry integrity test
+
+`scanner/test/skills-registry.test.js` enforces:
+- Every `skills/<slug>/SKILL.md` has well-formed YAML frontmatter
+- `name:` equals `agentic-security:<slug>`
+- `description:` is ≤ 120 chars (re-asserted at unit-test time)
+- Auto-activating skills include an "Activate" / "Activate on" cue
+- Every `/<slash-command>` referenced in a skill body resolves to a real
+  file under `commands/`
+
+7 new tests, all passing.
+
+### Multi-harness manifests (3 new)
+
+The MCP server is harness-agnostic — same binary, different manifest:
+
+| Harness        | Manifest                          |
+|----------------|-----------------------------------|
+| Claude Code    | `.claude-plugin/plugin.json`      (already shipping) |
+| **Codex CLI**  | `.codex-plugin/plugin.json`       (new) |
+| **Cursor**     | `.cursor-plugin/plugin.json`      (new) |
+| **Gemini CLI** | `gemini-extension.json` (root)    (new) |
+
+Each manifest declares the same `agentic-security` MCP server pointing at
+`scanner/bin/agentic-security-mcp.js`. Each carries an explicit note about
+which surface IS validated vs not. The 12 MCP tools work identically across
+all four harnesses; the slash-command + skill-activation surface is Claude-
+Code-specific today.
+
+README updated with an "Install in your harness" table covering all four
+plus the generic MCP-aware-client fallback.
+
+### Lint state
+
+89 surfaces total (80 commands + 9 skills + add-scan-rule SKILL). All
+within the 120-char description / 200-char argument-hint caps.
+
+### Tests
+
+619/619 passing (was 612 in v0.63.0; +7 skills-registry tests).
+
 ## 0.63.0 — Python IR via stdlib ast (real parser, regex fallback)
 
 Replaces the hand-rolled regex Python parser with Python 3's stdlib `ast`
