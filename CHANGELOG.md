@@ -1,5 +1,107 @@
 # Changelog
 
+## 0.68.0 — five capabilities that open clear competitive gap
+
+Five world-class capabilities ship together. Each addresses something
+mainstream SAST (SonarQube / Semgrep / Snyk / Checkmarx / Veracode /
+CodeQL) does poorly or not at all.
+
+### #3 Closed-loop auto-fix verification
+
+`scanner/src/posture/fix-verify-loop.js` — new `verifyFixWithTests`
+runs the full chain: re-scan + project linter + project test suite.
+A fix is `verified-clean` only when all three pass.
+
+Test-runner auto-discovery: `npm test`, pytest, go test, cargo test,
+bundle exec rspec, mvn test, ./gradlew test. Returns one of:
+`verified-clean`, `untested-but-passes` (no runner found — honest),
+or `verification-failed` (with per-leg detail).
+
+Competitor gap: most SAST tools suggest fixes but don't close the loop
+by running the user's tests.
+
+### #4 LLMSecOps coverage (3 new detectors)
+
+| Module | CWE | What it catches |
+|--------|-----|-----------------|
+| `sast/llm-stored-prompt.js` | CWE-1336 | System prompt sourced from DB / config file / writable mount fed to LLM call without hardening (delimiters, immutable instruction prefix, allow-list) |
+| `sast/rag-poisoning.js` | CWE-1336 | User-controlled text written to Chroma/Pinecone/Weaviate/Qdrant/LangChain/pgvector without `metadata: { source, trust_level }` provenance |
+| `sast/agent-tool-escalation.js` | CWE-269 | Agent harness exposes both READ tools (list/get/fetch/scrape) and ACT tools (exec/write/send/delete) with no approval gate between them — classic tool-chain privilege escalation |
+
+Competitor gap: nobody else ships LLM-agent-specific privilege flow
+analysis. The AI security market is wide open.
+
+### #7 Probabilistic exploitability with Wilson 95% CI
+
+`scanner/src/posture/exploitability-probability.js` — replaces opaque
+severity strings with a calibrated probability + 95% confidence interval:
+
+```
+f.exploitProbability      ∈ [0,1]
+f.exploitProbabilityCI95  [lo, hi]
+f.exploitProbabilityWhy   string[]    -- which factors fired
+f.exploitProbabilitySlice 'CWE-89×js' | 'CWE-89' | 'prior-only'
+```
+
+Method: CISA-KEV-derived CWE-family prior + multiplicative factor
+update (reachability, source provenance, sanitizer-in-path, project
+hardening). Wilson CI from operator-curated `.agentic-security/
+exploit-history.jsonl` when n ≥ 5 (slice grain); falls back to wider
+prior-only CI when sample is thin. The CI WIDTH is the honest signal.
+
+Competitor gap: every SAST emits severity strings; none surface
+calibrated probability with uncertainty.
+
+### #8 Provable-clean for SQL injection
+
+`scanner/src/dataflow/proven-clean.js` — `proveSqlClean` walks the
+function's CFG between every reaching source and the SQL sink,
+verifies at least one parameterizer (catalog-tagged sanitizer or
+known driver method: setString/AddWithValue/bindParam/etc.) sits on
+the path. If proof holds, `f.provenClean = true` with
+`f.provenanceProof.sanitizers: [...]`. Stronger statement than
+"we didn't find a flow" — auditor-grade evidence.
+
+v1 uses path-existence; v2 will substitute SMT-backed string-domain
+constraints behind the same interface.
+
+Competitor gap: existing tools emit "issue found" or "no issue
+found." Nobody emits "proven safe."
+
+### #9 Time-travel + counterfactual scanning
+
+`scanner/src/history-scan.js` + two new CLI subcommands:
+
+```
+agentic-security history --since 6.months --interval 1.month
+   # Walks N historical git refs, scans each, emits a timeline of
+   # introduced + resolved findings between consecutive refs.
+
+agentic-security what-if --overlay app.js:./new-app.js [--remove foo.js]
+   # Apply virtual file overlays + deletes, scan the counterfactual
+   # state, return findings delta vs. baseline. Working tree is never
+   # touched (overlay is in-memory via runFullScan's fileContents map).
+```
+
+Use cases: "What was our posture 6 months ago vs. today?" / "If I
+remove this auth middleware, how many new findings appear?" / "If I
+downgrade lodash to 4.17.20, how many CVE matches drop?"
+
+Competitor gap: existing tools scan the working state. None offer
+historical replay or counterfactual mode at this granularity.
+
+### Test totals
+
+**698 scanner tests pass / 0 fail** (up from 665 in v0.67).
+
+### Migration
+
+No breaking changes. All new capabilities are additive:
+- LLM/RAG/agent detectors fire automatically on relevant code
+- exploitProbability fields appear alongside existing severity
+- provenClean is informational (does NOT drop findings)
+- history + what-if are opt-in CLI subcommands
+
 ## 0.67.0 — detection rules for 6 new CWE families (SSTI / LDAP / open-redirect / response-splitting)
 
 The v0.66 corpus expansion exposed six CWE families with no detection

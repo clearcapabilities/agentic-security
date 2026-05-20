@@ -137,7 +137,7 @@ function printBanner(args) {
     BOLD:  '\x1b[1m',
     RESET: '\x1b[0m',
   } : { FROG:'', DEEP:'', CREAM:'', DIM:'', BOLD:'', RESET:'' };
-  const v = '0.67.0';
+  const v = '0.68.0';
   const compact = !args.flags.full;
   if (compact) {
     const lines = [
@@ -1535,7 +1535,72 @@ async function main() {
         }
         process.exit(r.ok ? 0 : 1);
       }
-      case 'version':  console.log('agentic-security 0.67.0  ·  created by ClearCapabilities.Com'); process.exit(0);
+      case 'history': {
+        // Time-travel scan. Walk N historical git refs within --since,
+        // scan each, emit a per-ref timeline + introduced/resolved deltas
+        // between consecutive snapshots.
+        const { runHistory } = await import('../src/history-scan.js');
+        const root = args.flags.root || process.cwd();
+        const r = await runHistory(path.resolve(root), {
+          since:    args.flags.since    || '6.months',
+          interval: args.flags.interval || '1.month',
+        });
+        if (args.flags.json) console.log(JSON.stringify(r, null, 2));
+        else if (r.error) console.error(`history: ${r.error}`);
+        else {
+          console.log(`Scanned ${r.refs.length} refs.`);
+          for (const ev of r.timeline) {
+            console.log(`  ${ev.fromWhen} → ${ev.toWhen}: +${ev.introducedN} introduced, -${ev.resolvedN} resolved`);
+          }
+        }
+        process.exit(r.error ? 1 : 0);
+      }
+      case 'what-if': {
+        // Counterfactual scan. Apply file overlays + virtual deletes to
+        // the working tree, scan, return delta vs. baseline.
+        const { runWhatIf } = await import('../src/history-scan.js');
+        const root = args.flags.root || process.cwd();
+        const overlays = [];
+        const overlayArg = args.flags.overlay;
+        if (overlayArg) {
+          // overlay format:  <relpath>:<source-file>
+          for (const spec of Array.isArray(overlayArg) ? overlayArg : [overlayArg]) {
+            const idx = spec.indexOf(':');
+            if (idx < 0) continue;
+            const file = spec.slice(0, idx);
+            const src = spec.slice(idx + 1);
+            try {
+              overlays.push({ file, content: (await import('node:fs')).readFileSync(src, 'utf8') });
+            } catch (e) {
+              console.error(`what-if: cannot read overlay source ${src}: ${e.message}`);
+              process.exit(1);
+            }
+          }
+        }
+        const remove = args.flags.remove
+          ? (Array.isArray(args.flags.remove) ? args.flags.remove : [args.flags.remove])
+          : [];
+        const r = await runWhatIf(path.resolve(root), { overlays, remove });
+        if (args.flags.json) console.log(JSON.stringify(r, null, 2));
+        else {
+          console.log(`baseline: ${r.baselineFindings} findings`);
+          console.log(`what-if:  ${r.whatIfFindings} findings (delta ${r.delta >= 0 ? '+' : ''}${r.delta})`);
+          if (r.introduced.length) {
+            console.log(`Introduced by this counterfactual:`);
+            for (const f of r.introduced.slice(0, 20)) {
+              console.log(`  + ${f.severity} ${f.vuln} (${f.file}:${f.line})`);
+            }
+          }
+          if (r.removed.length) {
+            console.log(`Removed by this counterfactual:`);
+            for (const f of r.removed.slice(0, 20)) {
+              console.log(`  - ${f.severity} ${f.vuln} (${f.file}:${f.line})`);
+            }
+          }
+        }
+        process.exit(0);
+      }
+      case 'version':  console.log('agentic-security 0.68.0  ·  created by ClearCapabilities.Com'); process.exit(0);
       case 'banner':   { printBanner(args); process.exit(0); }
       case 'harness':  process.exit(await cmdHarness(args));
       case 'scan-baseline': process.exit(await cmdScanBaseline(args));
