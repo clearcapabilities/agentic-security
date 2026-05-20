@@ -1,5 +1,40 @@
 # Changelog
 
+## 0.72.1 — CI template + README adopts the v0.72 viral features
+
+Patch release. Two adoption follow-ups for v0.72's viral features.
+
+### CI template defaults to advisor-tone PR comment
+
+`.github/workflows/scan.yml` — new `pr-comment-mode` input (default
+`"advisor"`, alternative `"findings-table"`):
+
+- **advisor** (new default): runs `pr-delta --base origin/<base_ref>` to
+  compute the security DELTA between PR and base, then pipes the JSON
+  into `pr-comment` to render the security-advisor's note. The comment
+  shows only what THIS PR introduced/resolved, with CWE narrative + fix
+  snippet + blocking-merge footer.
+- **findings-table** (legacy): the prior critical/high count table.
+  Available behind the input flag for adopters who prefer it.
+
+Downstream consumers automatically get the new comment style on next CI
+run. Opt back to the legacy table by passing `pr-comment-mode: findings-table`
+to the reusable workflow.
+
+### README adopts the status badge + leaderboard pitch
+
+`README.md`:
+- Stale `version-0.64.0` badge bumped to `version-0.72.1`.
+- New badge row entry: `[![agentic-security](...)]()`.
+- New "Status badge for your README" section with paste-ready Markdown,
+  three example states (passing / high / critical), and self-host
+  instructions for users who don't want to depend on `agentic-security.dev`.
+- New "Public leaderboard (preview)" section pointing at the v0.72
+  `leaderboard-row` backend.
+
+### Test totals
+**811 scanner tests pass / 0 fail** (unchanged from 0.72.0).
+
 ## 0.72.0 — viral features: shadowscan delta + advisor-tone PR comment + live badge + leaderboard backend
 
 Three viral-lever features built to compound: every PR generates a

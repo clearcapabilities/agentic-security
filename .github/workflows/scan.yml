@@ -51,6 +51,11 @@ on:
         required: false
         default: 'main'
         type: string
+      pr-comment-mode:
+        description: 'PR comment style. "advisor" (default): security-DELTA + advisor-tone narrative. "findings-table": legacy critical/high table.'
+        required: false
+        default: 'advisor'
+        type: string
 
 jobs:
   scan:
@@ -141,8 +146,45 @@ jobs:
         with:
           sarif_file: /tmp/security.sarif
 
-      - name: Comment on PR
-        if: github.event_name == 'pull_request'
+      # v0.72: default PR-comment mode is "advisor" — shows only what
+      # THIS PR introduced/resolved, rendered as a security advisor's
+      # note rather than a findings dump. The legacy findings-table is
+      # available via `pr-comment-mode: findings-table`.
+      - name: Compute PR delta (advisor mode)
+        if: github.event_name == 'pull_request' && inputs.pr-comment-mode == 'advisor'
+        run: |
+          set -euo pipefail
+          BASE_REF="${{ github.event.pull_request.base.ref }}"
+          # We have full fetch-depth (line 65). Make sure the base ref is local.
+          git fetch --quiet origin "$BASE_REF" || true
+          node /tmp/agentic-security.mjs pr-delta \
+            --base "origin/$BASE_REF" \
+            --head HEAD \
+            --json > /tmp/pr-delta.json
+          node /tmp/agentic-security.mjs pr-comment \
+            --in /tmp/pr-delta.json \
+            --repo "${{ github.repository }}" \
+            --pr "${{ github.event.pull_request.number }}" \
+            --title "${{ github.event.pull_request.title }}" \
+            > /tmp/pr-comment.md
+
+      - name: Post advisor comment
+        if: github.event_name == 'pull_request' && inputs.pr-comment-mode == 'advisor'
+        uses: actions/github-script@v8
+        with:
+          script: |
+            const fs = require('fs');
+            const body = fs.readFileSync('/tmp/pr-comment.md', 'utf8');
+            await github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body,
+            });
+
+      # Legacy findings-table comment — opt-in via pr-comment-mode: findings-table
+      - name: Post findings-table comment (legacy)
+        if: github.event_name == 'pull_request' && inputs.pr-comment-mode == 'findings-table'
         uses: actions/github-script@v8
         with:
           script: |

@@ -8,7 +8,8 @@
 
 [![License](https://img.shields.io/badge/license-PolyForm--Internal--Use-blue)](./LICENSE)
 [![Bundle](https://img.shields.io/badge/bundle-2.30MB-orange)]()
-[![Version](https://img.shields.io/badge/version-0.64.0-blue)]()
+[![Version](https://img.shields.io/badge/version-0.72.1-blue)]()
+[![agentic-security](https://img.shields.io/badge/agentic--security-passing-brightgreen)]()
 
 ---
 
@@ -65,6 +66,41 @@ What you get per harness:
 - **Codex / Cursor / Gemini**: the 12 MCP tools (deterministic write toolchain, scan, find, lookup) wired directly into the harness's agent. Slash commands + skill activation are Claude-Code-specific today; the underlying MCP behavior is identical across all four harnesses.
 
 If you want a harness not listed here, the MCP server speaks the standard JSON-RPC-over-NDJSON protocol — any MCP-aware client can use it.
+
+---
+
+## Status badge for your README
+
+Show the world your repo's security posture. The badge updates every scan; the color shifts to match your highest non-zero severity:
+
+```markdown
+![agentic-security](https://agentic-security.dev/badge?repo=YOUR-ORG/YOUR-REPO)
+```
+
+Example badges (these are static previews — the real badge is live):
+
+[![agentic-security: passing](https://img.shields.io/badge/agentic--security-passing-brightgreen)]() — clean scan
+[![agentic-security: 0 crit · 2 high](https://img.shields.io/badge/agentic--security-crit_0_·_high_2_·_med_5-orange)]() — has high-severity findings
+[![agentic-security: critical](https://img.shields.io/badge/agentic--security-crit_1_·_high_3_·_med_8-red)]() — has critical findings
+
+**Self-host the badge** (no `agentic-security.dev` dependency) by serving the output of `agentic-security badge --format svg` from a CI artifact or static site:
+
+```bash
+agentic-security badge --format svg > badge.svg
+agentic-security badge --format json > badge.json   # shields.io-compatible endpoint
+```
+
+The badge reads from `.agentic-security/last-scan.json` — wire it into your CI to publish on every scan, and you've got pull-marketing: every repo that adopts the badge becomes a billboard pointing at the tool.
+
+## Public leaderboard (preview)
+
+Future home: **agentic-security.dev/leaderboard** — ranks OSS repos by posture grade (A–F), severity counts, and CVE-replay coverage. The backend ships in v0.72:
+
+```bash
+agentic-security leaderboard-row --repo YOUR-ORG/YOUR-REPO
+```
+
+That returns a JSON row ready for the leaderboard ingester. If you want your repo featured when the site goes live, add the status badge today — that's our signal.
 
 ---
 
