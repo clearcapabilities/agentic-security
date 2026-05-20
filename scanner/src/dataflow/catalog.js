@@ -468,6 +468,88 @@ export const CATALOG = [
   { kind: 'sanitizer', id: 'py-yaml-safe-load',      language: 'py', match: { type: 'call', callee: 'safe_load' },      effect: 'strip', appliesTo: ['deserial'] },
   { kind: 'sanitizer', id: 'py-pathlib-resolve',     language: 'py', match: { type: 'call', callee: 'resolve' },        effect: 'taintIf-not-pinned', appliesTo: ['path'] },
   { kind: 'sanitizer', id: 'py-defusedxml',          language: 'py', match: { type: 'call', callee: 'fromstring' },     effect: 'strip', appliesTo: ['xxe'] },     // when called from defusedxml namespace
+
+  // ─── SOURCES (C# — ASP.NET MVC / Core) ───────────────────────────────────
+  { kind: 'source', id: 'cs-request-form',     language: 'cs', framework: 'aspnet', match: { type: 'member', object: 'Request', prop: 'Form' },        label: 'Request.Form',        provenance: 'http-body' },
+  { kind: 'source', id: 'cs-request-query',    language: 'cs', framework: 'aspnet', match: { type: 'member', object: 'Request', prop: 'QueryString' }, label: 'Request.QueryString', provenance: 'url-param' },
+  { kind: 'source', id: 'cs-request-cookies',  language: 'cs', framework: 'aspnet', match: { type: 'member', object: 'Request', prop: 'Cookies' },     label: 'Request.Cookies',     provenance: 'cookie' },
+  { kind: 'source', id: 'cs-request-headers',  language: 'cs', framework: 'aspnet', match: { type: 'member', object: 'Request', prop: 'Headers' },     label: 'Request.Headers',     provenance: 'header' },
+  { kind: 'source', id: 'cs-request-params',   language: 'cs', framework: 'aspnet', match: { type: 'member', object: 'Request', prop: 'Params' },      label: 'Request.Params' },
+  { kind: 'source', id: 'cs-request-body',     language: 'cs', framework: 'aspnet-core', match: { type: 'member', object: 'Request', prop: 'Body' },   label: 'Request.Body',        provenance: 'http-body' },
+  { kind: 'source', id: 'cs-env-var',          language: 'cs', framework: 'stdlib', match: { type: 'call',   callee: 'GetEnvironmentVariable' },       label: 'Environment.GetEnvironmentVariable', provenance: 'env' },
+
+  // ─── SINKS (C#) ──────────────────────────────────────────────────────────
+  { kind: 'sink', id: 'cs-sqlcommand',         language: 'cs', framework: 'ado',    match: { type: 'call', callee: 'SqlCommand' },     argIndex: 0,
+    vuln: { name: 'SQL Injection (new SqlCommand with concatenated user input)', severity: 'critical', cwe: 'CWE-89',
+            remediation: 'Use parameterized SqlCommand: `new SqlCommand("SELECT * FROM u WHERE id=@id"); cmd.Parameters.AddWithValue("@id", id);`' } },
+  { kind: 'sink', id: 'cs-executequery',       language: 'cs', framework: 'ado',    match: { type: 'call', callee: 'ExecuteQuery' },   argIndex: 0,
+    vuln: { name: 'SQL Injection (DataContext.ExecuteQuery string-form)', severity: 'critical', cwe: 'CWE-89',
+            remediation: 'Use parameterized form or LINQ Where clauses.' } },
+  { kind: 'sink', id: 'cs-dapper-query',       language: 'cs', framework: 'dapper', match: { type: 'call', callee: 'Query' },          argIndex: 0,
+    vuln: { name: 'SQL Injection (Dapper Query with string concat)', severity: 'critical', cwe: 'CWE-89',
+            remediation: 'Pass parameters as the 2nd arg: `Query<T>("SELECT … WHERE id=@id", new { id })`.' } },
+  { kind: 'sink', id: 'cs-process-start',      language: 'cs', framework: 'stdlib', match: { type: 'call', callee: 'Start' },          argIndex: 0,
+    vuln: { name: 'Command Injection (Process.Start string-form)', severity: 'critical', cwe: 'CWE-78',
+            remediation: 'Use ProcessStartInfo with separated FileName + Arguments; never pass /c with concat.' } },
+  { kind: 'sink', id: 'cs-file-readall',       language: 'cs', framework: 'stdlib', match: { type: 'call', callee: 'ReadAllText' },    argIndex: 0,
+    vuln: { name: 'Path Traversal (File.ReadAllText with user input)', severity: 'high', cwe: 'CWE-22',
+            remediation: 'Canonicalize the path with Path.GetFullPath and verify it starts with an allow-listed base directory.' } },
+  { kind: 'sink', id: 'cs-file-writeall',      language: 'cs', framework: 'stdlib', match: { type: 'call', callee: 'WriteAllText' },   argIndex: 0,
+    vuln: { name: 'Path Traversal (File.WriteAllText with user input)', severity: 'high', cwe: 'CWE-22',
+            remediation: 'Canonicalize the path and verify it stays within the allowed base.' } },
+  { kind: 'sink', id: 'cs-webclient',          language: 'cs', framework: 'stdlib', match: { type: 'call', callee: 'DownloadString' }, argIndex: 0,
+    vuln: { name: 'SSRF (WebClient.DownloadString)', severity: 'high', cwe: 'CWE-918',
+            remediation: 'Validate the URL host against an allow-list before fetching.' } },
+  { kind: 'sink', id: 'cs-httpclient-getstr',  language: 'cs', framework: 'stdlib', match: { type: 'call', callee: 'GetStringAsync' }, argIndex: 0,
+    vuln: { name: 'SSRF (HttpClient.GetStringAsync)', severity: 'high', cwe: 'CWE-918',
+            remediation: 'Validate the URL before fetching.' } },
+  { kind: 'sink', id: 'cs-binformatter',       language: 'cs', framework: 'stdlib', match: { type: 'call', callee: 'Deserialize' },    argIndex: 0,
+    vuln: { name: 'Insecure Deserialization (BinaryFormatter.Deserialize)', severity: 'critical', cwe: 'CWE-502',
+            remediation: 'BinaryFormatter is deprecated and unsafe. Use System.Text.Json with explicit type constraints.' } },
+
+  // ─── SANITIZERS (C#) ─────────────────────────────────────────────────────
+  { kind: 'sanitizer', id: 'cs-html-encode',    language: 'cs', match: { type: 'call', callee: 'HtmlEncode' },     effect: 'strip', appliesTo: ['xss'] },
+  { kind: 'sanitizer', id: 'cs-url-encode',     language: 'cs', match: { type: 'call', callee: 'UrlEncode' },      effect: 'strip', appliesTo: ['url'] },
+  { kind: 'sanitizer', id: 'cs-path-getfullpath',language: 'cs', match: { type: 'call', callee: 'GetFullPath' },   effect: 'taintIf-not-pinned', appliesTo: ['path'] },
+  { kind: 'sanitizer', id: 'cs-int-parse',      language: 'cs', match: { type: 'call', callee: 'Parse' },          effect: 'strip', appliesTo: ['*'] },
+  { kind: 'sanitizer', id: 'cs-int-tryparse',   language: 'cs', match: { type: 'call', callee: 'TryParse' },       effect: 'strip', appliesTo: ['*'] },
+  { kind: 'sanitizer', id: 'cs-regex-escape',   language: 'cs', match: { type: 'call', callee: 'Escape' },         effect: 'strip', appliesTo: ['regex'] },
+  { kind: 'sanitizer', id: 'cs-addwithvalue',   language: 'cs', match: { type: 'call', callee: 'AddWithValue' },   effect: 'strip', appliesTo: ['sql'] },
+
+  // ─── SOURCES (Kotlin — Spring / Ktor) ────────────────────────────────────
+  { kind: 'source', id: 'kt-request-param',    language: 'kt', framework: 'spring', match: { type: 'call', callee: 'getParameter' }, label: 'request.getParameter (Kotlin Spring)' },
+  { kind: 'source', id: 'kt-request-header',   language: 'kt', framework: 'spring', match: { type: 'call', callee: 'getHeader' },    label: 'request.getHeader' },
+  { kind: 'source', id: 'kt-ktor-receive',     language: 'kt', framework: 'ktor',   match: { type: 'call', callee: 'receive' },      label: 'call.receive() (Ktor)', provenance: 'http-body' },
+  { kind: 'source', id: 'kt-ktor-parameters',  language: 'kt', framework: 'ktor',   match: { type: 'member', object: 'call', prop: 'parameters' }, label: 'call.parameters (Ktor)' },
+  { kind: 'source', id: 'kt-env-var',          language: 'kt', framework: 'stdlib', match: { type: 'call', callee: 'getenv' },       label: 'System.getenv (Kotlin)', provenance: 'env' },
+
+  // ─── SINKS (Kotlin) ──────────────────────────────────────────────────────
+  { kind: 'sink', id: 'kt-jdbc-execute',       language: 'kt', framework: 'jdbc',   match: { type: 'call', callee: 'executeQuery' }, argIndex: 0,
+    vuln: { name: 'SQL Injection (JDBC executeQuery from Kotlin)', severity: 'critical', cwe: 'CWE-89',
+            remediation: 'Use PreparedStatement + setX(N, v) — Kotlin string templates concatenated into SQL are still injection.' } },
+  { kind: 'sink', id: 'kt-exposed-exec',       language: 'kt', framework: 'exposed', match: { type: 'call', callee: 'exec' },        argIndex: 0,
+    vuln: { name: 'SQL Injection (Exposed.exec with raw string)', severity: 'critical', cwe: 'CWE-89',
+            remediation: 'Use Exposed DSL queries or named-parameter exec with a typed parameter list.' } },
+  { kind: 'sink', id: 'kt-runtime-exec',       language: 'kt', framework: 'stdlib', match: { type: 'call', callee: 'exec' },         argIndex: 0,
+    vuln: { name: 'Command Injection (Runtime.exec / ProcessBuilder string-form, Kotlin)', severity: 'critical', cwe: 'CWE-78',
+            remediation: 'Use ProcessBuilder(listOf("cmd", "arg")) — never pass a single string to exec.' } },
+  { kind: 'sink', id: 'kt-file-readtext',      language: 'kt', framework: 'stdlib', match: { type: 'call', callee: 'readText' },     argIndex: 0,
+    vuln: { name: 'Path Traversal (File(name).readText)', severity: 'high', cwe: 'CWE-22',
+            remediation: 'Canonicalize: `File(name).canonicalFile` and verify path stays inside an allow-listed base.' } },
+  { kind: 'sink', id: 'kt-url-readtext',       language: 'kt', framework: 'stdlib', match: { type: 'call', callee: 'readText' },     argIndex: 'all',
+    vuln: { name: 'SSRF (URL(...).readText with user URL)', severity: 'high', cwe: 'CWE-918',
+            remediation: 'Validate the URL host against an allow-list before reading.' } },
+  { kind: 'sink', id: 'kt-objectinputstream', language: 'kt', framework: 'stdlib', match: { type: 'call', callee: 'readObject' },    argIndex: 'all',
+    vuln: { name: 'Insecure Deserialization (ObjectInputStream.readObject, Kotlin)', severity: 'critical', cwe: 'CWE-502',
+            remediation: 'Use kotlinx.serialization with explicit class allow-list.' } },
+
+  // ─── SANITIZERS (Kotlin) ─────────────────────────────────────────────────
+  { kind: 'sanitizer', id: 'kt-html-escape',   language: 'kt', match: { type: 'call', callee: 'escapeHtml4' },  effect: 'strip', appliesTo: ['xss'] },
+  { kind: 'sanitizer', id: 'kt-url-encode',    language: 'kt', match: { type: 'call', callee: 'URLEncoder' },   effect: 'strip', appliesTo: ['url'] },
+  { kind: 'sanitizer', id: 'kt-int-toint',     language: 'kt', match: { type: 'call', callee: 'toInt' },        effect: 'strip', appliesTo: ['*'] },
+  { kind: 'sanitizer', id: 'kt-int-toIntOrNull',language: 'kt', match: { type: 'call', callee: 'toIntOrNull' }, effect: 'strip', appliesTo: ['*'] },
+  { kind: 'sanitizer', id: 'kt-path-canonical',language: 'kt', match: { type: 'call', callee: 'canonicalFile' },effect: 'taintIf-not-pinned', appliesTo: ['path'] },
+  { kind: 'sanitizer', id: 'kt-jdbc-setstring',language: 'kt', match: { type: 'call', callee: 'setString' },    effect: 'strip', appliesTo: ['sql'] },
 ];
 
 // ─── Expanded sanitizer catalog (v0.65.0) ────────────────────────────────

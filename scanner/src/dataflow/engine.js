@@ -166,9 +166,42 @@ function step(node, stateIn, callContext) {
         ? node.source.callee : null;
       if (target && calleeName && callContext._summaryCache && callContext._callGraph) {
         const resolved = callContext._callGraph.resolve ? callContext._callGraph.resolve(calleeName) : null;
-        const qid = resolved && (resolved.qid || resolved); // resolve may return fn or qid
+        const fn  = resolved && resolved.qid ? resolved : null;
+        const qid = resolved && (resolved.qid || resolved);
         if (typeof qid === 'string') {
-          const sum = callContext._summaryCache.get(qid, new Set());
+          // v0.66 — context-sensitive lookup. Build the entry-state from
+          // the call args + current taint; look up (and lazily compute) the
+          // summary for THAT state, not just empty. This is what closes the
+          // "helper is pure when called clean but tainted when called with
+          // user input" FN class.
+          const callerTainted = newState;
+          const callArgs = (node.source.args || []);
+          const paramNames = (fn && Array.isArray(fn.params)) ? fn.params : [];
+          const entry = paramNames.length
+            ? entryStateFromCall(paramNames, callArgs, callerTainted)
+            : new Set();
+          let sum = callContext._summaryCache.get(qid, entry);
+          if (!sum && fn && fn.cfg) {
+            // Lazy compute under this entry state. Use a fresh ctx so we
+            // don't pollute the outer caller's _taintSources with the
+            // callee's internal noise.
+            sum = callContext._summaryCache.compute(qid, entry, () => {
+              const inner = {
+                _findings: [], _taintSources: [], _returnTainted: false,
+                _stack: new Set(), deadlineMs: callContext.deadlineMs,
+                _summaryCache: callContext._summaryCache,
+                _callGraph: callContext._callGraph,
+                _mutatedParamsOut: new Set(),
+              };
+              try { analyzeFunction(fn, entry, inner); } catch {}
+              return {
+                returnTainted: !!inner._returnTainted,
+                mutatedParams: inner._mutatedParamsOut || new Set(),
+                taintedGlobals: new Set(),
+                findings: [],
+              };
+            });
+          }
           if (sum && sum.returnTainted) {
             newState = addPath(newState, target);
             callContext._taintSources.push({
@@ -178,8 +211,14 @@ function step(node, stateIn, callContext) {
               provenance: 'interproc',
               line: node.line,
             });
-            return { state: newState, findings: [] };
           }
+          // applyAtCallSite — mutated params propagate to caller arg-vars.
+          if (sum && sum.mutatedParams && sum.mutatedParams.size && paramNames.length) {
+            const mutated = callContext._summaryCache.applyAtCallSite(
+              sum, paramNames, callArgs, callerTainted);
+            for (const v of mutated.mutated) newState = addPath(newState, v);
+          }
+          if (sum && sum.returnTainted) return { state: newState, findings: [] };
         }
       }
       if (src && target) {
@@ -210,6 +249,27 @@ function step(node, stateIn, callContext) {
       // 1. Catalog match: sanitizer, sink, or just an external/unresolved call.
       const cat = matchSinkOrSanitizer(node.callee);
       const argTaints = (node.args || []).map(a => exprTaint(a, state));
+      // v0.66 — apply mutated-param taint at plain (non-assign) call sites.
+      // Object.assign(target, tainted) → target becomes tainted in caller.
+      if (callContext._summaryCache && callContext._callGraph
+          && typeof node.callee === 'string') {
+        const resolved = callContext._callGraph.resolve
+          ? callContext._callGraph.resolve(node.callee) : null;
+        const fn  = resolved && resolved.qid ? resolved : null;
+        const qid = resolved && (resolved.qid || resolved);
+        if (typeof qid === 'string' && fn && Array.isArray(fn.params)) {
+          const paramNames = fn.params;
+          const entry = paramNames.length
+            ? entryStateFromCall(paramNames, node.args || [], state)
+            : new Set();
+          const sum = callContext._summaryCache.get(qid, entry);
+          if (sum && sum.mutatedParams && sum.mutatedParams.size) {
+            const mutated = callContext._summaryCache.applyAtCallSite(
+              sum, paramNames, node.args || [], state);
+            for (const v of mutated.mutated) state = addPath(state, v);
+          }
+        }
+      }
       if (cat) {
         for (const e of cat) {
           if (e.kind === 'sink' && (
@@ -354,7 +414,18 @@ function analyzeFunction(fn, entryState, callContext) {
     }
   }
 
-  return outStates.get(fn.cfg.exit) || new Set();
+  const exit = outStates.get(fn.cfg.exit) || new Set();
+  // v0.66 — record which params are tainted at function exit so the
+  // caller's applyAtCallSite can propagate that mutated taint back. We
+  // intersect the exit-state with the function's declared params (only
+  // param vars count as "mutated by reference"; locals are caller-invisible).
+  if (callContext && Array.isArray(fn.params) && fn.params.length) {
+    if (!callContext._mutatedParamsOut) callContext._mutatedParamsOut = new Set();
+    for (const p of fn.params) {
+      if (isCoveredBy(exit, p)) callContext._mutatedParamsOut.add(p);
+    }
+  }
+  return exit;
 }
 
 function mergeStates(a, b) {
@@ -395,23 +466,43 @@ export function runTaintEngine(perFileIR, callGraph, opts = {}) {
   const fnList = [...callGraph.functions.values()].sort((a, b) =>
     a.qid < b.qid ? -1 : a.qid > b.qid ? 1 : 0
   );
-  // Pre-pass: compute the empty-entry-state summary for every function so
-  // direct-call return-taint queries during the main pass are O(1).
-  for (const fn of fnList) {
-    summaryCache.compute(fn.qid, new Set(), () => {
+  // Pre-pass + fixed-point: compute empty-entry-state summaries for every
+  // function, then re-run the pre-pass until the summary cache stabilizes
+  // (capped at MAX_FP_ITERS so recursion and chains converge without
+  // unbounded blowup). v0.66 — the inner ctx now records mutatedParams
+  // via _mutatedParamsOut so cross-function param mutation propagates.
+  const MAX_FP_ITERS = 3;
+  let prevCacheSize = -1;
+  for (let it = 0; it < MAX_FP_ITERS; it++) {
+    if (Date.now() > deadlineMs) break;
+    for (const fn of fnList) {
+      if (Date.now() > deadlineMs) break;
+      const entry = new Set();
+      const key = fn.qid + '::empty';
+      const existing = summaryCache.get(fn.qid, entry);
+      // On re-iterations, recompute even if cached so refined summaries
+      // (from now-known callee summaries) can lift returnTainted/mutated.
       const ctx = {
         _findings: [], _taintSources: [], _returnTainted: false,
         _stack: new Set(), deadlineMs,
         _summaryCache: summaryCache, _callGraph: callGraph,
+        _mutatedParamsOut: new Set(),
       };
-      try { analyzeFunction(fn, new Set(), ctx); } catch {}
-      return {
+      try { analyzeFunction(fn, entry, ctx); } catch {}
+      const next = {
         returnTainted: !!ctx._returnTainted,
-        mutatedParams: new Set(),
+        mutatedParams: ctx._mutatedParamsOut || new Set(),
         taintedGlobals: new Set(),
         findings: [],
       };
-    });
+      if (!existing
+          || existing.returnTainted !== next.returnTainted
+          || (existing.mutatedParams?.size || 0) !== next.mutatedParams.size) {
+        summaryCache.set(fn.qid, entry, next);
+      }
+    }
+    if (summaryCache.size() === prevCacheSize) break;
+    prevCacheSize = summaryCache.size();
   }
   for (const fn of fnList) {
     if (++n > fnLimit) break;

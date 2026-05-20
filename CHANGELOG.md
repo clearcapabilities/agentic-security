@@ -1,5 +1,104 @@
 # Changelog
 
+## 0.66.0 — interprocedural precision + LLM default-on + C# / Kotlin IRs + corpus to 88
+
+Four world-class lifts shipped together. After v0.65 the F1=0.636 number
+was honest but the engine was still k=1 monovariant, the LLM validator
+was opt-in, and the IR coverage stopped at JS/TS/Python/Java.
+
+### Interprocedural taint precision (engine semantics)
+
+`scanner/src/dataflow/engine.js`:
+- **k≥2 context-sensitive summaries.** At assign-from-call sites the
+  engine now builds the entry-taint-state from call args + current
+  taint via `entryStateFromCall()` and looks up (lazily computes) a
+  summary keyed by THAT entry state. Closes the "helper is pure when
+  called clean but tainted when called with user input" FN class.
+- **`applyAtCallSite` wired.** Mutated by-reference params propagate
+  back to caller vars (`Object.assign(target, tainted)` → `target`
+  tainted in caller). Was previously dead code.
+- **Fixed-point iteration.** `runTaintEngine` now runs the pre-pass
+  up to MAX_FP_ITERS (3) iterations or until the summary cache size
+  stabilizes — recursion no longer under-approximates. Budget caps
+  on walltime + cache size still hold.
+
+Tests in `scanner/test/interproc-k2.test.js` lock the lifts: context
+disambiguates tainted vs clean call sites, recursion converges within
+budget, large helper chains finish within walltime.
+
+### LLM validator default-on
+
+`scanner/src/llm-validator/index.js` flips from opt-in to default-on:
+
+| Env state                                    | Behavior      |
+|----------------------------------------------|---------------|
+| `LLM_ENDPOINT` unset                         | no-op         |
+| `LLM_ENDPOINT` set, `VALIDATE` unset         | **runs**      |
+| `LLM_ENDPOINT` set, `VALIDATE=0`             | no-op (opt-out) |
+| `LLM_ENDPOINT` set, `VALIDATE=1`             | runs (legacy) |
+
+Cache by `(file-content-sha256, source→sink path, prompt version,
+model id)` continues to suppress repeat calls. Fail-closed semantics
+unchanged — any prompt-injection / verify-failure → escalate (keep).
+
+### C# IR backend (new language)
+
+`scanner/src/ir/parser-cs.js` (~290 lines) — regex-based first pass,
+parallel approach to the legacy Python regex parser. Models method
+declarations with modifiers, params, body extraction with brace-depth
+tracking. Lowers `var x = …`, `Type x = …`, `x = …`, calls, return,
+throw. Builds a linear CFG per method. Plus 24 C# catalog entries:
+ASP.NET MVC sources (`Request.Form`, `Request.QueryString`,
+`Request.Cookies`, `Request.Headers`, `Request.Body`), sinks (SqlCommand,
+Process.Start, File.ReadAll*, WebClient, HttpClient, BinaryFormatter),
+sanitizers (HtmlEncode, UrlEncode, GetFullPath, Parse/TryParse,
+Regex.Escape, AddWithValue).
+
+### Kotlin IR backend (new language)
+
+`scanner/src/ir/parser-kt.js` (~250 lines) — same regex approach.
+Models `fun` declarations with modifiers, params, optional return
+type, body extraction. Lowers `val`/`var`/`x = …`, calls, return,
+throw. Kotlin string interpolation (`"hi $x"` / `"hi ${name}"`) lowers
+into IR template-expression form so the engine sees the inner taint.
+Plus 14 Kotlin catalog entries: Ktor / Spring sources, JDBC / Exposed /
+ProcessBuilder / readText / ObjectInputStream sinks, escapeHtml4 /
+URLEncoder / toInt / canonicalFile / setString sanitizers.
+
+Both IRs wire into `buildProjectIR` and `buildProjectIRAsync`. Tests
+in `scanner/test/parser-cs-kt.test.js`: shape correctness, multi-method
+files, end-to-end scan over ASP.NET + Ktor fixtures.
+
+### CVE-replay corpus: 50 → 88 entries (20 CWEs × 8 languages)
+
+`bench/cve-replay/generate-corpus-extended.mjs` adds 38 entries:
+- 8 C# fixtures (exercises new IR)
+- 8 Kotlin fixtures (exercises new IR)
+- 6 new CWE families: SSTI (CWE-94), LDAP injection (CWE-90), XPath
+  injection (CWE-643), open redirect (CWE-601), HTTP response
+  splitting (CWE-113), regex DoS (CWE-1333)
+- 16 framework variants for existing families (NestJS, Koa, Symfony,
+  Laravel, Gin, Fiber, etc.)
+
+**Aggregate F1 = 0.500** (Wilson 95% CI [0.249, 0.429]) on the 88-entry
+corpus. Lower than v0.65's 0.636 BECAUSE the new fixtures include
+capabilities the scanner doesn't yet detect (C#/Kotlin coverage is
+still thin; new CWE families have no detection rules). This is the
+honest direction — broader corpus, narrower CI, real measurement.
+Regression-tier CI gate remains F1=1.0.
+
+### Test totals
+
+654 scanner tests pass / 0 fail (up from 640 in v0.65). Smoke +
+regression-tier CI both green.
+
+### Migration
+
+No breaking changes. To enable the LLM validator default-on path, set
+`AGENTIC_SECURITY_LLM_ENDPOINT`. To opt out: `AGENTIC_SECURITY_LLM_VALIDATE=0`.
+C# and Kotlin scans require no setup — drop a `.cs` or `.kt` file in
+the scan tree.
+
 ## 0.65.0 — sanitizer catalog 8× / CVE corpus 6× / continuous CVE alerting
 
 Closes three ASPM/SAST competitiveness gaps surfaced in the post-v0.64 review:

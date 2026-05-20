@@ -4,6 +4,8 @@
 // build the cross-file call graph on top.
 
 import { parseJsFile } from './parser-js.js';
+import { parseCSharpFile } from './parser-cs.js';
+import { parseKotlinFile } from './parser-kt.js';
 import { parsePythonFile as parsePythonFileRegex } from './parser-py.js';
 import {
   parsePythonFile as parsePythonFileCst,
@@ -68,6 +70,12 @@ export function buildProjectIR(fileContents) {
     } else if (/\.py$/i.test(file)) {
       // Defer Python files to a single batched subprocess call.
       pyBatch.push({ file, content: code });
+    } else if (/\.cs$/i.test(file)) {
+      const ir = parseCSharpFile(file, code);
+      if (ir) perFile[file] = ir;
+    } else if (/\.kt$/i.test(file)) {
+      const ir = parseKotlinFile(file, code);
+      if (ir) perFile[file] = ir;
     }
   }
   if (pyBatch.length) {
@@ -97,6 +105,12 @@ export async function buildProjectIRAsync(fileContents) {
       if (ir) perFile[file] = ir;
     } else if (/\.py$/i.test(file)) {
       pyBatch.push({ file, content: code });
+    } else if (/\.cs$/i.test(file)) {
+      const ir = parseCSharpFile(file, code);
+      if (ir) perFile[file] = ir;
+    } else if (/\.kt$/i.test(file)) {
+      const ir = parseKotlinFile(file, code);
+      if (ir) perFile[file] = ir;
     } else if (/\.java$/i.test(file)) {
       try {
         const ir = await parseJavaFile(file, code);
@@ -135,4 +149,4 @@ export function parsePythonFile(file, code) {
   return parsePythonFileRegex(file, code);
 }
 
-export { parseJsFile, parseJavaFile, buildCallGraph, buildClassHierarchy, computeSSA, isSSAEnabled, probePythonAvailable };
+export { parseJsFile, parseJavaFile, parseCSharpFile, parseKotlinFile, buildCallGraph, buildClassHierarchy, computeSSA, isSSAEnabled, probePythonAvailable };

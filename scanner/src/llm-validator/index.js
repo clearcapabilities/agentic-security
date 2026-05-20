@@ -354,17 +354,24 @@ export async function validateOne(finding, fileContents, scanRoot) {
   return parsed;
 }
 
-// Validate many findings. Skipped findings get unvalidated:true. Respects an
-// opt-in env (AGENTIC_SECURITY_LLM_VALIDATE=1) so the validator only runs
-// when explicitly enabled — otherwise we annotate unvalidated:true without
-// any network calls.
+// Validate many findings. Skipped findings get unvalidated:true.
+//
+// v0.66 — flipped to **default-on** semantics. The validator runs whenever
+// an endpoint is configured (AGENTIC_SECURITY_LLM_ENDPOINT set), unless
+// the operator explicitly opts out with AGENTIC_SECURITY_LLM_VALIDATE=0.
+// Backwards-compatible: the legacy AGENTIC_SECURITY_LLM_VALIDATE=1 still
+// works as an explicit-on signal. Without an endpoint configured, the
+// validator stays a no-op — no surprise network calls.
 //
 // Deterministic ordering: findings sorted by stableId (or id) before
 // batching. Default concurrency = 1 so cache misses produce identical SARIF
 // run-over-run. Operators raise concurrency for throughput.
 export async function validateMany(findings, { fileContents, scanRoot, concurrency = 1 } = {}) {
   if (!Array.isArray(findings) || findings.length === 0) return findings;
-  const enabled = process.env.AGENTIC_SECURITY_LLM_VALIDATE === '1' && !!endpointConfig();
+  // Default-on when an endpoint is configured. Opt-out via VALIDATE=0.
+  const cfg = endpointConfig();
+  const optOut = process.env.AGENTIC_SECURITY_LLM_VALIDATE === '0';
+  const enabled = !!cfg && !optOut;
   if (!enabled) {
     for (const f of findings) {
       f.validator_verdict = 'unvalidated';
