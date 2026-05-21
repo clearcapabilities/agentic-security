@@ -1,5 +1,30 @@
 # Changelog
 
+## 0.74.0 — viral surface: PoC video gen + security-tutor skill + personality voices + compare runner
+
+Four shareability lifts.
+
+### Auto-recorded PoC scripts — `scanner/src/poc-video.js`
+For findings with `_exploitInput` (v0.71 symbolic prover), generate a
+self-contained script the operator runs against their own staging URL:
+- **playwright**: TypeScript test that drives the exploit live + records video. Default for UI-driven exploits.
+- **curl**: bash script with verbose tracing + payload-acceptance assertion. Default for backend exploits.
+- **http**: RFC 7230-style raw request pastable into Postman/Insomnia.
+
+The generator does NOT execute anything; produces share-grade evidence the operator runs against their OWN environment.
+
+### Educational mode skill — `skills/security-tutor/SKILL.md`
+Auto-activates when the user asks "why is X dangerous", references a finding-id and asks for context, or has mechanically accepted ≥3 fixes in a row. Walks the finding Socratically: identify source/sink/sanitizer, ask user to propose the payload BEFORE showing the fix, verify understanding with follow-up traps. CWE-specific Socratic patterns table covers 8 families.
+
+### Security personality voices — `scanner/src/personality.js`
+Three tone modes wrapping any rendered report: **sage** (calm, default), **cassandra** (alarmist), **vince** (drill-sergeant). Same findings, dramatically different shareability. `AGENTIC_SECURITY_PERSONALITY` env selects. Only the framing changes — technical content stays identical.
+
+### Compare runner framework — `scanner/src/compare.js`
+Bring-your-own-tool side-by-side comparison. User supplies the other tool's invocation + field map; we render a Markdown card with overlap / unique / severity-disagreement sections. Framework is generic — no competitor-specific adapters shipped.
+
+### Test totals
+**847 scanner tests pass / 0 fail** (up from 832).
+
 ## 0.73.0 — technical depth: IFDS summary edges + type-stub filter + cross-repo federation
 
 Three technical-depth lifts. v0.71 shipped IFDS scaffolding with bottom
