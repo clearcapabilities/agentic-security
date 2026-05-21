@@ -6,11 +6,6 @@
 
 > Built by **[Clear Capabilities](https://www.clearcapabilities.com/)**.
 
-[![License](https://img.shields.io/badge/license-PolyForm--Internal--Use-blue)](./LICENSE)
-[![Bundle](https://img.shields.io/badge/bundle-2.30MB-orange)]()
-[![Version](https://img.shields.io/badge/version-0.72.1-blue)]()
-[![agentic-security](https://img.shields.io/badge/agentic--security-passing-brightgreen)]()
-
 ---
 
 ## The 30-second pitch
@@ -91,16 +86,6 @@ agentic-security badge --format json > badge.json   # shields.io-compatible endp
 ```
 
 The badge reads from `.agentic-security/last-scan.json` — wire it into your CI to publish on every scan, and you've got pull-marketing: every repo that adopts the badge becomes a billboard pointing at the tool.
-
-## Public leaderboard (preview)
-
-Future home: **agentic-security.dev/leaderboard** — ranks OSS repos by posture grade (A–F), severity counts, and CVE-replay coverage. The backend ships in v0.72:
-
-```bash
-agentic-security leaderboard-row --repo YOUR-ORG/YOUR-REPO
-```
-
-That returns a JSON row ready for the leaderboard ingester. If you want your repo featured when the site goes live, add the status badge today — that's our signal.
 
 ---
 
@@ -571,6 +556,11 @@ We try to be honest about the boundaries.
 - **Not free for resale.** PolyForm Internal Use license. Use it to make your own code safe and secure, Don't repackage it as a competing scanner.
 
 ---
+
+[![License](https://img.shields.io/badge/license-PolyForm--Internal--Use-blue)](./LICENSE)
+[![Bundle](https://img.shields.io/badge/bundle-2.30MB-orange)]()
+[![Version](https://img.shields.io/badge/version-0.74.2-blue)]()
+[![agentic-security](https://img.shields.io/badge/agentic--security-passing-brightgreen)]()
 
 ## License
 
