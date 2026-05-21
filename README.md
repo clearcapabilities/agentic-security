@@ -64,31 +64,6 @@ If you want a harness not listed here, the MCP server speaks the standard JSON-R
 
 ---
 
-## Status badge for your README
-
-Show the world your repo's security posture. The badge updates every scan; the color shifts to match your highest non-zero severity:
-
-```markdown
-![agentic-security](https://agentic-security.dev/badge?repo=YOUR-ORG/YOUR-REPO)
-```
-
-Example badges (these are static previews — the real badge is live):
-
-[![agentic-security: passing](https://img.shields.io/badge/agentic--security-passing-brightgreen)]() — clean scan
-[![agentic-security: 0 crit · 2 high](https://img.shields.io/badge/agentic--security-crit_0_·_high_2_·_med_5-orange)]() — has high-severity findings
-[![agentic-security: critical](https://img.shields.io/badge/agentic--security-crit_1_·_high_3_·_med_8-red)]() — has critical findings
-
-**Self-host the badge** (no `agentic-security.dev` dependency) by serving the output of `agentic-security badge --format svg` from a CI artifact or static site:
-
-```bash
-agentic-security badge --format svg > badge.svg
-agentic-security badge --format json > badge.json   # shields.io-compatible endpoint
-```
-
-The badge reads from `.agentic-security/last-scan.json` — wire it into your CI to publish on every scan, and you've got pull-marketing: every repo that adopts the badge becomes a billboard pointing at the tool.
-
----
-
 ## What 30 seconds gets you
 
 <img src="docs/brand/patch-alert.svg" align="right" width="120" alt="Patch · ALERT — finding detected">
@@ -376,6 +351,29 @@ npx @clear-capabilities/agentic-security-scanner ci . --fail-on critical
 # 5. Generate compliance attestation evidence.
 npx @clear-capabilities/agentic-security-scanner scan . --format aibom > ai-bom.json
 ```
+
+### Status badge for your README
+
+Show the world your repo's security posture. The badge updates every scan; the color shifts to match your highest non-zero severity:
+
+```markdown
+![agentic-security](https://agentic-security.dev/badge?repo=YOUR-ORG/YOUR-REPO)
+```
+
+Example badges (static previews — the live badge updates from `.agentic-security/last-scan.json` on every scan):
+
+[![agentic-security: passing](https://img.shields.io/badge/agentic--security-passing-brightgreen)]() — clean scan<br>
+[![agentic-security: 0 crit · 2 high](https://img.shields.io/badge/agentic--security-crit_0_·_high_2_·_med_5-orange)]() — has high-severity findings<br>
+[![agentic-security: critical](https://img.shields.io/badge/agentic--security-crit_1_·_high_3_·_med_8-red)]() — has critical findings
+
+**Self-host the badge** (no `agentic-security.dev` dependency) by serving the output of `agentic-security badge --format svg` from a CI artifact or static site:
+
+```bash
+agentic-security badge --format svg > badge.svg
+agentic-security badge --format json > badge.json   # shields.io-compatible endpoint
+```
+
+Wire `agentic-security badge` into your CI to publish on every scan, and every repo that adopts the badge becomes a billboard pointing at the tool.
 
 ### The full pro catalog
 
