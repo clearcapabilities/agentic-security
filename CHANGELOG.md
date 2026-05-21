@@ -1,5 +1,27 @@
 # Changelog
 
+## 0.75.0 — /executive-summary: CISO-facing six-control posture report
+
+New top-level command for buyer-questionnaire / diligence / CISO use.
+`/executive-summary` prints a plain-English briefing of the six harness
+controls (Tool access, Guardrails, Feedback loops, Audit evidence,
+Failure mode, Compliance) with live status indicators drawn from the
+current project state — hook activation, scan-signature presence,
+audit-log entry count, remote-witness configuration, compliance artifacts.
+
+Each control renders four named subsections modeled on `/explain`:
+**What it does** (2-3 paragraphs of plain English), **Specifically**
+(the concrete enumerated list of allows/blocks/intercepts), **What would
+have to go wrong for this to fail** (threat model in one paragraph), and
+**Live status (this project)** (verifiable indicators). The "Specifically"
+block names actual reserved paths, every shell command intercepted, every
+code-edit pattern blocked, every audit-log property, every refusal point,
+and every compliance artifact format — so a reviewer can verify the claim
+without opening any source file.
+
+Flags: `--format md` for markdown output; `--output PATH` writes to disk
+(typically `EXECUTIVE_SUMMARY.md` for buyer questionnaires).
+
 ## 0.74.2 — npm package + version alignment
 
 First release published to npm under the org that owns the scope:

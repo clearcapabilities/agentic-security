@@ -1,5 +1,5 @@
 ---
-description: One-page CISO-facing summary of the six harness controls — what runs, what's blocked, what's caught, what's proven, what fails safely, what's compliance-ready.
+description: CISO-facing six-control posture report — tool access, guardrails, feedback, audit evidence, failure mode, compliance.
 argument-hint: "[--output PATH] [--format text|md]"
 ---
 
