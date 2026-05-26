@@ -4,6 +4,9 @@
 import * as fs from 'node:fs';
 import * as fsp from 'node:fs/promises';
 import * as path from 'node:path';
+import { createRequire } from 'node:module';
+const __require = createRequire(import.meta.url);
+const PKG_VERSION = __require('../package.json').version;
 import { signLastScan as _signLastScan, verifyLastScan as _verifyLastScanShared } from '../src/posture/integrity.js';
 import { runScan } from '../src/runScan.js';
 import { toJSON, toMarkdown, toSARIF, toSTIX, toCSV, toJUnit, toCLI, toCLIByProfile, toShipVerdict, toProTable, toHTML, toSummary, exitCodeFor, normalizeFindings } from '../src/report/index.js';
@@ -137,7 +140,7 @@ function printBanner(args) {
     BOLD:  '\x1b[1m',
     RESET: '\x1b[0m',
   } : { FROG:'', DEEP:'', CREAM:'', DIM:'', BOLD:'', RESET:'' };
-  const v = '0.75.1';
+  const v = PKG_VERSION;
   const compact = !args.flags.full;
   if (compact) {
     const lines = [
@@ -1665,7 +1668,7 @@ async function main() {
         }
         process.exit(0);
       }
-      case 'version':  console.log('agentic-security 0.75.1  ·  created by ClearCapabilities.Com'); process.exit(0);
+      case 'version':  console.log(`agentic-security ${PKG_VERSION}  ·  created by ClearCapabilities.Com`); process.exit(0);
       case 'banner':   { printBanner(args); process.exit(0); }
       case 'harness':  process.exit(await cmdHarness(args));
       case 'scan-baseline': process.exit(await cmdScanBaseline(args));
