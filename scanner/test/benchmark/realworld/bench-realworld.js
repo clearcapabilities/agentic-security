@@ -1075,6 +1075,17 @@ async function runOne(name, app, vulnFamilyMap) {
   for (const x of fps) bump(x.family, 'fp');
   for (const x of fns) bump(x.family, 'fn');
 
+  // Per-CWE breakdown — Recommendation #2 of the SCA/SAST improvement
+  // plan. Surfaces which specific CWE (e.g. CWE-22 vs CWE-23, both
+  // path-traversal) is the bottleneck within a family. CWE comes from
+  // the expected-finding entry when present; for actuals (FPs) we
+  // try to read f.cwe directly.
+  const perCwe = {};
+  const bumpCwe = (cwe, k) => { if (!cwe) return; (perCwe[cwe] ??= {tp:0,fp:0,fn:0})[k]++; };
+  for (const t of tps) bumpCwe(t.cwe, 'tp');
+  for (const x of fps) bumpCwe(x.cwe || (x.vuln && (x.vuln.match(/CWE-\d+/)?.[0])), 'fp');
+  for (const x of fns) bumpCwe(x.cwe, 'fn');
+
   // Youden Index (TPR − FPR) — requires a real negative class. OWASP Benchmark
   // ships real=false rows in expectedresults-1.2.csv; we parse them as a list
   // of (file, family) pairs the engine should NOT fire on. For each negative,
@@ -1113,7 +1124,7 @@ async function runOne(name, app, vulnFamilyMap) {
     tp, fp, fn, precision, recall, f1: fOne,
     tpr, fpr, specificity, youden,
     negativesTotal: negatives.length, negTN: negTotalTN, negFP: negTotalFP,
-    perFamily, fps, fns,
+    perFamily, perCwe, fps, fns,
     elapsedSec: parseFloat(elapsed),
     expectedTotal: expected.length,
     auditorVerifiedSource,
@@ -1145,6 +1156,24 @@ function printResult(r) {
         ? `  FPR:${(fprFam*100).toFixed(0).padStart(3)}%  Y:${(yFam*100).toFixed(0).padStart(3)}%`
         : '';
       console.log(`    ${pad(fam, 24)} TP:${pad(s.tp,4)} FP:${pad(s.fp,4)} FN:${pad(s.fn,4)} P:${(p*100).toFixed(0).padStart(3)}%  R:${(rr*100).toFixed(0).padStart(3)}%${negCols}`);
+    }
+  }
+  // Per-CWE breakdown — Recommendation #2. Surfaces which specific CWE
+  // is the bottleneck within a family. Sorted by recall ascending so the
+  // worst-performing CWE floats to the top of the list.
+  if (r.perCwe && Object.keys(r.perCwe).length) {
+    const cwes = Object.entries(r.perCwe).map(([cwe, s]) => {
+      const p = s.tp+s.fp===0?1:s.tp/(s.tp+s.fp);
+      const rr = s.tp+s.fn===0?1:s.tp/(s.tp+s.fn);
+      return { cwe, ...s, p, r: rr, scale: s.tp+s.fn };
+    }).filter(e => e.scale >= 5)   // hide noise-rounded buckets with <5 expected
+      .sort((a, b) => a.r - b.r || b.scale - a.scale);
+    if (cwes.length) {
+      console.log(`  per-CWE (≥5 expected, sorted by recall asc):`);
+      for (const e of cwes.slice(0, 15)) {
+        console.log(`    ${pad(e.cwe, 10)} TP:${pad(e.tp,4)} FP:${pad(e.fp,4)} FN:${pad(e.fn,4)} P:${(e.p*100).toFixed(0).padStart(3)}%  R:${(e.r*100).toFixed(0).padStart(3)}%`);
+      }
+      if (cwes.length > 15) console.log(`    … and ${cwes.length - 15} more CWEs (use --json for full list)`);
     }
   }
   if (VERBOSE) {

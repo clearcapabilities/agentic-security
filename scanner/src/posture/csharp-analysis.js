@@ -84,13 +84,21 @@ const SANITIZER_PATTERNS = [
   /\bSqlParameter\b/,
 ];
 
+import { isLibrarySource, isLibrarySanitizer } from '../dataflow/lib-taint-summaries.js';
+
 function isSourceExpr(text) {
   if (TAINT_SOURCE_PATTERNS.some(re => re.test(text))) return true;
   if (benchShapeActive() && JULIET_SHAPE_SOURCE_PATTERNS.some(re => re.test(text))) return true;
+  // Recommendation #5: consult per-language library taint summaries.
+  // These add ASP.NET / Newtonsoft / Files / Streams source signatures
+  // that aren't in the local TAINT_SOURCE_PATTERNS table.
+  if (isLibrarySource(text, 'csharp')) return true;
   return false;
 }
 function isSanitizedExpr(text) {
-  return SANITIZER_PATTERNS.some(re => re.test(text));
+  if (SANITIZER_PATTERNS.some(re => re.test(text))) return true;
+  if (isLibrarySanitizer(text, 'csharp')) return true;
+  return false;
 }
 
 // Walk a single method's body and compute per-variable type + taint.

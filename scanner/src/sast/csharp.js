@@ -687,6 +687,207 @@ function detectLdapInjection(file, raw, ir, analysis, out, seen) {
   }
 }
 
+// ── Expanded XSS detectors — Juliet sink-shape coverage (Recommendation #3) ──
+
+function detectXssExpanded(file, raw, ir, analysis, out, seen) {
+  for (const m of ir.methods) {
+    const flow = analysis.methodFlow.get(m);
+    if (!flow) continue;
+    for (const call of m.calls) {
+      // 1. HtmlGenericControl / Literal / Label .Text = tainted
+      // The IR captures assignments; check member-assignment shape.
+    }
+    // ASP.NET Web Forms shape: someControl.InnerHtml/InnerText = tainted
+    for (const a of m.assignments) {
+      if (!a.isMember || !a.memberPath) continue;
+      if (!/^(?:InnerHtml|InnerText|Text|Value|Title)$/.test(a.memberPath)) continue;
+      const idents = rhsIdents(a.rhsTokens);
+      if (!idents.some(i => flow.taintMap.get(i))) continue;
+      const id = `csharp-control-text:${file}:${a.line}`;
+      if (seen.has(id)) continue;
+      seen.add(id);
+      out.push(makeFinding({
+        ruleId: 'csharp-control-text', file, line: a.line, raw, ir,
+        family: 'xss', severity: 'high', cwe: 'CWE-79',
+        vuln: `XSS — assignment of tainted value to ${a.target}.${a.memberPath} (control property)`,
+        remediation: 'Encode the value with `HttpUtility.HtmlEncode(x)` or set the property via `Literal.Encode=true`. ASP.NET Web Forms controls render strings verbatim unless explicitly told to encode.',
+      }));
+    }
+    // ASP.NET Core IHtmlContent / HtmlContentBuilder.AppendHtml(tainted)
+    for (const call of m.calls) {
+      if (!/^(?:AppendHtml|SetHtmlContent|WriteTo)$/.test(call.method)) continue;
+      const arg = call.args[0];
+      if (!arg || !argIsTainted(flow, arg)) continue;
+      const id = `csharp-htmlcontent:${file}:${call.line}`;
+      if (seen.has(id)) continue;
+      seen.add(id);
+      out.push(makeFinding({
+        ruleId: 'csharp-htmlcontent', file, line: call.line, raw, ir,
+        family: 'xss', severity: 'high', cwe: 'CWE-79',
+        vuln: `XSS — ${call.fullPath || call.method}(tainted) bypasses HTML encoding`,
+        remediation: 'Use `Append` (which encodes) instead of `AppendHtml`. The `Html` suffix variants explicitly mark the content as pre-encoded.',
+      }));
+    }
+  }
+}
+
+// Expanded command-injection — beyond Process.Start patterns. Juliet uses
+// shapes including ProcessStartInfo with a tainted FileName + Arguments,
+// plus shell-out via cmd.exe / sh patterns.
+function detectCommandInjectionExpanded(file, raw, ir, analysis, out, seen) {
+  for (const m of ir.methods) {
+    const flow = analysis.methodFlow.get(m);
+    if (!flow) continue;
+    // 1. new Process { StartInfo = new ProcessStartInfo(tainted, ...) }
+    for (const ctor of m.ctors) {
+      if (ctor.type !== 'ProcessStartInfo') continue;
+      // Either positional arg taint or initialized property taint
+      const arg0Tainted = ctor.args[0] && argIsTainted(flow, ctor.args[0]);
+      const arg1Tainted = ctor.args[1] && argIsTainted(flow, ctor.args[1]);
+      if (!arg0Tainted && !arg1Tainted) continue;
+      const id = `csharp-psi-ctor-tainted:${file}:${ctor.line}`;
+      if (seen.has(id)) continue;
+      seen.add(id);
+      out.push(makeFinding({
+        ruleId: 'csharp-psi-ctor-tainted', file, line: ctor.line, raw, ir,
+        family: 'command-injection', severity: 'critical', cwe: 'CWE-78',
+        vuln: 'Command Injection — `new ProcessStartInfo(tainted, …)` with tainted FileName or Arguments',
+        remediation: 'Validate the FileName against an allow-list of executable paths AND set `UseShellExecute = false`; pass arguments via `ArgumentList` (a list) instead of `Arguments` (a single string). The `Arguments` string is parsed by the shell on Windows.',
+      }));
+    }
+    // 2. process.StartInfo.Arguments = tainted assignment
+    for (const a of m.assignments) {
+      if (!a.isMember) continue;
+      const full = (a.target || '') + '.' + (a.memberPath || '');
+      if (!/StartInfo\.(?:Arguments|FileName)$/.test(full)) continue;
+      const idents = rhsIdents(a.rhsTokens);
+      if (!idents.some(i => flow.taintMap.get(i))) continue;
+      const id = `csharp-process-args:${file}:${a.line}`;
+      if (seen.has(id)) continue;
+      seen.add(id);
+      out.push(makeFinding({
+        ruleId: 'csharp-process-args', file, line: a.line, raw, ir,
+        family: 'command-injection', severity: 'critical', cwe: 'CWE-78',
+        vuln: `Command Injection — tainted value assigned to ${full}`,
+        remediation: 'Replace `StartInfo.Arguments = userInput` with `StartInfo.ArgumentList.Add(arg)` per token. The list form bypasses shell parsing.',
+      }));
+    }
+  }
+}
+
+// XXE — CWE-611. Loading external XML without disabling resolver lets a
+// crafted XML document fetch internal files or local services.
+function detectXxe(file, raw, ir, analysis, out, seen) {
+  for (const m of ir.methods) {
+    const flow = analysis.methodFlow.get(m);
+    if (!flow) continue;
+    // new XmlDocument(); doc.LoadXml(tainted); with NO XmlResolver=null
+    const xmlDocs = m.decls.filter(d => /\bnew\s+XmlDocument\s*\(/.test(d.rhsText || ''));
+    for (const d of xmlDocs) {
+      // Does this method set XmlResolver = null on it?
+      const safe = m.assignments.some(a => a.target === d.name && a.memberPath === 'XmlResolver' && /\bnull\b/.test(a.rhsText));
+      if (safe) continue;
+      const loadCall = m.calls.find(c => c.receiver === d.name && /^Load(?:Xml)?$/.test(c.method));
+      if (!loadCall) continue;
+      const id = `csharp-xxe-xmldoc:${file}:${d.line}`;
+      if (seen.has(id)) continue;
+      seen.add(id);
+      out.push(makeFinding({
+        ruleId: 'csharp-xxe-xmldoc', file, line: d.line, raw, ir,
+        family: 'xxe', severity: 'high', cwe: 'CWE-611',
+        vuln: 'XXE — XmlDocument loaded without disabling XmlResolver',
+        remediation: 'After `new XmlDocument()`, set `doc.XmlResolver = null;` BEFORE calling `.LoadXml()` / `.Load()`. The .NET Framework default resolver fetches external entities, enabling file/SSRF disclosure.',
+      }));
+    }
+    // new XmlReaderSettings(); WITHOUT DtdProcessing = DtdProcessing.Prohibit
+    const xmlSettings = m.decls.filter(d => /\bnew\s+XmlReaderSettings\s*\(/.test(d.rhsText || ''));
+    for (const d of xmlSettings) {
+      const dtdProhibit = (d.rhsText || '').includes('DtdProcessing.Prohibit')
+                       || m.assignments.some(a => a.target === d.name && a.memberPath === 'DtdProcessing' && /Prohibit/.test(a.rhsText));
+      if (dtdProhibit) continue;
+      const id = `csharp-xxe-xmlsettings:${file}:${d.line}`;
+      if (seen.has(id)) continue;
+      seen.add(id);
+      out.push(makeFinding({
+        ruleId: 'csharp-xxe-xmlsettings', file, line: d.line, raw, ir,
+        family: 'xxe', severity: 'medium', cwe: 'CWE-611',
+        vuln: 'XXE — XmlReaderSettings without DtdProcessing=Prohibit',
+        remediation: 'Configure `new XmlReaderSettings { DtdProcessing = DtdProcessing.Prohibit, XmlResolver = null }`. `DtdProcessing.Parse` (the .NET Framework default) is the unsafe shape.',
+      }));
+    }
+  }
+}
+
+// XPath injection — CWE-643. XPath expressions built by string
+// concatenation with user input enable expression manipulation similar
+// to SQL injection.
+function detectXpathInjection(file, raw, ir, analysis, out, seen) {
+  for (const m of ir.methods) {
+    const flow = analysis.methodFlow.get(m);
+    if (!flow) continue;
+    for (const call of m.calls) {
+      if (!/^(?:SelectNodes|SelectSingleNode|Evaluate|Select|XPathSelectElement|XPathSelectElements|Compile)$/.test(call.method)) continue;
+      const arg = call.args[0];
+      if (!arg || !argIsTainted(flow, arg)) continue;
+      // The receiver should be an XPath-capable object — XmlDocument,
+      // XmlNode, XPathNavigator. Best-effort: skip if receiver type known
+      // and doesn't match.
+      const t = flow.typeMap.get(call.receiver || '');
+      if (t && !/(?:XmlDocument|XmlNode|XPathNavigator|XmlNodeList|XmlElement|XPathDocument|XDocument|XmlPathDocument)/.test(t)) continue;
+      const id = `csharp-xpath-injection:${file}:${call.line}`;
+      if (seen.has(id)) continue;
+      seen.add(id);
+      out.push(makeFinding({
+        ruleId: 'csharp-xpath-injection', file, line: call.line, raw, ir,
+        family: 'xpath-injection', severity: 'high', cwe: 'CWE-643',
+        vuln: `XPath Injection — ${call.fullPath || call.method} with tainted XPath expression`,
+        remediation: 'Use parameterized XPath where the runtime supports it (e.g. `XPathExpression.Compile("/users[@id=$id]", resolver)` with an `IXmlNamespaceResolver` providing the variable values). Escape via `XmlConvert` if you must build XPath strings — but parameterization is safer.',
+      }));
+    }
+  }
+}
+
+// Insecure HTTP — CWE-319. URLs constructed with http:// scheme + user
+// input over HTTP transport are vulnerable to MITM. Juliet's CWE-319
+// tests use straightforward string concatenation patterns.
+function detectInsecureHttp(file, raw, ir, analysis, out, seen) {
+  for (const m of ir.methods) {
+    // 1. WebRequest.Create("http://…") — literal http URL
+    // 2. new HttpClient(); httpClient.BaseAddress = new Uri("http://…")
+    for (const ctor of m.ctors) {
+      if (ctor.type !== 'Uri') continue;
+      const arg0 = ctor.args[0];
+      if (!arg0) continue;
+      if (!/^http:\/\//i.test((arg0.text || '').replace(/^\s*["']|["']\s*$/g, ''))) continue;
+      const id = `csharp-insecure-http:${file}:${ctor.line}`;
+      if (seen.has(id)) continue;
+      seen.add(id);
+      out.push(makeFinding({
+        ruleId: 'csharp-insecure-http', file, line: ctor.line, raw, ir,
+        family: 'insecure-http', severity: 'medium', cwe: 'CWE-319',
+        vuln: 'Cleartext HTTP — `new Uri("http://…")` literal HTTP scheme',
+        remediation: 'Switch to `https://`. If the upstream server lacks TLS, terminate via a reverse proxy you control; never send credentials or sensitive data over cleartext HTTP.',
+      }));
+    }
+    for (const call of m.calls) {
+      if (!/^(?:Create|GetAsync|PostAsync|PutAsync|DeleteAsync|Get|Post)$/.test(call.method)) continue;
+      const arg = call.args[0];
+      if (!arg) continue;
+      const txt = (arg.text || '').replace(/^\s*["']|["']\s*$/g, '');
+      if (!/^http:\/\//i.test(txt)) continue;
+      const id = `csharp-insecure-http-call:${file}:${call.line}`;
+      if (seen.has(id)) continue;
+      seen.add(id);
+      out.push(makeFinding({
+        ruleId: 'csharp-insecure-http-call', file, line: call.line, raw, ir,
+        family: 'insecure-http', severity: 'medium', cwe: 'CWE-319',
+        vuln: `Cleartext HTTP — ${call.fullPath || call.method} called with http:// literal URL`,
+        remediation: 'Switch the URL to `https://`. If the endpoint genuinely does not support TLS, document it and gate the call behind a `WebRequest.Create(`-style allow-list, never an unverified literal.',
+      }));
+    }
+  }
+}
+
 // ─── Entry point ───────────────────────────────────────────────────────────
 
 export function scanCSharp(fp, raw) {
@@ -710,12 +911,17 @@ export function scanCSharp(fp, raw) {
   try { detectHardcodedSecret(fp, raw, ir, analysis, out, seen); } catch {}
   try { detectInsecureCookies(fp, raw, ir, analysis, out, seen); } catch {}
   try { detectXss(fp, raw, ir, analysis, out, seen); } catch {}
+  try { detectXssExpanded(fp, raw, ir, analysis, out, seen); } catch {}
   try { detectHeaderInjection(fp, raw, ir, analysis, out, seen); } catch {}
   try { detectOpenRedirect(fp, raw, ir, analysis, out, seen); } catch {}
   try { detectFormatString(fp, raw, ir, analysis, out, seen); } catch {}
   try { detectCodeInjection(fp, raw, ir, analysis, out, seen); } catch {}
   try { detectPathTraversal(fp, raw, ir, analysis, out, seen); } catch {}
   try { detectLdapInjection(fp, raw, ir, analysis, out, seen); } catch {}
+  try { detectCommandInjectionExpanded(fp, raw, ir, analysis, out, seen); } catch {}
+  try { detectXxe(fp, raw, ir, analysis, out, seen); } catch {}
+  try { detectXpathInjection(fp, raw, ir, analysis, out, seen); } catch {}
+  try { detectInsecureHttp(fp, raw, ir, analysis, out, seen); } catch {}
   // Stamp route + auth context on every finding for downstream exploitability.
   for (const f of out) {
     f._routes = analysis.routes.map(r => ({ http: r.http, path: r.path, line: r.line, requiresAuth: r.requiresAuth, methodName: r.methodName }));

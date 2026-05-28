@@ -81,6 +81,33 @@ function _isStrcpyGuarded(ctx) {
   return _SIZEOF_GUARD_RE.test(window);
 }
 
+// Destination-size guard — Recommendation #6 of the SCA/SAST improvement
+// plan. Read the first arg of a strcpy/strcat/sprintf call site and look
+// backwards in the function for a `char dest[N];` declaration. If found,
+// classify the buffer as "small" (≤ 256 bytes) or "large" (> 256) — the
+// large case suggests the developer sized intentionally and we downgrade
+// to medium confidence; the small case keeps the high-confidence finding.
+// If no fixed-size declaration is found at all (heap-allocated, struct
+// member, function parameter), we keep the original finding shape.
+const _CHAR_BUFFER_DECL_RE = /\b(?:char|unsigned\s+char|signed\s+char|wchar_t|int8_t|uint8_t)\s+(\w+)\s*\[\s*(\d+|\w+)\s*\]\s*;/g;
+function _classifyDestBuffer(ctx, destName) {
+  if (!destName) return { kind: 'unknown' };
+  const lines = ctx.raw.split('\n');
+  // Walk backwards from the current line; cap at file start.
+  const before = lines.slice(0, ctx.line).join('\n');
+  let bestSize = null;
+  let m;
+  const re = new RegExp(_CHAR_BUFFER_DECL_RE.source, 'g');
+  while ((m = re.exec(before))) {
+    if (m[1] !== destName) continue;
+    const sizeTxt = m[2];
+    if (/^\d+$/.test(sizeTxt)) bestSize = parseInt(sizeTxt, 10);
+  }
+  if (bestSize === null) return { kind: 'unknown' };
+  if (bestSize <= 256) return { kind: 'small-fixed', size: bestSize };
+  return { kind: 'large-fixed', size: bestSize };
+}
+
 // Format-string: only fire when the variable holding the format string was
 // not assigned from a string literal earlier in the file.
 function _isPrintfVarLiteral(ctx, varName) {
@@ -99,10 +126,21 @@ const FINDINGS = [
   // variants on Windows and strlcpy on BSD/macOS.
   {
     id: 'cpp-strcpy', severity: 'high', cwe: 'CWE-120', family: 'buffer-overflow',
-    re: /\b(strcpy|strcat|gets|stpcpy|sprintf)\s*\(/g,
+    // Capture the destination identifier so we can apply the destination-size
+    // guard (Recommendation #6) — large fixed buffers downgrade severity.
+    re: /\b(strcpy|strcat|gets|stpcpy|sprintf)\s*\(\s*(\w+)/g,
     vuln: 'Banned API — unbounded string copy/format (potential buffer overflow)',
     remediation: 'Replace with the bounded variant: strcpy → strlcpy / strcpy_s; strcat → strlcat / strcat_s; gets → fgets(buf, sizeof(buf), stdin); sprintf → snprintf(buf, sizeof(buf), "%s", v). The unbounded form will silently overflow on attacker-controlled input.',
-    gate: (ctx) => !_isStrcpyGuarded(ctx),
+    gate: (ctx, m) => {
+      if (_isStrcpyGuarded(ctx)) return false;
+      // Destination classification — large fixed buffers are intentional
+      // and we demote them to a less-noisy emission. Small fixed buffers
+      // stay high-severity; unknown (heap / param) keeps the original behavior.
+      const destName = m && m[2];
+      ctx._destClass = _classifyDestBuffer(ctx, destName);
+      return true;
+    },
+    severityFor: (ctx) => ctx._destClass && ctx._destClass.kind === 'large-fixed' ? 'medium' : 'high',
   },
   {
     // printf/warn-family: format string is ARG 1.
@@ -196,7 +234,96 @@ const FINDINGS = [
     // common (bad) example pattern, not a real vulnerability.
     gate: (ctx) => _isCryptoContextRand(ctx),
   },
+
+  // ── Recommendation #6/7: C/C++ family expansion ──────────────────────────
+
+  // exec*-family with non-literal argument (CWE-78). Beyond system/popen.
+  {
+    id: 'cpp-exec-family', severity: 'critical', cwe: 'CWE-78', family: 'command-injection',
+    re: /\b(?:execl|execle|execlp|execlpe|execv|execve|execvp|execvpe|posix_spawn)\s*\(\s*(?!["'])\w+/g,
+    vuln: 'Command Injection — exec*() family with non-literal program path',
+    remediation: 'Pin the program path to a constant and pass arguments as a separate argv. Never pass user-controlled data as the program path itself; an attacker can substitute any binary on $PATH.',
+  },
+
+  // Weak crypto — OpenSSL legacy / EVP_des / MD5 / SHA1 (CWE-327).
+  {
+    id: 'cpp-weak-crypto-md', severity: 'high', cwe: 'CWE-327', family: 'weak-crypto',
+    re: /\b(?:MD5_(?:Init|Update|Final|MD5)|MD4_|MD2_|SHA1_(?:Init|Update|Final|SHA1)|RIPEMD160_)\s*\(/g,
+    vuln: 'Weak Cryptography — legacy MD5/MD4/SHA1/RIPEMD160 hash primitive',
+    remediation: 'Use SHA-256 or SHA-3 via the OpenSSL EVP interface (`EVP_sha256()` → `EVP_DigestInit_ex` → `EVP_DigestUpdate` → `EVP_DigestFinal_ex`). For password hashing use Argon2 (libsodium) or scrypt.',
+  },
+  {
+    id: 'cpp-weak-crypto-des', severity: 'high', cwe: 'CWE-327', family: 'weak-crypto',
+    re: /\b(?:DES_(?:set_key|ecb_encrypt|ncbc_encrypt|cbc_encrypt|ede3_cbc_encrypt)|RC2_|RC4_(?:set_key|encrypt|decrypt)|BF_(?:set_key|ecb_encrypt))\s*\(/g,
+    vuln: 'Weak Cryptography — legacy DES/3DES/RC2/RC4/Blowfish primitive',
+    remediation: 'Use AES-256 in GCM mode via the EVP interface (`EVP_aes_256_gcm()` → `EVP_EncryptInit_ex`). DES and RC4 are broken; 3DES is deprecated; Blowfish has a 64-bit block (Sweet32).',
+  },
+  {
+    id: 'cpp-weak-crypto-evp', severity: 'high', cwe: 'CWE-327', family: 'weak-crypto',
+    re: /\bEVP_(?:des_(?:ede3?)?_(?:cbc|ecb|cfb|ofb)|md5|md4|md2|sha1|rc4|rc2_(?:cbc|ecb|cfb|ofb)|bf_(?:cbc|ecb|cfb|ofb))\s*\(/g,
+    vuln: 'Weak Cryptography — EVP factory for legacy primitive (MD5/SHA1/DES/3DES/RC2/RC4/BF)',
+    remediation: 'Use a modern EVP factory: `EVP_aes_256_gcm()` for AEAD, `EVP_sha256()` / `EVP_sha3_256()` for hashing.',
+  },
+
+  // Hardcoded secret in C/C++ (CWE-798) — a string literal assigned to a
+  // variable matching credential naming. Same idea as the Java/JS detector
+  // but tuned to C idioms.
+  {
+    id: 'cpp-hardcoded-secret', severity: 'high', cwe: 'CWE-798', family: 'hardcoded-secret',
+    // `static const char *password = "literal";`  or  `#define PASSWORD "literal"`
+    re: /\b(?:const\s+)?char\s*(?:\*\s*)?(?:const\s+)?(\w*(?:password|passwd|pwd|secret|api[_-]?key|access[_-]?token|auth[_-]?token|cred(?:ential)?s?|priv(?:ate)?[_-]?key)\w*)\s*\[?\s*\]?\s*=\s*"([^"]{8,})"/gi,
+    vuln: 'Hardcoded Secret — credential-named char assigned a string literal',
+    remediation: 'Load secrets at runtime from environment variables (`getenv("API_KEY")`), a secrets file with restricted permissions, or a vault SDK. Never compile a literal credential into the binary — `strings(1)` extracts every literal string and the binary ships with the secret embedded.',
+    gate: (ctx, m) => {
+      // Apply the same entropy filter to avoid the 468 FPs/1 TP problem.
+      const val = m && m[2];
+      if (!val) return false;
+      try {
+        // Lazy import — avoids a circular dep on the entropy module being
+        // present in older snapshots.
+        // eslint-disable-next-line no-unused-vars
+        const { classifySecretCandidate } = _entropyMod || {};
+        if (classifySecretCandidate) {
+          const r = classifySecretCandidate(val);
+          if (r.skip) return false;
+        }
+      } catch { /* fail open */ }
+      return true;
+    },
+  },
+
+  // Use-after-free / double-free — CWE-416 / CWE-415. Heuristic: same pointer
+  // referenced in a free() call earlier in the function, then dereferenced
+  // (or free'd again) later. Conservative on declared `nullptr`-after-free.
+  {
+    id: 'cpp-uaf-heuristic', severity: 'high', cwe: 'CWE-416', family: 'mem-unsafe',
+    re: /\bfree\s*\(\s*(\w+)\s*\)\s*;[\s\S]{0,400}?\b\1\s*(?:->|\[|=\s*[^=])/g,
+    vuln: 'Use-After-Free heuristic — free(p) followed by p->/p[ access in same function window',
+    remediation: 'After `free(p)`, set `p = NULL;` immediately. The compiler can\'t catch UAF in general; explicit nulling means later derefs crash on a null check instead of executing on freed memory.',
+  },
+  {
+    id: 'cpp-double-free', severity: 'high', cwe: 'CWE-415', family: 'mem-unsafe',
+    re: /\bfree\s*\(\s*(\w+)\s*\)\s*;[\s\S]{0,400}?\bfree\s*\(\s*\1\s*\)/g,
+    vuln: 'Double-free — free(p) followed by free(p) without nulling in between',
+    remediation: 'After `free(p)`, set `p = NULL;`. `free(NULL)` is a defined no-op in C; `free(already_freed_p)` is undefined behavior that can corrupt the allocator and pivot to RCE.',
+  },
+
+  // Cookie / Session / token = rand() shape — when rand() is used to mint
+  // session identifiers, even outside a strict "crypto" context. Distinct
+  // from the gated rand() rule above to catch the obvious Juliet shape.
+  {
+    id: 'cpp-rand-session-token', severity: 'high', cwe: 'CWE-338', family: 'weak-rng',
+    re: /\b(?:session_id|token|cookie|nonce|csrf|secret_key)\s*(?:=|\.|->)[\s\S]{0,200}?\b(?:rand|random)\s*\(/gi,
+    vuln: 'Weak Randomness — session/token/cookie value derived from rand()/random()',
+    remediation: 'Use getrandom() (Linux), RAND_bytes() (OpenSSL), or BCryptGenRandom() (Windows) for any identifier that has to be unguessable. rand() outputs are predictable to within 2^31 internal states.',
+  },
 ];
+
+// Late-bound entropy module — imported via a dynamic require shim so the
+// rule table can lazy-call it from inside gate functions without creating
+// a circular import at module load time.
+let _entropyMod = null;
+import('./_secret-entropy.js').then(m => { _entropyMod = m; }).catch(() => { _entropyMod = null; });
 
 function lineOf(raw, idx) { return raw.substring(0, idx).split('\n').length; }
 
@@ -223,15 +350,22 @@ export function scanCpp(fp, raw) {
       if (/^\s*#\s*define\b/.test(lineText)) continue;
       // Per-rule contextual gate (Action 2). Suppress when the surrounding
       // file/line context shows the call is not security-relevant.
+      const gateCtx = { file: fp, raw, line, lineText };
       if (typeof rule.gate === 'function') {
         try {
-          if (!rule.gate({ file: fp, raw, line, lineText }, m)) continue;
+          if (!rule.gate(gateCtx, m)) continue;
         } catch { /* gate threw → fail open, keep finding */ }
+      }
+      // Per-finding severity override (Recommendation #6 — destination-size
+      // classifier downgrades large-fixed-buffer strcpy to medium).
+      let sev = rule.severity;
+      if (typeof rule.severityFor === 'function') {
+        try { sev = rule.severityFor(gateCtx, m) || sev; } catch { /* keep default */ }
       }
       out.push({
         id, file: fp, line,
         vuln: rule.vuln,
-        severity: rule.severity,
+        severity: sev,
         cwe: rule.cwe,
         stride: rule.family === 'buffer-overflow' || rule.family === 'mem-unsafe' ? 'Tampering'
               : rule.family === 'command-injection' ? 'Elevation of Privilege'

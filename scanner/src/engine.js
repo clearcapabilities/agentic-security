@@ -93,6 +93,7 @@ import { scanDeserializationGadgets, _detectGadgets } from './sast/deserializati
 import { scanKotlin } from './sast/kotlin.js';
 import { scanRuby } from './sast/ruby.js';
 import { scanPhp } from './sast/php.js';
+import { classifySecretCandidate as _entropyClassifySecret } from './sast/_secret-entropy.js';
 // Phase 1 — precision-engineering posture modules.
 import { annotateConfidence } from './posture/confidence.js';
 import { backfillFindingDefaults } from './posture/finding-defaults.js';
@@ -2051,6 +2052,13 @@ function _isFalsePositiveCredential(fp, snippet, fullMatch){
   const val = valM ? valM[1] : '';
   if (val.length < 8) return {skip:true, reason:'value-too-short'};
   if (_CRED_PLACEHOLDER_VAL_RE.test(val)) return {skip:true, reason:'placeholder-value'};
+  // Shannon-entropy + dictionary-word filter (Recommendation #1 from the
+  // SCA/SAST improvement plan). The Juliet Java hardcoded-secret detector
+  // was producing 468 FPs / 1 TP because test fixtures use short
+  // dictionary words ("hello", "password", "todo") as fake credentials.
+  // Real secrets score ≥3.5 bits/char and aren't dictionary words.
+  const entropyVerdict = _entropyClassifySecret(val);
+  if (entropyVerdict.skip) return { skip: true, reason: `entropy-filter:${entropyVerdict.reason}` };
   // Non-ASCII content with i18n-shaped variable name → translation string
   if (_CRED_I18N_VAL_RE.test(val) && /(?:label|message|text|title|description|placeholder)/i.test(varName)) {
     return {skip:true, reason:'i18n-text'};
@@ -2715,7 +2723,16 @@ const JAVA_FAMILY_RULES = [
     // Generic verbs (update / insert / delete / count / query) removed — they
     // misfire on hash.update, list.insert/delete/count, etc. JdbcTemplate's
     // verb-based methods still match via batchUpdate / queryForObject etc.
-    sinkRe: /\.\s*(?:executeQuery|executeUpdate|execute|executeBatch|prepareStatement|prepareCall|createQuery|createNativeQuery|createSQLQuery|createCriteriaQuery|createSqlQuery|addBatch|queryForObject|queryForList|queryForMap|queryForLong|queryForInt|queryForRowSet|batchUpdate|find_by_sql)\s*\(/,
+    //
+    // Recommendation #4 of the SCA/SAST improvement plan: expanded sink list.
+    // Added: NamedParameterJdbcTemplate.{query,queryForObject,…} (Spring),
+    // EntityManager.createQuery+createNativeQuery (JPA),
+    // Session.createNativeQuery + createSQLQuery (Hibernate native),
+    // Criteria.add(Restrictions.sqlRestriction(…)) (Hibernate criteria),
+    // SqlSession.{selectList,selectOne,selectMap,update,insert,delete} (MyBatis),
+    // JdbcTemplate.{queryForStream,queryForRowSet}, R2DBC DatabaseClient.sql,
+    // JdbcOperations / JdbcAggregateOperations.* (Spring Data JDBC).
+    sinkRe: /\.\s*(?:executeQuery|executeUpdate|execute|executeBatch|prepareStatement|prepareCall|createQuery|createNativeQuery|createSQLQuery|createCriteriaQuery|createSqlQuery|createStatement|addBatch|queryForObject|queryForList|queryForMap|queryForLong|queryForInt|queryForRowSet|queryForStream|batchUpdate|find_by_sql|sqlRestriction|selectList|selectOne|selectMap|selectCursor|sql)\s*\(/,
     sanitizerRe: null,
     useTaint: true,
   },
