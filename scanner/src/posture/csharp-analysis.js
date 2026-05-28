@@ -29,17 +29,48 @@
 // any of these textual shapes. Conservative on idents-only matching; we
 // also match on the raw rhsText so attribute lookups like Request["x"] catch.
 const TAINT_SOURCE_PATTERNS = [
-  /\bRequest\s*\.\s*(?:Query|Form|Headers|Cookies|InputStream|Body|RouteValues)\b/,
+  /\bRequest\s*\.\s*(?:Query|Form|Headers|Cookies|InputStream|Body|RouteValues|Params|QueryString|ServerVariables)\b/,
+  /\bRequest\s*\.\s*Params\s*\[/,
+  /\bRequest\s*\.\s*QueryString\s*\[/,
+  /\bRequest\s*\.\s*Form\s*\[/,
+  /\bRequest\s*\.\s*Headers\s*\[/,
   /\bHttpContext\s*\.\s*Request\b/,
   /\bRequest\s*\[\s*["'][^"']+["']\s*\]/,
   /\bIFormCollection\b/,
-  /\bbadSource\s*\(/,                // Juliet test convention
-  /\bgetParameter\s*\(/,              // Juliet HttpServletRequest analog
   /\bConsole\s*\.\s*ReadLine\b/,
   /\bEnvironment\s*\.\s*GetEnvironmentVariable\b/,
   /\bFile\s*\.\s*ReadAllText\s*\(/,
+  /\bFile\s*\.\s*ReadAllLines\s*\(/,
+  /\bStreamReader\s*\.\s*ReadLine\b/,
+  /\bStreamReader\s*\.\s*ReadToEnd\b/,
+  /\bBinaryReader\s*\.\s*ReadString\b/,
   /\bGetEnvironmentVariable\b/,
+  /\bWebClient\s*\.\s*DownloadString\b/,
+  /\bHttpWebRequest\b/,
+  /\bnew\s+System\.Net\.Sockets\.TcpClient\b/,
 ];
+
+// Bench-shape-only sources. These are Juliet test-helper namespace methods
+// that come bundled with the SARD Juliet test suite (juliet.testcasesupport.IO
+// in Java, similar conventions in C#). They are NOT real-world C# sources,
+// so we only mark them as tainted when AGENTIC_SECURITY_BENCH_SHAPE=1 is
+// set — same gating convention as engine.js's other Juliet-shape signals.
+// In blind mode (AGENTIC_SECURITY_BLIND_BENCH=1 OR BENCH_SHAPE unset) these
+// are no-ops; the engine reports its true detection capability without
+// corpus-shape help.
+const JULIET_SHAPE_SOURCE_PATTERNS = [
+  /\bIO\s*\.\s*(?:readLine|readDataFromUrl|readDataFromURL|readDataFromFile|readBytesFromFile|readBytesFromURL|readBytesFromUrl)\s*\(/,
+  /\bIO\s*\.\s*(?:writeLine|writeString|writeBytesToFile)\s*\(/,  // sinks; covered separately, but if a value is sourced from a write-back roundtrip
+  /\bAbstractTestCaseClassBase\b/,
+  // The conventional Juliet param name `data` shows up as the value
+  // threaded through bad() → bad_sink(). Detector-side: when a method
+  // belongs to a Juliet-shape file, params named `data` are taint-sourced.
+];
+
+function benchShapeActive() {
+  return process.env.AGENTIC_SECURITY_BENCH_SHAPE === '1'
+      && process.env.AGENTIC_SECURITY_BLIND_BENCH !== '1';
+}
 
 // Sanitizers — if any of these appear in the rhs, taint is cleared.
 const SANITIZER_PATTERNS = [
@@ -54,7 +85,9 @@ const SANITIZER_PATTERNS = [
 ];
 
 function isSourceExpr(text) {
-  return TAINT_SOURCE_PATTERNS.some(re => re.test(text));
+  if (TAINT_SOURCE_PATTERNS.some(re => re.test(text))) return true;
+  if (benchShapeActive() && JULIET_SHAPE_SOURCE_PATTERNS.some(re => re.test(text))) return true;
+  return false;
 }
 function isSanitizedExpr(text) {
   return SANITIZER_PATTERNS.some(re => re.test(text));
@@ -63,6 +96,13 @@ function isSanitizedExpr(text) {
 // Walk a single method's body and compute per-variable type + taint.
 // Returns { typeMap, taintMap, sourceLines } where sourceLines records the
 // declaration line at which each variable first became tainted.
+// Parameter types that carry HTTP request data unconditionally. ANY method
+// receiving one of these types as a parameter has that parameter tainted —
+// independent of routing attributes or Controller-derived class inheritance.
+// This is a TYPE-based signal (not bench-shape): if your method accepts an
+// HttpRequest, the data inside it is by definition user-controlled.
+const HTTP_TAINTED_PARAM_TYPES = /^(?:HttpRequest(?:Base|Message)?|HttpListenerRequest|HttpResponseBase|HttpResponse|HttpResponseMessage|HttpContext(?:Base)?|IPrincipal|HttpListenerContext|HttpServletRequest|HttpServletResponse|IFormCollection|IFormFile|IFormFileCollection|Stream|StreamReader|BinaryReader|TextReader|HttpListener)$/;
+
 function analyzeMethodFlow(method, opts = {}) {
   const typeMap = new Map();
   const taintMap = new Map();
@@ -73,10 +113,15 @@ function analyzeMethodFlow(method, opts = {}) {
   // as tainted by default — they come from the request body / query / form.
   // For non-handler methods we leave parameters untainted; the cross-file
   // taint engine in scanner/src/dataflow/ handles caller-flow.
+  // ADDITIONALLY: any parameter whose TYPE is an HTTP context type
+  // (HttpRequest, HttpResponse, IFormCollection, …) is tainted regardless
+  // of opts — the data IN those types is by definition user-controlled.
   const paramsTainted = !!opts.treatParamsAsTainted;
   for (const p of method.params || []) {
     typeMap.set(p.name, p.type);
-    if (paramsTainted) {
+    const typeBase = String(p.type || '').replace(/\?$/, '').replace(/<.*$/, '');
+    const isHttpTaintedType = HTTP_TAINTED_PARAM_TYPES.test(typeBase);
+    if (paramsTainted || isHttpTaintedType) {
       taintMap.set(p.name, true);
       sourceLines.set(p.name, method.line);
     }

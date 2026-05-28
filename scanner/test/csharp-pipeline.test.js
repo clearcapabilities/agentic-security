@@ -249,3 +249,166 @@ test('detector: malformed C# does not throw', () => {
   const src = 'class { void M() { /* unclosed';
   assert.doesNotThrow(() => scanCSharp('t.cs', src));
 });
+
+// ── Expanded detectors: XSS / header / open-redirect / format / code-injection / path ─
+
+test('detector: Response.Write with tainted input', () => {
+  const src = `
+    public class C : Controller {
+      [HttpGet] public void Get(string name) {
+        Response.Write(name);
+      }
+    }`;
+  const findings = scanCSharp('t.cs', src);
+  assert.ok(findings.some(f => f.family === 'xss' && /Response\.Write/.test(f.vuln)));
+});
+
+test('detector: Response.AddHeader with tainted input = header injection', () => {
+  const src = `
+    public class C : Controller {
+      [HttpGet] public void Get(string ua) {
+        Response.AddHeader("X-User-Agent", ua);
+      }
+    }`;
+  const findings = scanCSharp('t.cs', src);
+  assert.ok(findings.some(f => f.family === 'header-hardening' && f.cwe === 'CWE-113'));
+});
+
+test('detector: Response.Redirect with tainted URL = open redirect', () => {
+  // [Authorize] keeps the route authenticated so the severity bump for
+  // unauth routes doesn't fire — we get the detector's native 'high'.
+  const src = `
+    [Authorize]
+    public class C : Controller {
+      [HttpGet] public void Get(string url) {
+        Response.Redirect(url);
+      }
+    }`;
+  const findings = scanCSharp('t.cs', src);
+  const f = findings.find(x => x.family === 'open-redirect');
+  assert.ok(f);
+  assert.equal(f.severity, 'high');
+});
+
+test('detector: LocalRedirect with tainted URL fires at medium severity', () => {
+  const src = `
+    [Authorize]
+    public class C : Controller {
+      [HttpGet] public IActionResult Get(string url) {
+        return LocalRedirect(url);
+      }
+    }`;
+  const findings = scanCSharp('t.cs', src);
+  const f = findings.find(x => x.family === 'open-redirect');
+  assert.ok(f);
+  assert.equal(f.severity, 'medium');
+});
+
+test('detector: string.Format with tainted format string', () => {
+  const src = `
+    [Authorize]
+    public class C : Controller {
+      [HttpGet] public string Get(string fmt) {
+        return string.Format(fmt, "hello");
+      }
+    }`;
+  const findings = scanCSharp('t.cs', src);
+  assert.ok(findings.some(f => f.family === 'format-string' && f.cwe === 'CWE-134'));
+});
+
+test('detector: string.Format with constant format + tainted ARG does NOT fire', () => {
+  const src = `
+    public class C : Controller {
+      [HttpGet] public string Get(string user) {
+        return string.Format("hello {0}", user);
+      }
+    }`;
+  const findings = scanCSharp('t.cs', src);
+  assert.ok(!findings.some(f => f.family === 'format-string'));
+});
+
+test('detector: Assembly.Load with tainted assembly name = code injection', () => {
+  const src = `
+    public class C : Controller {
+      [HttpGet] public void Get(string asm) {
+        System.Reflection.Assembly.Load(asm);
+      }
+    }`;
+  const findings = scanCSharp('t.cs', src);
+  // fullPath is "System.Reflection.Assembly.Load" but my regex matches "Assembly.Load" too
+  assert.ok(findings.some(f => f.family === 'code-injection'));
+});
+
+test('detector: Activator.CreateInstance with tainted type name', () => {
+  const src = `
+    public class C : Controller {
+      [HttpGet] public object Get(string typeName) {
+        return Activator.CreateInstance(typeName);
+      }
+    }`;
+  const findings = scanCSharp('t.cs', src);
+  assert.ok(findings.some(f => f.family === 'code-injection'));
+});
+
+test('detector: File.OpenRead with tainted path = traversal', () => {
+  const src = `
+    public class C : Controller {
+      [HttpGet] public void Get(string file) {
+        File.OpenRead(file);
+      }
+    }`;
+  const findings = scanCSharp('t.cs', src);
+  assert.ok(findings.some(f => f.family === 'path-traversal' && /File\.OpenRead/.test(f.vuln)));
+});
+
+test('detector: new StreamReader(tainted) = traversal via ctor', () => {
+  const src = `
+    public class C : Controller {
+      [HttpGet] public string Get(string file) {
+        var r = new StreamReader(file);
+        return r.ReadToEnd();
+      }
+    }`;
+  const findings = scanCSharp('t.cs', src);
+  assert.ok(findings.some(f => f.family === 'path-traversal' && /StreamReader/.test(f.vuln)));
+});
+
+// ── Bench-shape gated Juliet-IO sources ────────────────────────────────────
+
+test('analysis: IO.readLine() taints when BENCH_SHAPE=1', () => {
+  process.env.AGENTIC_SECURITY_BENCH_SHAPE = '1';
+  delete process.env.AGENTIC_SECURITY_BLIND_BENCH;
+  try {
+    const src = `
+      class T {
+        public void M() {
+          string data = IO.readLine();
+          var cmd = new SqlCommand("SELECT * WHERE id=" + data);
+          cmd.ExecuteReader();
+        }
+      }`;
+    const findings = scanCSharp('t.cs', src);
+    assert.ok(findings.some(f => f.family === 'sql-injection'), 'IO.readLine taint propagates to SQL sink under BENCH_SHAPE=1');
+  } finally {
+    delete process.env.AGENTIC_SECURITY_BENCH_SHAPE;
+  }
+});
+
+test('analysis: IO.readLine() does NOT taint under blind mode', () => {
+  process.env.AGENTIC_SECURITY_BENCH_SHAPE = '1';
+  process.env.AGENTIC_SECURITY_BLIND_BENCH = '1';
+  try {
+    const src = `
+      class T {
+        public void M() {
+          string data = IO.readLine();
+          var cmd = new SqlCommand("SELECT * WHERE id=" + data);
+        }
+      }`;
+    const findings = scanCSharp('t.cs', src);
+    assert.ok(!findings.some(f => f.family === 'sql-injection'), 'IO.readLine is NOT a source in blind mode');
+  } finally {
+    delete process.env.AGENTIC_SECURITY_BENCH_SHAPE;
+    delete process.env.AGENTIC_SECURITY_BLIND_BENCH;
+  }
+});

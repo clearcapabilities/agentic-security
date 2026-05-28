@@ -317,8 +317,10 @@ function walkMethodBody(method) {
         }
       }
     }
-    // Assignment: ident(.member)* = ...
-    if (t.kind === 'ident') {
+    // Assignment / call: <ident-or-builtin-type-kw>(.member)* (= ...)? ( ( … ) )?
+    // Built-in type keywords like `string` are valid receivers for static
+    // methods (`string.Format`, `int.TryParse`, etc.), so we accept them here.
+    if (t.kind === 'ident' || (t.kind === 'kw' && BUILTIN_TYPES.has(t.value) && t.value !== 'void' && t.value !== 'var' && t.value !== 'dynamic')) {
       // Collect dotted target
       let j = i;
       const targetParts = [tokens[j].value];
@@ -385,7 +387,7 @@ function walkMethodBody(method) {
         }
         continue;
       }
-      if (tk.kind === 'ident') {
+      if (tk.kind === 'ident' || (tk.kind === 'kw' && BUILTIN_TYPES.has(tk.value) && tk.value !== 'void' && tk.value !== 'var' && tk.value !== 'dynamic')) {
         let j = k;
         const parts = [tk.value];
         j++;

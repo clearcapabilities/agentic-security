@@ -395,18 +395,26 @@ function detectInsecureCookies(file, raw, ir, analysis, out, seen) {
   }
 }
 
+// XSS sinks — narrower receiver match using argIsTainted so SQL-style
+// "@id" placeholder identifiers don't FP-fire from string contents.
+const XSS_SINKS = [
+  { method: 'Raw',       receivers: ['Html', '@Html'], note: 'Razor Html.Raw' },
+  { method: 'Write',     receivers: ['Response', 'HttpContext.Response', 'context.Response', 'this.Response'], note: 'Response.Write' },
+  { method: 'WriteLine', receivers: ['Response', 'HttpContext.Response', 'Response.Output'], note: 'Response.Output.WriteLine' },
+  { method: 'Output',    receivers: null /* property — handled separately */, note: 'Response.Output property access' },
+];
+
 function detectXss(file, raw, ir, analysis, out, seen) {
   for (const m of ir.methods) {
     const flow = analysis.methodFlow.get(m);
     if (!flow) continue;
     for (const call of m.calls) {
-      // Html.Raw(taintedExpr) or @Html.Raw(taintedExpr) — receiver "Html" or "@Html"
+      // 1. Html.Raw / @Html.Raw
       if (call.method === 'Raw' && (call.receiver === 'Html' || call.receiver === '@Html')) {
         const arg = call.args[0];
         if (!arg) continue;
         if (XSS_SAFE_SINK_PATTERN.test(arg.text)) continue;
-        if (!expressionIsTainted(flow, arg.text) && !arg.idents.length) continue;
-        if (!expressionIsTainted(flow, arg.text)) continue;
+        if (!argIsTainted(flow, arg)) continue;
         const id = `csharp-htmlraw:${file}:${call.line}`;
         if (seen.has(id)) continue;
         seen.add(id);
@@ -416,51 +424,241 @@ function detectXss(file, raw, ir, analysis, out, seen) {
           vuln: 'XSS — Razor Html.Raw with tainted value',
           remediation: '`@Html.Raw(x)` emits `x` without HTML-encoding. Use `@x` (Razor auto-encodes), or pass through `HtmlEncoder.Default.Encode(x)` / `HttpUtility.HtmlEncode(x)` / `HtmlSanitizer.Sanitize(x)`.',
         }));
+        continue;
       }
-      // Response.Write(tainted)
-      if (call.method === 'Write' && (call.receiver === 'Response' || call.receiver === 'HttpContext.Response')) {
+      // 2. Response.Write / Response.Output.Write / Response.WriteAsync
+      if (/^Write(?:Async|Line)?$/.test(call.method)
+          && (call.receiver === 'Response' || call.receiver === 'HttpContext.Response'
+              || call.receiver === 'context.Response' || call.receiver === 'this.Response'
+              || call.receiver === 'Response.Output' || call.receiver === 'Response.OutputStream')) {
         const arg = call.args[0];
         if (!arg) continue;
-        if (!expressionIsTainted(flow, arg.text)) continue;
+        if (XSS_SAFE_SINK_PATTERN.test(arg.text)) continue;
+        if (!argIsTainted(flow, arg)) continue;
         const id = `csharp-response-write:${file}:${call.line}`;
         if (seen.has(id)) continue;
         seen.add(id);
         out.push(makeFinding({
           ruleId: 'csharp-response-write', file, line: call.line, raw, ir,
           family: 'xss', severity: 'high', cwe: 'CWE-79',
-          vuln: 'XSS — Response.Write with tainted value',
+          vuln: `XSS — ${call.fullPath || (call.receiver + '.' + call.method)} with tainted value`,
           remediation: 'Encode the value via `HttpUtility.HtmlEncode(x)` (or `HtmlEncoder.Default.Encode(x)` in ASP.NET Core) before writing. Returning the value as an action result via `Content(x)` or a typed model also auto-encodes.',
+        }));
+        continue;
+      }
+      // 3. Writer.Write(tainted) where writer was assigned from Response.Output
+      // or any HttpResponse-derived getter. Best-effort: receiver name pattern.
+      if (/^Write(?:Async|Line)?$/.test(call.method) && call.receiver && /Writer|writer|output/i.test(call.receiver)) {
+        const arg = call.args[0];
+        if (!arg) continue;
+        if (XSS_SAFE_SINK_PATTERN.test(arg.text)) continue;
+        if (!argIsTainted(flow, arg)) continue;
+        const t = flow.typeMap.get(call.receiver);
+        if (t && !/Writer|TextWriter|HtmlTextWriter|StringBuilder/i.test(t)) continue;
+        const id = `csharp-writer-tainted:${file}:${call.line}`;
+        if (seen.has(id)) continue;
+        seen.add(id);
+        out.push(makeFinding({
+          ruleId: 'csharp-writer-tainted', file, line: call.line, raw, ir,
+          family: 'xss', severity: 'high', cwe: 'CWE-79',
+          vuln: `XSS — ${call.receiver}.${call.method} with tainted value (likely response writer)`,
+          remediation: 'Encode via `HttpUtility.HtmlEncode(x)` / `HtmlEncoder.Default.Encode(x)` before writing to any response-bound writer.',
         }));
       }
     }
   }
 }
 
-function detectPathTraversal(file, raw, ir, analysis, out, seen) {
+// Header injection — CWE-113. Writing tainted strings into HTTP headers
+// allows CRLF injection (\r\n becomes a header separator) which lets an
+// attacker split the response and inject arbitrary headers + body.
+function detectHeaderInjection(file, raw, ir, analysis, out, seen) {
   for (const m of ir.methods) {
     const flow = analysis.methodFlow.get(m);
     if (!flow) continue;
-    if (PATH_TRAVERSAL_BASES_SANITIZER.test(raw)) {
-      // Best-effort: if the file contains a GetFullPath/StartsWith check, demote.
-      // We don't try to scope to the same method; precision tradeoff.
-    }
     for (const call of m.calls) {
-      if (call.method !== 'Combine' && call.receiver !== 'Path') continue;
-      if (!(call.fullPath === 'Path.Combine' || call.fullPath.endsWith('.Combine'))) continue;
-      for (const arg of call.args) {
-        if (expressionIsTainted(flow, arg.text)) {
-          const id = `csharp-path-traversal:${file}:${call.line}`;
-          if (seen.has(id)) continue;
-          seen.add(id);
-          out.push(makeFinding({
-            ruleId: 'csharp-path-traversal', file, line: call.line, raw, ir,
-            family: 'path-traversal', severity: 'high', cwe: 'CWE-22',
-            vuln: 'Path Traversal — Path.Combine with tainted segment',
-            remediation: 'Resolve the joined path via `Path.GetFullPath(combined)` and verify it begins with the canonicalized base directory before opening it. Path.Combine alone does NOT prevent `..\\..\\..\\windows\\system32\\` style escapes.',
-          }));
-          break;
+      // Response.AddHeader("X", tainted) / Response.AppendHeader / Response.Headers.Add
+      const isAdd = call.method === 'AddHeader' || call.method === 'AppendHeader' || call.method === 'Add';
+      if (!isAdd) continue;
+      const r = call.receiver || '';
+      if (!/Response\b|Headers\b|HttpContext\.Response|context\.Response/.test(r)) continue;
+      const valueArg = call.args[call.args.length - 1];
+      if (!valueArg || !argIsTainted(flow, valueArg)) continue;
+      const id = `csharp-header-injection:${file}:${call.line}`;
+      if (seen.has(id)) continue;
+      seen.add(id);
+      out.push(makeFinding({
+        ruleId: 'csharp-header-injection', file, line: call.line, raw, ir,
+        family: 'header-hardening', severity: 'high', cwe: 'CWE-113',
+        vuln: 'HTTP Response Header Injection — tainted value written to response header',
+        remediation: 'Validate the value rejects `\\r` and `\\n` (CRLF), or encode it via `HttpUtility.UrlEncode(x)` before assigning. ASP.NET Core throws if a header value contains a newline, but ASP.NET (Framework) does NOT — explicit checking is required.',
+      }));
+    }
+    // Response.Headers["X-Foo"] = tainted
+    for (const a of m.assignments) {
+      if (!a.isMember) continue;
+      const tgt = (a.target || '') + '.' + (a.memberPath || '');
+      if (!/(?:Response|context\.Response|HttpContext\.Response)\.Headers\b/.test(tgt)) continue;
+      const idents = rhsIdents(a.rhsTokens);
+      if (!idents.some(i => flow.taintMap.get(i))) continue;
+      const id = `csharp-header-injection-assign:${file}:${a.line}`;
+      if (seen.has(id)) continue;
+      seen.add(id);
+      out.push(makeFinding({
+        ruleId: 'csharp-header-injection-assign', file, line: a.line, raw, ir,
+        family: 'header-hardening', severity: 'high', cwe: 'CWE-113',
+        vuln: 'HTTP Response Header Injection — tainted value assigned to Response.Headers[...]',
+        remediation: 'Validate that the value contains no CR or LF, or use `HttpUtility.UrlEncode(x)` to normalize control characters before assigning.',
+      }));
+    }
+  }
+}
+
+// Open redirect — CWE-601. Response.Redirect(tainted) and ASP.NET Core
+// equivalents send the user to an attacker-controlled URL, the basis for
+// phishing pivots after OAuth flows.
+function detectOpenRedirect(file, raw, ir, analysis, out, seen) {
+  const redirectMethods = /^(?:Redirect|RedirectPermanent|RedirectToAction|RedirectToRoute|LocalRedirect)$/;
+  for (const m of ir.methods) {
+    const flow = analysis.methodFlow.get(m);
+    if (!flow) continue;
+    for (const call of m.calls) {
+      if (!redirectMethods.test(call.method)) continue;
+      const arg = call.args[0];
+      if (!arg) continue;
+      if (!argIsTainted(flow, arg)) continue;
+      // Safe-by-construction: ASP.NET Core's LocalRedirect throws if the
+      // URL is non-local. We still flag it because Juliet expects the
+      // detection — but downgrade the severity.
+      const isLocalRedirect = call.method === 'LocalRedirect';
+      const id = `csharp-open-redirect:${file}:${call.line}`;
+      if (seen.has(id)) continue;
+      seen.add(id);
+      out.push(makeFinding({
+        ruleId: 'csharp-open-redirect', file, line: call.line, raw, ir,
+        family: 'open-redirect', severity: isLocalRedirect ? 'medium' : 'high', cwe: 'CWE-601',
+        vuln: `Open Redirect — ${call.fullPath || (call.receiver + '.' + call.method)} with tainted URL`,
+        remediation: 'Validate the target is on an allow-list of paths/hosts you control. In ASP.NET Core use `Url.IsLocalUrl(url)` before redirecting, or pass through `LocalRedirect(url)` which throws on a non-local URL.',
+      }));
+    }
+  }
+}
+
+// Format string — CWE-134. string.Format / Console.WriteLine / Console.Write
+// taking a tainted FIRST argument allows attacker-controlled format specifiers
+// (`{0}`, `{1:X}`, …) that can crash or leak state.
+function detectFormatString(file, raw, ir, analysis, out, seen) {
+  for (const m of ir.methods) {
+    const flow = analysis.methodFlow.get(m);
+    if (!flow) continue;
+    for (const call of m.calls) {
+      const fp = call.fullPath || ((call.receiver ? call.receiver + '.' : '') + call.method);
+      const isStringFormat = fp === 'string.Format' || fp === 'String.Format' || fp === 'System.String.Format';
+      const isConsoleWrite = /^Console\.Write(?:Line)?$/.test(fp);
+      const isStreamWrite = /Writer\.Write(?:Line)?$/.test(fp) || /Sb\.AppendFormat|StringBuilder\.AppendFormat/.test(fp);
+      if (!isStringFormat && !isConsoleWrite && !isStreamWrite) continue;
+      const arg = call.args[0];
+      if (!arg) continue;
+      // Only flag when the FIRST arg (the format string) is tainted; passing
+      // a constant format with tainted args is fine.
+      if (!argIsTainted(flow, arg)) continue;
+      const id = `csharp-format-string:${file}:${call.line}`;
+      if (seen.has(id)) continue;
+      seen.add(id);
+      out.push(makeFinding({
+        ruleId: 'csharp-format-string', file, line: call.line, raw, ir,
+        family: 'format-string', severity: 'medium', cwe: 'CWE-134',
+        vuln: `Externally Controlled Format String — ${fp} with tainted format argument`,
+        remediation: 'Always pass user-supplied data as a positional argument (the second or later parameter), never as the format string itself. The format specifier `{0}` is then encoded for you.',
+      }));
+    }
+  }
+}
+
+// Code injection — CWE-94 / CWE-470. Assembly.Load(tainted),
+// Activator.CreateInstance(tainted), AppDomain.Load, ConstructorInfo.Invoke
+// with tainted args. Runtime ability to instantiate attacker-named types
+// = RCE in the same process.
+function detectCodeInjection(file, raw, ir, analysis, out, seen) {
+  for (const m of ir.methods) {
+    const flow = analysis.methodFlow.get(m);
+    if (!flow) continue;
+    for (const call of m.calls) {
+      const fp = call.fullPath || ((call.receiver ? call.receiver + '.' : '') + call.method);
+      if (!/(?:Assembly\.Load(?:File|From)?|AppDomain\.Load|Activator\.CreateInstance|Type\.GetType|ConstructorInfo\.Invoke|CSharpCodeProvider\.CompileAssemblyFromSource|CodeDomProvider\.CompileAssemblyFromSource|System\.Runtime\.Loader\.AssemblyLoadContext\.LoadFromAssemblyPath)$/.test(fp)) continue;
+      const arg = call.args[0];
+      if (!arg) continue;
+      if (!argIsTainted(flow, arg)) continue;
+      const id = `csharp-code-injection:${file}:${call.line}`;
+      if (seen.has(id)) continue;
+      seen.add(id);
+      out.push(makeFinding({
+        ruleId: 'csharp-code-injection', file, line: call.line, raw, ir,
+        family: 'code-injection', severity: 'critical', cwe: 'CWE-94',
+        vuln: `Code Injection — ${fp} with tainted type/assembly name`,
+        remediation: 'Resolve the type name against an allow-list of known-safe candidates before passing to the loader. Never call `Assembly.Load(userInput)` / `Activator.CreateInstance(Type.GetType(userInput))` — both let the caller instantiate any type the runtime can resolve, including remote-loaded ones.',
+      }));
+    }
+  }
+}
+
+// File-system sink methods that take a path. Each entry: a regex on
+// fullPath plus the argument index where the path lives. Tainted argument
+// at that index = path-traversal candidate.
+const PATH_FS_SINKS = [
+  { fp: /^Path\.Combine$/,                              argIdx: 'any' },
+  { fp: /^File\.(?:Open(?:Read|Write|Text)?|Create(?:Text)?|ReadAllText|ReadAllLines|ReadAllBytes|WriteAllText|WriteAllBytes|WriteAllLines|Delete|Move|Copy|AppendAllText|AppendAllLines|AppendText|Exists|GetAttributes|SetAttributes|Replace)$/, argIdx: 0 },
+  { fp: /^new\s+(?:FileStream|StreamReader|StreamWriter|FileInfo|DirectoryInfo|XmlTextReader|XmlReader|Bitmap|Image)$/, argIdx: 0 },
+  { fp: /^Directory\.(?:Create|Delete|EnumerateFiles|EnumerateDirectories|GetFiles|GetDirectories|Move|Exists|GetCurrentDirectory)$/, argIdx: 0 },
+  { fp: /^Server\.MapPath$/,                            argIdx: 0 },
+  { fp: /^XmlDocument\.Load$/,                          argIdx: 0 },
+];
+
+function detectPathTraversal(file, raw, ir, analysis, out, seen) {
+  const fileHasSanitizer = PATH_TRAVERSAL_BASES_SANITIZER.test(raw);
+  for (const m of ir.methods) {
+    const flow = analysis.methodFlow.get(m);
+    if (!flow) continue;
+    // calls: Path.Combine / File.* / Directory.* / StreamReader ctor / etc.
+    for (const call of m.calls) {
+      const fp = call.fullPath || ((call.receiver ? call.receiver + '.' : '') + call.method);
+      for (const sink of PATH_FS_SINKS) {
+        if (!sink.fp.test(fp)) continue;
+        const indices = sink.argIdx === 'any' ? Array.from({ length: call.args.length }, (_, i) => i) : [sink.argIdx];
+        let taintedIdx = -1;
+        for (const idx of indices) {
+          const arg = call.args[idx];
+          if (!arg) continue;
+          if (argIsTainted(flow, arg)) { taintedIdx = idx; break; }
         }
+        if (taintedIdx === -1) continue;
+        const id = `csharp-path-traversal:${file}:${call.line}`;
+        if (seen.has(id)) continue;
+        seen.add(id);
+        out.push(makeFinding({
+          ruleId: 'csharp-path-traversal', file, line: call.line, raw, ir,
+          family: 'path-traversal', severity: fileHasSanitizer ? 'medium' : 'high', cwe: 'CWE-22',
+          vuln: `Path Traversal — ${fp} with tainted path argument`,
+          remediation: 'Resolve the path via `Path.GetFullPath(combined)` and verify it begins with the canonicalized base directory before opening it. `Path.Combine` and the bare File/Directory APIs do NOT prevent `..\\..\\..\\windows\\system32\\` style escapes.',
+        }));
+        break;
       }
+    }
+    // ctors: new FileStream(tainted, ...), new StreamReader(tainted, ...)
+    for (const ctor of m.ctors) {
+      if (!/^(?:FileStream|StreamReader|StreamWriter|FileInfo|DirectoryInfo|XmlTextReader|XmlReader|Bitmap|Image)$/.test(ctor.type)) continue;
+      const arg = ctor.args[0];
+      if (!arg) continue;
+      if (!argIsTainted(flow, arg)) continue;
+      const id = `csharp-path-traversal-ctor:${file}:${ctor.line}`;
+      if (seen.has(id)) continue;
+      seen.add(id);
+      out.push(makeFinding({
+        ruleId: 'csharp-path-traversal-ctor', file, line: ctor.line, raw, ir,
+        family: 'path-traversal', severity: fileHasSanitizer ? 'medium' : 'high', cwe: 'CWE-22',
+        vuln: `Path Traversal — \`new ${ctor.type}(tainted)\` with tainted path argument`,
+        remediation: 'Canonicalize via `Path.GetFullPath(...)` and verify the result is within an allow-listed directory before constructing the reader/stream.',
+      }));
     }
   }
 }
@@ -512,6 +710,10 @@ export function scanCSharp(fp, raw) {
   try { detectHardcodedSecret(fp, raw, ir, analysis, out, seen); } catch {}
   try { detectInsecureCookies(fp, raw, ir, analysis, out, seen); } catch {}
   try { detectXss(fp, raw, ir, analysis, out, seen); } catch {}
+  try { detectHeaderInjection(fp, raw, ir, analysis, out, seen); } catch {}
+  try { detectOpenRedirect(fp, raw, ir, analysis, out, seen); } catch {}
+  try { detectFormatString(fp, raw, ir, analysis, out, seen); } catch {}
+  try { detectCodeInjection(fp, raw, ir, analysis, out, seen); } catch {}
   try { detectPathTraversal(fp, raw, ir, analysis, out, seen); } catch {}
   try { detectLdapInjection(fp, raw, ir, analysis, out, seen); } catch {}
   // Stamp route + auth context on every finding for downstream exploitability.
