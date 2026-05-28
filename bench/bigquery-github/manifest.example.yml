@@ -1,0 +1,49 @@
+# Per-cycle metadata. Each cycle directory carries a manifest.yml at its root
+# so the cycle is reproducible and so two cycles can be compared.
+#
+# This file is written by bin/run-cycle.mjs when --materialize completes.
+# Do not edit by hand.
+
+cycle:
+  date: "2026-05-28"
+  engine_version: "0.79.0"
+  engine_sha: "92fec54"               # git rev of the agentic-security tree
+  blind_mode: true                    # AGENTIC_SECURITY_BLIND_BENCH=1
+  per_file_timeout_ms: 30000
+
+query:
+  sha: "0123456789abcdef…"            # SHA-256 of query/stratified.sql at run time
+  bq_table_last_modified:
+    files: "2026-05-20T12:34:56Z"
+    contents: "2026-05-20T12:34:56Z"
+    licenses: "2026-05-20T12:34:56Z"
+
+sample:
+  total_files: 39732
+  per_language:
+    py: 4987
+    js: 4995
+    ts: 4940
+    cs: 1998
+    cpp: 4970
+    java: 2994
+    go: 3000
+    rb: 1989
+    php: 1998
+    kt: 1495
+    swift: 1488
+    rs: 1497
+    sol: 1431
+    dart: 950
+  per_stratum:
+    random: 13241
+    popular: 13245
+    recent: 13246
+
+# SHA-256 content hash of every file in the cycle. The harness checks this on
+# rescan to detect silent corpus drift. Files keyed by their materialized
+# repo-relative path (e.g. "py/owner__repo/src/foo/bar.py").
+#
+# In practice this list is large (~40k entries); the harness writes it as a
+# separate file referenced here:
+files_index: "files-index.jsonl"

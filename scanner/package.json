@@ -70,6 +70,8 @@
     "bench:llm-goats": "node test/benchmark/llm-goats/bench-llm-goats.js",
     "bench:cve-replay": "node ../bench/cve-replay/runner.mjs",
     "bench:cve-replay:ci": "node ../bench/cve-replay/runner.mjs --ci",
+    "bench:bigquery:smoke": "node ../bench/bigquery-github/bin/run-cycle.mjs --smoke",
+    "bench:bigquery": "node ../bench/bigquery-github/bin/run-cycle.mjs",
     "bench:agent-tasks": "node ../bench/agent-tasks/security-fixer/runner.mjs",
     "bench:polyglot": "node ../bench/polyglot/runner.mjs"
   },

@@ -27,6 +27,13 @@ scanner/dist/*
 # Keyed by {app}-{sha} so updating the manifest invalidates only that entry.
 scanner/test/benchmark/realworld/.bench-cache/
 
+# BigQuery GitHub coverage bench — per-cycle output contains third-party source
+# code (under permissive licenses) and raw scanner findings keyed by repo+file.
+# By policy (bench/bigquery-github/README.md) these stay local and are not
+# republished. Only summary.md aggregate tables are reviewable, and even those
+# do not get committed.
+bench/bigquery-github/cycle-*/
+
 # CHANGELOG.md is copied into scanner/ at npm publish (prepublishOnly) so it
 # ships in the package; the canonical copy lives at the repo root.
 scanner/CHANGELOG.md
