@@ -6282,22 +6282,131 @@ function _parseCargoLock(text,filePath){
   return out;
 }
 
-function _parsePomXml(text,filePath){
-  const out=[];
-  for(const block of text.matchAll(/<dependency>([\s\S]*?)<\/dependency>/g)){
-    const inner=block[1];
-    const gM=inner.match(/<groupId>([^<]+)<\/groupId>/);
-    const aM=inner.match(/<artifactId>([^<]+)<\/artifactId>/);
-    const vM=inner.match(/<version>([^<]+)<\/version>/);
-    const sM=inner.match(/<scope>([^<]+)<\/scope>/);
-    if(!gM||!aM)continue;
-    const group=gM[1].trim();const artifact=aM[1].trim();
-    const ver=vM?vM[1].trim().replace(/^\$\{[^}]+\}$/,'0.0.0'):'0.0.0';
-    const scope=sM&&(sM[1]==='test'||sM[1]==='provided')?'optional':'required';
-    out.push({name:`${group}:${artifact}`,version:ver,group,scope,
-      purl:_makePurl('maven',artifact,ver,group),ecosystem:'maven',filePath,
-      isUnpinned:ver==='0.0.0'||ver.startsWith('$')});
-  }return out;
+// Strip XML comments before tag-extraction so the regex doesn't accidentally
+// match a commented-out <dependency> block.
+function _stripPomXmlComments(text){
+  return text.replace(/<!--[\s\S]*?-->/g, '');
+}
+
+// Build a property table from <properties>...</properties> AND from common
+// child elements (<project.version>, etc.). Used to substitute ${propName}
+// version references. We do TWO passes so a property that references
+// another property (rare but legal — `${spring.boot.version}`) resolves.
+function _pomPropertyMap(text){
+  const props = new Map();
+  // <properties> block — the canonical place for user-defined properties.
+  const propsBlock = text.match(/<properties>([\s\S]*?)<\/properties>/);
+  if (propsBlock) {
+    for (const m of propsBlock[1].matchAll(/<([\w.-]+)>([^<]+)<\/\1>/g)) {
+      props.set(m[1].trim(), m[2].trim());
+    }
+  }
+  // Resolve cross-property references (one pass is sufficient for typical
+  // pom.xml shapes — chains deeper than 1 are vanishingly rare).
+  for (const [k, v] of props) {
+    if (v.includes('${')) {
+      const resolved = v.replace(/\$\{([^}]+)\}/g, (_, name) => props.get(name) ?? '');
+      props.set(k, resolved);
+    }
+  }
+  return props;
+}
+
+function _resolvePomVersion(raw, props){
+  if (!raw) return '0.0.0';
+  let v = raw.trim();
+  // Strip Maven's range/qualifier wrappers that aren't useful for SCA matching.
+  // `[1.0,2.0)` → take the lower bound.
+  const rangeMatch = v.match(/^[\[\(]\s*([^,\]\)]+)/);
+  if (rangeMatch) v = rangeMatch[1].trim();
+  // Substitute ${propName} references — return '0.0.0' so OSV knows it's
+  // unresolvable rather than silently dropping the dep.
+  v = v.replace(/\$\{([^}]+)\}/g, (_, name) => props.get(name) || '');
+  if (!v || v.startsWith('$')) return '0.0.0';
+  return v;
+}
+
+// Parse a single <dependency>…</dependency> block to a component shape.
+// Used by both the top-level <dependencies> walk and the
+// <dependencyManagement>/<dependencies>/<dependency> BOM-import walk.
+function _parsePomDependencyBlock(inner, filePath, props, source){
+  const gM = inner.match(/<groupId>([^<]+)<\/groupId>/);
+  const aM = inner.match(/<artifactId>([^<]+)<\/artifactId>/);
+  const vM = inner.match(/<version>([^<]+)<\/version>/);
+  const sM = inner.match(/<scope>([^<]+)<\/scope>/);
+  const tM = inner.match(/<type>([^<]+)<\/type>/);
+  if (!gM || !aM) return null;
+  const group = _resolvePomVersion(gM[1], props) || gM[1].trim();
+  const artifact = _resolvePomVersion(aM[1], props) || aM[1].trim();
+  const ver = _resolvePomVersion(vM ? vM[1] : '', props);
+  const scopeRaw = sM ? sM[1].trim() : '';
+  const scope = (scopeRaw === 'test' || scopeRaw === 'provided') ? 'optional' : 'required';
+  return {
+    name: `${group}:${artifact}`, version: ver, group, scope,
+    purl: _makePurl('maven', artifact, ver, group), ecosystem: 'maven', filePath,
+    isUnpinned: ver === '0.0.0' || ver.startsWith('$'),
+    isTransitive: false,
+    pomSource: source,                 // 'direct' | 'managed'
+    pomType: tM ? tM[1].trim() : null, // 'jar' (default) | 'pom' (BOM import) | etc.
+  };
+}
+
+function _parsePomXml(text, filePath){
+  const cleanText = _stripPomXmlComments(text);
+  const props = _pomPropertyMap(cleanText);
+  const out = [];
+  // Identify the <dependencyManagement> block once so we can label its
+  // contents as `pomSource: 'managed'` (BOM-imported) without doubly-emitting.
+  const mgmtBlock = cleanText.match(/<dependencyManagement>([\s\S]*?)<\/dependencyManagement>/);
+  const mgmtStart = mgmtBlock ? mgmtBlock.index : -1;
+  const mgmtEnd = mgmtBlock ? mgmtBlock.index + mgmtBlock[0].length : -1;
+  for (const block of cleanText.matchAll(/<dependency>([\s\S]*?)<\/dependency>/g)) {
+    const inBomImport = mgmtStart >= 0 && block.index >= mgmtStart && block.index < mgmtEnd;
+    const comp = _parsePomDependencyBlock(block[1], filePath, props, inBomImport ? 'managed' : 'direct');
+    if (comp) out.push(comp);
+  }
+  return out;
+}
+
+// Maven's `mvn dependency:tree -DoutputFile=target/dependency-tree.txt`
+// emits the FULL resolved transitive graph. When that file is present, we
+// ingest it for transitive coverage — pom.xml itself only declares direct
+// deps. Format (per dep, one line, with tree-drawing prefixes we strip):
+//   groupId:artifactId:type:version:scope
+//   +- groupId:artifactId:type:version:scope
+//   |  \- groupId:artifactId:type:version:scope
+// The first line is the project itself; we skip it.
+function _parseMavenDependencyTree(text, filePath){
+  const out = [];
+  let isFirstLine = true;
+  for (const rawLine of text.split('\n')) {
+    if (!rawLine.trim()) continue;
+    // Strip the tree-drawing prefix: spaces, pipes, dashes, plus signs, backslashes.
+    const stripped = rawLine.replace(/^[\s|+\\-]+/, '').trim();
+    if (!stripped) continue;
+    if (isFirstLine) { isFirstLine = false; continue; }
+    // Format: groupId:artifactId:type:version[:scope]
+    // type is typically `jar` but can be `pom`, `war`, `aar`. Some POMs include
+    // a classifier: groupId:artifactId:type:classifier:version[:scope] (5–6 parts).
+    const parts = stripped.split(':');
+    if (parts.length < 4) continue;
+    const group = parts[0];
+    const artifact = parts[1];
+    // type at [2]; classifier (optional) at [3] when length >= 6.
+    const hasClassifier = parts.length >= 6;
+    const ver = hasClassifier ? parts[4] : parts[3];
+    const scopeRaw = hasClassifier ? parts[5] : parts[4];
+    if (!group || !artifact || !ver) continue;
+    const scope = (scopeRaw === 'test' || scopeRaw === 'provided') ? 'optional' : 'required';
+    out.push({
+      name: `${group}:${artifact}`, version: ver, group, scope,
+      purl: _makePurl('maven', artifact, ver, group), ecosystem: 'maven', filePath,
+      isUnpinned: false,
+      isTransitive: rawLine.match(/^[\s|+\\-]/) ? true : false,
+      pomSource: 'dependency-tree',
+    });
+  }
+  return out;
 }
 
 function _parseBuildGradle(text,filePath){
@@ -6466,8 +6575,119 @@ function _parseVcpkgJson(text,filePath){
     }
   }catch(_){}return out;
 }
+
+// go.sum: the full resolved transitive dependency graph for a Go module.
+// go.mod only declares direct deps; go.sum is what `go mod download` resolved.
+// Format (two lines per module — one for the module, one for go.mod):
+//   github.com/pkg/errors v0.9.1 h1:FEBLx1zS214owpjy7qsBeixbURkuhQAwrK5UwLGTwt4=
+//   github.com/pkg/errors v0.9.1/go.mod h1:bwawxfHBFNV+L2hUp1rHADufV3IMtnDRdf1r5NINEl0=
+// We extract the module-line variant (no `/go.mod` suffix) so each module
+// gets exactly one component. Empty go.sum (no deps) gracefully returns [].
+function _parseGoSum(text, filePath){
+  const out = [];
+  const seen = new Set();
+  for (const line of text.split('\n')) {
+    const t = line.trim();
+    if (!t || t.startsWith('//')) continue;
+    // Skip the /go.mod hash line — it would double-count each module.
+    if (t.includes('/go.mod ')) continue;
+    const m = t.match(/^(\S+)\s+v([^\s]+)\s+h1:/);
+    if (!m) continue;
+    const name = m[1];
+    // Strip +incompatible / -timestamp-sha suffixes that aren't useful for OSV matching.
+    const ver = m[2].replace(/\+incompatible$/, '').replace(/^v?/, '');
+    const dedupKey = `${name}@${ver}`;
+    if (seen.has(dedupKey)) continue;
+    seen.add(dedupKey);
+    out.push({
+      name, version: ver, group: '', scope: 'required',
+      purl: _makePurl('golang', name, ver, ''), ecosystem: 'golang', filePath,
+      isUnpinned: false,
+      isTransitive: true,  // every go.sum entry is a resolved (transitive or direct) dep
+    });
+  }
+  return out;
+}
+
+// conan.lock: the resolved Conan dependency lockfile. JSON format:
+//   { "version": "0.5", "graph_lock": { "nodes": { "0": {"ref": "openssl/3.0.0@..." }, "1": {...} } } }
+// or the newer Conan 2.x format with a flat list. Both supported here.
+function _parseConanLock(text, filePath){
+  const out = [];
+  let d;
+  try { d = JSON.parse(text); } catch { return out; }
+  const refs = new Set();
+  // Conan 1.x graph_lock format.
+  const nodes = d?.graph_lock?.nodes;
+  if (nodes && typeof nodes === 'object') {
+    for (const node of Object.values(nodes)) {
+      if (node && typeof node.ref === 'string') refs.add(node.ref);
+    }
+  }
+  // Conan 2.x lock format: arrays under requires / build_requires / python_requires.
+  for (const k of ['requires', 'build_requires', 'python_requires']) {
+    if (Array.isArray(d?.[k])) for (const r of d[k]) if (typeof r === 'string') refs.add(r);
+  }
+  for (const ref of refs) {
+    // Format: name/version[@user/channel][#revision]
+    const m = ref.match(/^([^/]+)\/([^@#\s]+)/);
+    if (!m) continue;
+    const name = m[1].toLowerCase();
+    const version = m[2];
+    out.push({
+      name, version, group: '', scope: 'required',
+      purl: `pkg:generic/${name}@${version}`, ecosystem: 'system', filePath,
+      isUnpinned: false,
+      isTransitive: true,
+    });
+  }
+  return out;
+}
+
+// vcpkg-configuration.json: overlay-ports config for vcpkg. Schema:
+//   { "default-registry": {...}, "registries": [{ "kind": "git", "packages": [...] }] }
+// We don't have version info here (vcpkg pins via baseline commit), so emit
+// each named package with version 0.0.0 so OSV at least sees the package
+// name. Useful for "are you using an EOL/known-malicious overlay registry?"
+function _parseVcpkgConfiguration(text, filePath){
+  const out = [];
+  let d;
+  try { d = JSON.parse(text); } catch { return out; }
+  const names = new Set();
+  if (Array.isArray(d?.registries)) {
+    for (const reg of d.registries) {
+      if (Array.isArray(reg?.packages)) for (const p of reg.packages) if (typeof p === 'string') names.add(p);
+    }
+  }
+  for (const name of names) {
+    out.push({
+      name: name.toLowerCase(), version: '0.0.0', group: '', scope: 'required',
+      purl: `pkg:generic/${name.toLowerCase()}@0.0.0`, ecosystem: 'system', filePath,
+      isUnpinned: true,
+    });
+  }
+  return out;
+}
 function parseManifests(allFileContents){
-  const PARSERS={'package.json':_parsePackageJson,'package-lock.json':_parsePackageLockJson,'yarn.lock':_parseYarnLock,'pnpm-lock.yaml':_parsePnpmLock,'requirements.txt':_parseRequirementsTxt,'pyproject.toml':_parsePyprojectToml,'poetry.lock':_parsePoetryLock,'Pipfile.lock':_parsePipfileLock,'composer.json':_parseComposerJson,'composer.lock':_parseComposerLock,'Gemfile':_parseGemfile,'Gemfile.lock':_parseGemfileLock,'go.mod':_parseGoMod,'Cargo.toml':_parseCargoToml,'Cargo.lock':_parseCargoLock,'pom.xml':_parsePomXml,'build.gradle':_parseBuildGradle,'build.gradle.kts':_parseBuildGradle,'pubspec.yaml':_parsePubspecYaml,'pubspec.lock':_parsePubspecLock,'CMakeLists.txt':_parseCMakeLists,'conanfile.txt':_parseConanfile,'vcpkg.json':_parseVcpkgJson};
+  const PARSERS={
+    'package.json':_parsePackageJson,'package-lock.json':_parsePackageLockJson,
+    'yarn.lock':_parseYarnLock,'pnpm-lock.yaml':_parsePnpmLock,
+    'requirements.txt':_parseRequirementsTxt,'pyproject.toml':_parsePyprojectToml,
+    'poetry.lock':_parsePoetryLock,'Pipfile.lock':_parsePipfileLock,
+    'composer.json':_parseComposerJson,'composer.lock':_parseComposerLock,
+    'Gemfile':_parseGemfile,'Gemfile.lock':_parseGemfileLock,
+    'go.mod':_parseGoMod,'go.sum':_parseGoSum,
+    'Cargo.toml':_parseCargoToml,'Cargo.lock':_parseCargoLock,
+    'pom.xml':_parsePomXml,'build.gradle':_parseBuildGradle,'build.gradle.kts':_parseBuildGradle,
+    'pubspec.yaml':_parsePubspecYaml,'pubspec.lock':_parsePubspecLock,
+    'CMakeLists.txt':_parseCMakeLists,
+    'conanfile.txt':_parseConanfile,'conan.lock':_parseConanLock,
+    'vcpkg.json':_parseVcpkgJson,'vcpkg-configuration.json':_parseVcpkgConfiguration,
+    // Maven dependency-tree output. The canonical path is
+    // `target/dependency-tree.txt` (per `mvn dependency:tree -DoutputFile=...`)
+    // but users sometimes commit it as `dependency-tree.txt` at repo root.
+    'dependency-tree.txt':_parseMavenDependencyTree,
+  };
   const out=[],seen=new Set();
   for(const[fp,content]of Object.entries(allFileContents)){
     const base=fp.split('/').pop();
