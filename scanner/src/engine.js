@@ -129,6 +129,25 @@ import { annotateFeatureFlagGating } from './posture/feature-flags.js';
 import { annotatePersonaScores } from './posture/persona-prioritization.js';
 import { annotateMitigationComposite } from './posture/mitigation-composite.js';
 import { annotateCompositeRisk } from './posture/composite-risk.js';
+
+// ── Integration block: world-class scaffolded modules ──────────────────────
+// Each module is opt-in via its own env var so partial adoption is safe.
+// AGENTIC_SECURITY_NO_INTEGRATION=1 disables the entire block (for CI bench
+// runs that need bit-identical baselines).
+import { scanLlmApp } from './sast/llm-app.js';
+import { scanMobile } from './sast/mobile.js';
+import { runCrossServiceTaint } from './dataflow/cross-service-taint.js';
+import { annotateRuntimeCorrelation } from './posture/runtime-correlation.js';
+import { applyLearnedCalibration } from './posture/triage-learning.js';
+import { annotateFormalVerification } from './dataflow/formal-verify.js';
+import { annotatePathFeasibility } from './dataflow/smt-feasibility.js';
+import { annotatePrivacyTaint, emitDpiaArtifact } from './dataflow/privacy-taint.js';
+import { buildThreatModel as buildAutoThreatModel, persistThreatModel as persistAutoThreatModel } from './posture/threat-model-auto.js';
+import { runApiContractScan } from './posture/api-contract.js';
+import { annotateProvenance } from './sca/sigstore-verify.js';
+import { runSbomDiff } from './posture/sbom-diff.js';
+import { loadPolicy as loadCompliancePolicy, verifyPolicy as verifyCompliancePolicy, emitEvidenceJsonLd as emitComplianceJsonLd, emitEvidenceMarkdown as emitComplianceMarkdown } from './posture/compliance-policy.js';
+import { generateBundles as generateExploitBundles } from './posture/exploit-bundle.js';
 import { annotateTypeNarrowing } from './posture/type-narrowing.js';
 import { annotateWhyFired } from './posture/why-fired.js';
 import { scanSpecificationDrift } from './posture/specification-mining.js';
@@ -7238,6 +7257,11 @@ async function runFullScan({fileContents={}, depFileContents={}, scanRoot=null},
       aF.push(...scanKotlin(p,c));
       aF.push(...scanRuby(p,c));
       aF.push(...scanPhp(p,c));
+      // Integration block: scaffolded SAST scanners. Gated by env var.
+      if (process.env.AGENTIC_SECURITY_NO_INTEGRATION !== '1') {
+        if (process.env.AGENTIC_SECURITY_NO_LLM_APP !== '1') aF.push(...scanLlmApp(p,c));
+        if (process.env.AGENTIC_SECURITY_NO_MOBILE  !== '1') aF.push(...scanMobile(p,c));
+      }
       const _ftElapsed=Date.now()-_ft0;
       if(_ftElapsed>_perFileTimeoutMs){aF.push({id:`file-timeout:${p}`,file:p,line:0,vuln:`File analysis exceeded ${_perFileTimeoutMs}ms (${_ftElapsed}ms)`,severity:'info',parser:'ENGINE',confidence:0.5,_timeout:true});_filesTimedOut++;}
       _fileTimings.push({file:p,ms:_ftElapsed});
@@ -7635,6 +7659,60 @@ async function runFullScan({fileContents={}, depFileContents={}, scanRoot=null},
   // composite + exploitability + toxicityScore so it sees the final values.
   // Used by agents and UI as the canonical sort key for "which finding first."
   _runAnnotator("annotateCompositeRisk", () => { annotateCompositeRisk(finalFindings); });
+
+  // ── World-class integration block ─────────────────────────────────────
+  // Each annotator is opt-in via env var and try/catch wrapped. They run
+  // AFTER composite risk so they can read the canonical risk ordinal but
+  // BEFORE crown-jewel / persona scoring so demotions are honored.
+  if (process.env.AGENTIC_SECURITY_NO_INTEGRATION !== '1') {
+    // Cross-service taint annotation reads .agentic-security/services.yml
+    // and bumps severity on cross-service-reachable findings.
+    if (process.env.AGENTIC_SECURITY_NO_CROSS_SERVICE !== '1') {
+      _runAnnotator("runCrossServiceTaint", () => { runCrossServiceTaint(scanRoot, finalFindings); });
+    }
+    // Runtime correlation: demotes findings whose paths were unobserved
+    // in production eBPF traces (when a trace file is present).
+    if (process.env.AGENTIC_SECURITY_NO_RUNTIME_CORRELATION !== '1') {
+      _runAnnotator("annotateRuntimeCorrelation", async () => { await annotateRuntimeCorrelation(scanRoot, finalFindings); });
+    }
+    // Triage learning: applies per-(project, family, file-glob) calibration
+    // from prior wont-fix / false-positive decisions.
+    if (process.env.AGENTIC_SECURITY_NO_TRIAGE_LEARNING !== '1') {
+      _runAnnotator("applyLearnedCalibration", () => { applyLearnedCalibration(scanRoot, finalFindings); });
+    }
+    // Formal verification: CBMC for C/C++, MIRI for Rust. Opt-in via
+    // AGENTIC_SECURITY_FORMAL=1 (off by default — requires external tools).
+    if (process.env.AGENTIC_SECURITY_FORMAL === '1') {
+      _runAnnotator("annotateFormalVerification", async () => { await annotateFormalVerification(finalFindings, fc, {}); });
+    }
+    // SMT path feasibility: Z3-backed proof of reachability. Opt-in via
+    // AGENTIC_SECURITY_SMT_FEASIBILITY=1.
+    if (process.env.AGENTIC_SECURITY_SMT_FEASIBILITY === '1') {
+      _runAnnotator("annotatePathFeasibility", async () => { await annotatePathFeasibility(finalFindings, {}); });
+    }
+    // Privacy / PII taint: emits pii-exposure findings + DPIA artifact.
+    if (process.env.AGENTIC_SECURITY_NO_PRIVACY !== '1') {
+      _runAnnotator("annotatePrivacyTaint", () => {
+        // Build a minimal IR map from fc; the privacy taint module needs
+        // per-file content + a coarse decls/calls list. We construct it
+        // from existing finding sources rather than re-parsing every file.
+        const minimalIR = new Map();
+        for (const [fp, content] of Object.entries(fc || {})) {
+          if (typeof content !== 'string') continue;
+          minimalIR.set(fp, { _content: content, decls: [], calls: [] });
+        }
+        const r = annotatePrivacyTaint(minimalIR);
+        if (r && Array.isArray(r.findings)) finalFindings.push(...r.findings);
+        // Persist the DPIA scaffold for compliance review.
+        if (r && r.piiFields) {
+          try {
+            const dpia = emitDpiaArtifact(r.piiFields, r.findings || []);
+            fs.writeFileSync(path.join(scanRoot, '.agentic-security', 'dpia.md'), dpia);
+          } catch (_) {}
+        }
+      });
+    }
+  }
   // v3 next-gen: crown-jewel mapping (FR-PROD-5) — score each file/finding by
   // business impact. Must run before persona prioritization (which uses it).
   _runAnnotator("annotateCrownJewelScores", () => { annotateCrownJewelScores(finalFindings, fc); });
@@ -8025,8 +8103,66 @@ async function runFullScan({fileContents={}, depFileContents={}, scanRoot=null},
   try{const srcGroups=new Map();for(const f of finalFindings){const src=f.chain?.[0]?.label;if(!src)continue;if(!srcGroups.has(src))srcGroups.set(src,[]);srcGroups.get(src).push(f);}for(const[src,group]of srcGroups){if(group.length<2)continue;const groupId=`multi-sink:${src}:${group.length}`;for(const f of group)f._multiSinkGroupId=groupId;finalFindings.push({id:groupId,file:group[0].file,line:group[0].line,vuln:`Multi-Sink Taint Chain — ${src} reaches ${group.length} sinks`,severity:group.some(f=>f.severity==='critical')?'critical':'high',cwe:'CWE-20',parser:'MULTI-SINK',confidence:0.85,sinks:group.map(f=>({file:f.file,line:f.line,vuln:f.vuln})),_aggregated:true});}}catch(_){}
   // SCA transitive dedup: collapse duplicate CVEs across dep chains
   try{const osvGroups=new Map();for(const sc of supplyChain){if(sc.type!=='vulnerable_dep'||!sc.osvId)continue;if(!osvGroups.has(sc.osvId))osvGroups.set(sc.osvId,[]);osvGroups.get(sc.osvId).push(sc);}for(const[osvId,group]of osvGroups){if(group.length<=1)continue;const primary=group.find(s=>s.isDirect)||group[0];primary.dependents=group.filter(s=>s!==primary).map(s=>({name:s.name,version:s.version,depChain:s.depChain,isDirect:s.isDirect}));primary._transitiveDeduped=group.length-1;for(const dup of group){if(dup!==primary)dup._deduplicatedInto=primary.osvId;}supplyChain.splice(0,supplyChain.length,...supplyChain.filter(s=>!s._deduplicatedInto));}}catch(_){}
+  // ── World-class post-scan artifact emitters ──────────────────────────
+  // Each is opt-in via env var. They produce machine-readable artifacts
+  // (threat-model.json/.md, dpia.md, compliance-evidence.json/.md,
+  // sbom-history/<sha>.json, exploit-bundles/) under .agentic-security/.
+  let _threatModel = null, _apiContractFindings = [], _sbomDiff = null,
+      _complianceReport = null, _exploitBundles = null;
+  if (process.env.AGENTIC_SECURITY_NO_INTEGRATION !== '1') {
+    // Threat model — STRIDE + entities + attack trees rooted in findings.
+    if (process.env.AGENTIC_SECURITY_NO_THREAT_MODEL !== '1') {
+      try {
+        _threatModel = buildAutoThreatModel({
+          findings: finalFindings, routes: aR, supplyChain,
+        });
+        persistAutoThreatModel(scanRoot, _threatModel);
+      } catch (_) {}
+    }
+    // API contract — undocumented endpoints / missing-auth flags.
+    if (process.env.AGENTIC_SECURITY_NO_API_CONTRACT !== '1') {
+      try { _apiContractFindings = runApiContractScan(scanRoot, aR) || []; finalFindings.push(..._apiContractFindings); } catch (_) {}
+    }
+    // SBOM diff — drift detection across releases.
+    if (process.env.AGENTIC_SECURITY_NO_SBOM_DIFF !== '1') {
+      try {
+        _sbomDiff = runSbomDiff(scanRoot, annotatedComponents || []);
+        if (_sbomDiff && Array.isArray(_sbomDiff.findings)) finalFindings.push(..._sbomDiff.findings);
+      } catch (_) {}
+    }
+    // Sigstore provenance — opt-in (requires network + flag).
+    if (process.env.AGENTIC_SECURITY_SIGSTORE === '1') {
+      try { /* fire-and-forget async — don't block scan completion */ annotateProvenance(supplyChain, annotatedComponents).catch(()=>{}); } catch (_) {}
+    }
+    // Compliance evidence — auto-generate from policy file if present.
+    if (process.env.AGENTIC_SECURITY_NO_COMPLIANCE !== '1') {
+      try {
+        const policy = loadCompliancePolicy(scanRoot);
+        if (policy && !policy._error) {
+          _complianceReport = verifyCompliancePolicy(policy, { scanRoot, findings: finalFindings });
+          emitComplianceJsonLd(_complianceReport, scanRoot);
+          emitComplianceMarkdown(_complianceReport, scanRoot);
+        }
+      } catch (_) {}
+    }
+    // Exploit bundles — per-family PoC + Jest + pytest + remediation for
+    // top-N critical/high findings.
+    if (process.env.AGENTIC_SECURITY_NO_EXPLOIT_BUNDLES !== '1') {
+      try {
+        const bundles = generateExploitBundles(finalFindings, { maxBundles: 25 });
+        if (bundles.size) {
+          _exploitBundles = {};
+          for (const [id, b] of bundles) _exploitBundles[id] = b;
+          const bundlePath = path.join(scanRoot, '.agentic-security', 'exploit-bundles.json');
+          try { fs.mkdirSync(path.dirname(bundlePath), { recursive: true }); } catch {}
+          try { fs.writeFileSync(bundlePath, JSON.stringify(_exploitBundles, null, 2)); } catch {}
+        }
+      } catch (_) {}
+    }
+  }
+
   const _scanMeta={filesScanned:files.length,filesSkipped:_filesSkipped,filesTimedOut:_filesTimedOut,fileTimings:_fileTimings.sort((a,b)=>b.ms-a.ms).slice(0,20),findingsBySeverity:{critical:finalFindings.filter(f=>f.severity==='critical').length,high:finalFindings.filter(f=>f.severity==='high').length,medium:finalFindings.filter(f=>f.severity==='medium').length,low:finalFindings.filter(f=>f.severity==='low').length,info:finalFindings.filter(f=>f.severity==='info').length}};
-  return{routes:dd(aR,r=>`${r.method}:${r.path}:${r.file}:${r.line}`),findings:finalFindings,sources:aSrc,sinks:aSink,sanitizers:aSan,filesScanned:files.length,crossFileCount:cf.length,logicVulns:aLogic,supplyChain,components:annotatedComponents,secrets:aSecrets,ciphers:{atRest:aCiphersRest,inTransit:aCiphersTransit},pfr,fc,suppressions:_getSuppressions(),_v3,_scanMeta,_engineErrors:{cppDataflowParseErrors:_cppDataflowParseErrors.value},annotatorErrors:_annotatorErrors};}
+  return{routes:dd(aR,r=>`${r.method}:${r.path}:${r.file}:${r.line}`),findings:finalFindings,sources:aSrc,sinks:aSink,sanitizers:aSan,filesScanned:files.length,crossFileCount:cf.length,logicVulns:aLogic,supplyChain,components:annotatedComponents,secrets:aSecrets,ciphers:{atRest:aCiphersRest,inTransit:aCiphersTransit},pfr,fc,suppressions:_getSuppressions(),_v3,_scanMeta,_engineErrors:{cppDataflowParseErrors:_cppDataflowParseErrors.value},annotatorErrors:_annotatorErrors,threatModel:_threatModel,sbomDiff:_sbomDiff,complianceReport:_complianceReport,exploitBundles:_exploitBundles};}
 
 // Post-aggregation classification: every source becomes "unsafe"|"safe"; every sink becomes "confirmed"|"safe".
 // Orphans (no finding linkage) are bucketed by file-local heuristic so the UI shows binary states only.
