@@ -144,12 +144,20 @@ const ALLOWLIST = new Set([
 
 function listJsFiles(dir) {
   const out = [];
+  // Skip directories that contain vendored / bundled / cached third-party
+  // code — symbol-name matches inside their bundles are false positives for
+  // "your dead allowlist entry is now used".
+  const SKIP_DIR = /(?:^|\/)(?:\.bench-cache|node_modules|dist|build|\.next|\.git|coverage)(?:$|\/)/;
   function walk(d) {
     let entries;
     try { entries = fs.readdirSync(d, { withFileTypes: true }); } catch { return; }
     for (const e of entries) {
       const p = path.join(d, e.name);
-      if (e.isDirectory()) { walk(p); continue; }
+      if (e.isDirectory()) {
+        if (SKIP_DIR.test(p)) continue;
+        walk(p);
+        continue;
+      }
       if (e.isFile() && /\.js$/.test(e.name)) out.push(p);
     }
   }

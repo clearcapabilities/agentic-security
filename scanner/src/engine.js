@@ -159,6 +159,7 @@ import { buildMigrationPlan as buildPqcPlan, persistMigrationPlan as persistPqcP
 import { analyzeLicenseGraph, loadLicenseGraphPolicy } from './posture/license-graph.js';
 import { generateAttributions, persistAttributions } from './posture/license-attributions.js';
 import { annotateAttackTaxonomy, summarizeTaxonomy } from './posture/attack-taxonomy.js';
+import { suppressByPastDecisions } from './posture/triage-memory.js';
 import { annotateTypeNarrowing } from './posture/type-narrowing.js';
 import { annotateWhyFired } from './posture/why-fired.js';
 import { scanSpecificationDrift } from './posture/specification-mining.js';
@@ -7735,6 +7736,11 @@ async function runFullScan({fileContents={}, depFileContents={}, scanRoot=null},
     // SOAR systems can correlate with existing detection rules.
     if (process.env.AGENTIC_SECURITY_NO_ATTACK_TAX !== '1') {
       _runAnnotator("annotateAttackTaxonomy", () => { annotateAttackTaxonomy(finalFindings); });
+    }
+    // Triage memory — demote findings whose (family, dir) bucket was
+    // previously marked wont-fix or false-positive in this project.
+    if (process.env.AGENTIC_SECURITY_NO_TRIAGE_MEMORY !== '1') {
+      _runAnnotator("suppressByPastDecisions", () => { suppressByPastDecisions(scanRoot, finalFindings); });
     }
   }
   // v3 next-gen: crown-jewel mapping (FR-PROD-5) — score each file/finding by

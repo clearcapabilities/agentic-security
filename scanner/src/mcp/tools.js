@@ -946,6 +946,33 @@ export const read_agents_memory = {
   },
 };
 
+// ─── query_triage_memory ───────────────────────────────────────────────────
+// Natural-language Q&A over past triage decisions (wont-fix / false-positive
+// markings + reasons). Backed by .agentic-security/triage-memory.jsonl, which
+// is auto-populated by triage.transition(). Returns at most 10 most-relevant
+// past decisions.
+
+export const query_triage_memory = {
+  name: 'query_triage_memory',
+  description: 'Search past triage decisions (wont-fix / false-positive) by natural-language query. Returns up to 10 most-relevant past decisions with their reasons. Use when you see a new finding and want to know "did we already decide on something like this?" — answers in seconds without re-reading the full AGENTS.md narrative.',
+  inputSchema: {
+    type: 'object',
+    additionalProperties: false,
+    properties: {
+      query: { type: 'string', description: 'Free-text terms to match against past reasons / vuln text / file paths / family names.' },
+    },
+  },
+  async handler({ query }, ctx) {
+    const { queryMemory } = await import('../posture/triage-memory.js');
+    const results = queryMemory(ctx.sessionRoot, query || '');
+    return {
+      _meta: META,
+      count: results.length,
+      results,
+    };
+  },
+};
+
 // ─── lookup_cve ────────────────────────────────────────────────────────────
 // LangChain harness-anatomy #8: bridge the knowledge-cutoff gap by exposing
 // the local OSV / KEV / EPSS cache as a structured tool. Read-only — never
@@ -1041,4 +1068,4 @@ export const apply_sca_upgrade = {
   },
 };
 
-export const ALL_TOOLS = [scan_diff, query_taint, explain_finding, apply_fix, verify_fix, synthesize_fix, find_rule_module, append_scratchpad, read_scratchpad, append_agents_memory, read_agents_memory, lookup_cve, synthesize_sca_upgrade, apply_sca_upgrade];
+export const ALL_TOOLS = [scan_diff, query_taint, explain_finding, apply_fix, verify_fix, synthesize_fix, find_rule_module, append_scratchpad, read_scratchpad, append_agents_memory, read_agents_memory, lookup_cve, synthesize_sca_upgrade, apply_sca_upgrade, query_triage_memory];

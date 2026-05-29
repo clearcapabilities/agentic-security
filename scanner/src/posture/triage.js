@@ -6,6 +6,7 @@ import * as fs from 'node:fs';
 import * as path from 'node:path';
 import { statePath, safeWriteState } from './state-dir.js';
 import { appendAcceptRiskFromTriage } from './sca-policy.js';
+import { recordDecision as recordTriageMemory } from './triage-memory.js';
 
 export const STATES = ['open', 'in-progress', 'fixed', 'wont-fix', 'false-positive'];
 
@@ -105,7 +106,16 @@ export function transition(scanRoot, id, toState, comment) {
       policyBridge = { ok: false, reason: String(e && e.message || e) };
     }
   }
-  return { ok: true, policyBridge };
+  // Triage-memory bridge — write a narrative entry to AGENTS.md and a
+  // structured entry to triage-memory.jsonl whenever a finding is marked
+  // wont-fix or false-positive. The next scan's suppressByPastDecisions
+  // annotator demotes similar findings by bucket (family + dir).
+  let memoryBridge = null;
+  if (['wont-fix', 'false-positive'].includes(toState)) {
+    try { memoryBridge = recordTriageMemory(scanRoot, cur, toState, comment); }
+    catch (e) { memoryBridge = { ok: false, reason: String(e && e.message || e) }; }
+  }
+  return { ok: true, policyBridge, memoryBridge };
 }
 
 export function comment(scanRoot, id, author, body) {
