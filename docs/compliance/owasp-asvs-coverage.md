@@ -92,7 +92,7 @@ Level 3 (formal verification) requirements are almost entirely out of automated 
 ## How to generate an attestation report
 
 ```bash
-/compliance-report asvs
+/compliance --report asvs
 ```
 
 The command produces `owasp-asvs-attestation.md` mapping scan findings to ASVS requirements.

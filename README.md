@@ -23,7 +23,7 @@ is now the default.
 ─────────────────────────────────────────────────────────────────
    3 critical · 8 high · 22 medium · 41 advisory
    🔥 2 actively exploited in the wild (CISA KEV)
-   ✓  1 CONFIRMED (PoC built by /validate-findings)
+   ✓  1 CONFIRMED (PoC built by /triage --validate)
 
    [critical] SQL Injection                api/users.ts:42
      Could leak PII for ~5,000 users.
@@ -33,7 +33,7 @@ is now the default.
    [critical] Hardcoded Stripe live key    src/lib/billing.ts:7
      Could enable fraudulent charges against your account.
      Estimated cost if exploited: $50k–$500k (chargebacks + Stripe fees)
-     Fix:  rotate via /agentic-security:rotate-secret --auto, then move to env var
+     Fix:  rotate via /agentic-security:fix --rotate-secret --auto, then move to env var
 
    [critical] Missing webhook signature    api/stripe-webhook.ts:12
      Anyone can POST a fake "payment.succeeded" and unlock paid features.
@@ -100,7 +100,7 @@ Also works with Codex, Cursor, and Gemini CLI — [harness setup](docs/HARNESS_C
 ## What makes it different
 
 - **Plain-English findings with dollar-cost estimates.** Best/likely/worst-case exposure, grounded in IBM Cost of a Data Breach 2024 and 25+ public settlement records. Not CVE numbers.
-- **Intercepts insecure AI-generated code before it hits disk.** The `/ai-bodyguard` hook blocks SQLi via concat, hardcoded API keys, `eval` on user input, and more — in real time, as your AI writes.
+- **Intercepts insecure AI-generated code before it hits disk.** The `/setup --bodyguard` hook blocks SQLi via concat, hardcoded API keys, `eval` on user input, and more — in real time, as your AI writes.
 - **12-pillar scan in one command.** SAST, SCA, secrets, IaC, LLM safety, MCP agent-tool audit, auth/authZ, pipeline integrity, containers, deploy config, supply chain, and trend tracking.
 - **Function-level reachability across every dependency.** OSV ecosystem_specific parsing, GHSA fix-commit analysis, vendored code fingerprinting, Java IR call-graph matching, and LLM-assisted function extraction — not just a hardcoded hints list.
 - **SCA reachability tiers.** Every dependency classified as `function-reachable`, `import-reachable`, `build-only`, `manifest-only`, or `transitive-only` — so you fix what matters.
@@ -116,7 +116,7 @@ Deep engine details — [architecture](docs/ARCHITECTURE.md).
 ## What this is NOT
 
 - **Not a SaaS dashboard.** It's a CLI + Claude Code plugin.
-- **Not a replacement for a pentester.** Static analysis catches patterns; humans catch business-logic flaws. The `security-logic-reviewer` subagent and `/validate-findings` close part of the gap, not all of it.
+- **Not a replacement for a pentester.** Static analysis catches patterns; humans catch business-logic flaws. The `security-logic-reviewer` subagent and `/triage --validate` close part of the gap, not all of it.
 - **Not magic.** It can miss novel vulnerabilities, especially anything that requires understanding intent.
 - **Not free for resale.** PolyForm Internal Use license. Use it to make your own code safe and secure. Don't repackage it as a competing scanner.
 
@@ -124,7 +124,7 @@ Deep engine details — [architecture](docs/ARCHITECTURE.md).
 
 [![License](https://img.shields.io/badge/license-PolyForm--Internal--Use-blue)](./LICENSE)
 [![Bundle](https://img.shields.io/badge/bundle-2.30MB-orange)]()
-[![Version](https://img.shields.io/badge/version-0.85.1-blue)]()
+[![Version](https://img.shields.io/badge/version-0.85.2-blue)]()
 [![agentic-security](https://img.shields.io/badge/agentic--security-passing-brightgreen)]()
 
 ## License

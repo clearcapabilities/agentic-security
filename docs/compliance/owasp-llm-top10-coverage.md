@@ -124,7 +124,7 @@ extraction attack detection are out of static-analysis scope.
 ## How to generate an attestation report
 
 ```bash
-/compliance-report llm
+/compliance --report llm
 ```
 
 Produces `owasp-llm-top10-attestation.md` with per-risk finding counts and coverage status.

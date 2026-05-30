@@ -2,7 +2,7 @@
 
 Full ASPM + LLMSecOps Claude Code plugin. Delivers SAST, SCA (OSV + CISA KEV + function-level reachability), secrets, IaC, prompt-injection, MCP/agent-tool audit, auth/authZ deep analysis, attack chains, PoC generation, SBOM/PBOM/AI-BOM, SARIF ingest, and compliance attestation (NIST AI 600-1, OWASP ASVS, OWASP LLM Top 10, EU AI Act).
 
-**Version:** 0.85.1  
+**Version:** 0.85.2  
 **License:** PolyForm Internal Use 1.0.0  
 **Author:** Ross Young <ross@clearcapabilities.com> / Clear Capabilities Inc.
 
@@ -25,7 +25,7 @@ Full ASPM + LLMSecOps Claude Code plugin. Delivers SAST, SCA (OSV + CISA KEV + f
 | `scanner/test/` | Node test runner suite. Scoped via `npm run test:{smoke,sast,posture,dataflow,mcp,report,lifecycle}` — see `scanner/CLAUDE.md`. |  |
 | `bench/cve-replay/` | Real-CVE replay corpus + runner. Six entries today; target 500 (`bench/cve-replay/CONTRIBUTING.md`). |  |
 | `bench/owasp-benchmark-v1.2/`, `bench/sard-juliet-java/`, `bench/polyglot/` | External benches (gitignored, regenerated). |  |
-| `commands/` | Slash-command markdown files (~77). |  |
+| `commands/` | Slash-command markdown files. 10 primary dispatchers (`secure`, `find-and-fix-everything`, `scan`, `triage`, `fix`, `posture`, `compliance`, `supply`, `setup`, `labs`) + 44 legacy aliases for back-compat. |  |
 | `agents/` | Sub-agent system prompts. Edit-capable agents follow `agents/_CONFINEMENT.md`. |  |
 | `hooks/` | Claude Code hook scripts + `hooks.json`. |  |
 | `scripts/` | Compliance + helper scripts + CI templates (`scripts/ci-templates/`). |  |

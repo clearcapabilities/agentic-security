@@ -168,14 +168,14 @@ CCPA:         Sensitive personal info; opt-out flow at /privacy/opt-out.
 
 ## Canonical commands
 
-- `/compliance-report` — generate PRIVACY.md + cookie banner from the stack
-- `/compliance-report nist|asvs|llm` — generate auditor-ready attestation
-- `/scan --all` followed by `/show-findings --threat-model` — surface
+- `/compliance --report` — generate PRIVACY.md + cookie banner from the stack
+- `/compliance --report nist|asvs|llm` — generate auditor-ready attestation
+- `/scan --all` followed by `/triage --show --threat-model` — surface
   data-class findings the scanner already detected
 
 ## Why this is here
 
-The `/compliance-report` slash produces a privacy artifact AFTER the project
+The `/compliance --report` slash produces a privacy artifact AFTER the project
 is built. This skill produces a per-field data-flow record **before**
 the field is written. The two are complementary — privacy-docs is the
 post-hoc summary; this is the pre-write gate.
