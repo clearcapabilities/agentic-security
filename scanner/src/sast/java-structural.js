@@ -1,0 +1,81 @@
+// Java structural (taint-independent) injection detectors — PRD Tier 1.
+//
+// The flow-based Java modules miss standalone DAO/handler methods whose
+// tainted-by-convention parameter has no in-file source. Java has no string
+// templates, so the injection shape is string CONCATENATION (`"…" +`) into a
+// dangerous sink — which is itself the vulnerability regardless of the
+// variable's name. Parameterized statements / canonicalized paths / host-
+// guarded URLs do not match, keeping this high-precision.
+
+import { blankComments } from './_comment-strip.js';
+
+// Concat-into-sink families with no guard needed (parameterized form has no
+// string-concat argument, so it auto-clears).
+const RE = {
+  sqlInjection: /\b(?:executeQuery|executeUpdate|execute|createQuery|createNativeQuery|prepareStatement|prepareCall)\s*\(\s*"[^"\n]*"\s*\+/g,
+  cmdInjection: /\b(?:Runtime\.getRuntime\(\)\s*\.\s*exec|ProcessBuilder)\s*\(\s*(?:new\s+String\s*\[\s*\]\s*\{\s*)?"[^"\n]*"\s*\+/g,
+};
+
+const META = {
+  sqlInjection: {
+    vuln: 'SQL Injection — query built with string concatenation (Java)',
+    severity: 'critical', cwe: 'CWE-89',
+    remediation: 'Use a PreparedStatement with bind parameters: prepareStatement("… WHERE name = ?") then setString(1, name). Never concatenate values into SQL.',
+  },
+  cmdInjection: {
+    vuln: 'Command Injection — exec built with string concatenation (Java)',
+    severity: 'critical', cwe: 'CWE-78',
+    remediation: 'Use ProcessBuilder with an argument array (no shell): new ProcessBuilder("cmd", arg1, arg2). Never concatenate input into a command string.',
+  },
+};
+
+function lineOf(raw, idx) { return raw.substring(0, idx).split('\n').length; }
+
+export function scanJavaStructural(fp, raw) {
+  if (!/\.java$/i.test(fp)) return [];
+  if (!raw || raw.length > 500_000) return [];
+  const code = blankComments(raw);
+  const findings = [];
+  const seen = new Set();
+  const push = (f) => { if (!seen.has(f.id)) { seen.add(f.id); findings.push(f); } };
+  const emit = (key, line, meta) => push({
+    id: `java-struct-${key}:${fp}:${line}`, file: fp, line,
+    vuln: meta.vuln, severity: meta.severity, cwe: meta.cwe, family: meta.family,
+    snippet: (raw.split('\n')[line - 1] || '').trim().slice(0, 200),
+    remediation: meta.remediation, parser: 'JAVA', confidence: 0.78,
+  });
+
+  for (const [key, re] of Object.entries(RE)) {
+    const r = new RegExp(re.source, re.flags);
+    let m;
+    while ((m = r.exec(code))) emit(key, lineOf(code, m.index), META[key]);
+  }
+
+  // Path traversal (CWE-22): a file path built by concatenation, unless the
+  // file canonicalizes / normalizes / range-checks the path.
+  const PATH_SINK = /\bnew\s+(?:File|FileInputStream|FileReader|FileOutputStream|RandomAccessFile)\s*\(\s*"[^"\n]*"\s*\+|\bPaths\.get\s*\(\s*"[^"\n]*"\s*\+/;
+  const PATH_GUARD = /getCanonicalPath|toRealPath|\.normalize\s*\(\s*\)|\bstartsWith\s*\(|FilenameUtils|\.isAbsolute\s*\(/;
+  if (PATH_SINK.test(code) && !PATH_GUARD.test(code)) {
+    const line = lineOf(code, code.search(PATH_SINK));
+    emit('path', line, {
+      vuln: 'Path Traversal — file path built with string concatenation (Java)',
+      severity: 'high', cwe: 'CWE-22',
+      remediation: 'Resolve against an allow-listed base and verify containment: Path want = base.resolve(name).normalize().toRealPath(); if (!want.startsWith(base)) throw …',
+    });
+  }
+
+  // SSRF (CWE-918): new URL/URI opened from a non-literal/templated value,
+  // unless a host allow/deny guard is present.
+  const SSRF_SINK = /\bnew\s+(?:URL|URI)\s*\(\s*(?:[A-Za-z_]\w*\s*\)|"[^"\n]*"\s*\+)/;
+  const SSRF_GUARD = /169\.254\.169\.254|getHost\s*\(\s*\)|allow(?:ed)?Hosts?|isLoopback|isSiteLocal|isLinkLocal|InetAddress|\bDENY\b|deny(?:list)?|block(?:list|ed)/i;
+  if (SSRF_SINK.test(code) && !SSRF_GUARD.test(code)) {
+    const line = lineOf(code, code.search(SSRF_SINK));
+    emit('ssrf', line, {
+      vuln: 'SSRF — URL/URI opened from a non-literal value (Java)',
+      severity: 'high', cwe: 'CWE-918',
+      remediation: 'Resolve the host and reject RFC1918 / link-local / metadata (169.254.169.254) addresses, or use an allow-list, before opening the connection.',
+    });
+  }
+
+  return findings;
+}

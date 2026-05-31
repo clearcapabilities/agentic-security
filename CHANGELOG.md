@@ -1,5 +1,30 @@
 # Changelog
 
+## 0.100.0 — Java/Spring + C# recall: structural detectors (PRD Tier 1)
+
+Continues the recall-led PRD. The flow-based `csharp.js` and AST/bench Java
+modules miss standalone methods whose tainted-by-convention parameter has no
+in-file source; Java has no string templates, so the shape is concatenation.
+
+- **`java-structural.js`** (new): SQLi (executeQuery/createQuery + concat,
+  CWE-89), command injection (Runtime.exec/ProcessBuilder + concat, CWE-78),
+  path traversal (new File/Paths.get + concat, CWE-22, suppressed by
+  canonical/normalize/startsWith guards), SSRF (new URL/URI from a non-literal,
+  CWE-918, suppressed by a host allow/deny guard).
+- **`csharp-structural.js`** (new): hardcoded credential in a const/static
+  field — including the **split-concat evasion** (`"sk_" + "live_…"`) that
+  defeats plain secret regexes (CWE-798, value gated on length/known-prefix so
+  header-name constants aren't flagged); guarded SSRF via WebClient/HttpClient
+  (CWE-918).
+- **Measured: 5 more FN → TP** (spring-path, spring-ssrf, spring-sqli,
+  cs-hardcoded, cs-ssrf). Both modules return clean on the fixed versions.
+- **Session total: corpus false-negatives 35 → 20** (Kotlin 6 + Ruby/PHP 4 +
+  Java/C# 5 = 15 FN closed). Additive, language-scoped, no regressions. New
+  `java-csharp-structural.test.js` + fixtures; full gate green.
+
+Note: spring-ssrf / cs-ssrf still show a pre-existing `post:FP` from other
+detectors on the fixed file (not introduced here) — a precision item for later.
+
 ## 0.99.0 — Ruby + PHP recall: structural injection detectors (PRD Tier 1)
 
 Continues the recall-led PRD down the corpus FN list. Same root cause as
