@@ -1,5 +1,29 @@
 # Changelog
 
+## 0.95.0 — Stored taint (#2, opt-in) + corpus coverage reporter (#10)
+
+- **#2 — Second-order / stored taint** (`sast/stored-taint.js`, **opt-in** via
+  `AGENTIC_SECURITY_STORED_TAINT=1`). Flags a value read from a persistence
+  store (DB/cache) that flows into an injection sink (XSS/SQLi/cmd/code)
+  without re-validation — the stored-XSS / second-order-SQLi shape the forward
+  taint engine can't see across the persistence boundary. Lower confidence by
+  design (stored data isn't always attacker-controlled), so OFF by default:
+  enabling it cannot change default scan behavior.
+- **#10 — Corpus coverage reporter** (`posture/corpus-status.js`). Turns the
+  CVE-replay corpus into an actionable map: progress toward the 500-entry
+  target and exactly which CWE×language cells have zero ground-truth entries.
+  Measures the existing corpus only — it never fabricates entries. This is the
+  measurement substrate that makes scaling the corpus prioritizable.
+
+Tests for both; full gate green.
+
+### Still genuinely open (need a decision or are research-grade)
+- **#8 long-tail languages onto the IR** — five net-new IR parsers, or a
+  tree-sitter dependency (which conflicts with the offline-degradation rule).
+  This is a dependency decision, not a quick fix.
+- **#1 full** — context-tagged taint lattice (a core-engine rewrite); the
+  practical wrong-context slice already ships.
+
 ## 0.94.0 — Same-file-preference call resolution (roadmap #3)
 
 The cross-file resolver (`ir/callgraph.js` `resolve()`) was name-based: a bare
