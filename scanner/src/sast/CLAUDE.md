@@ -13,7 +13,7 @@ SAST detector modules. Each file exports one or more `scan*()` functions returni
 
 ## What lives here, by category
 
-**Language-specific** — `cpp.js`, `csharp.js`, `dart-flutter.js`, `go-extended.js`, `java-deserialization.js`, `kotlin.js`, `php.js`, `python-sinks.js`, `ruby.js`, `rust.js`, `solidity.js`, `swift.js`, `xxe.js`.
+**Language-specific** — `cpp.js`, `csharp.js`, `dart-flutter.js`, `go-extended.js`, `java-deserialization.js`, `kotlin.js` (Kotlin idioms + **taint-independent structural injection** detectors: SQLi/cmdi/path via string template/concat, SSRF (guarded), XXE (insecure XML config), ObjectInputStream deser — closes the corpus Kotlin FNs where a tainted-by-convention param has no in-file source), `php.js`, `python-sinks.js`, `ruby.js`, `rust.js`, `solidity.js`, `swift.js`, `xxe.js`.
 
 **Tree-sitter (long-tail languages, opt-in)** — `tree-sitter-sinks.js` (roadmap #8). AST-accurate detectors for languages with no first-class IR parser (rust/solidity/cpp/go/swift/dart), via `../ir/tree-sitter-loader.js`. Gated behind `AGENTIC_SECURITY_TREE_SITTER=1` and the **optional** `web-tree-sitter` + `tree-sitter-wasms` deps (ABI-pinned 0.20.8 ↔ 0.1.13, marked `--external` so they're never bundled). Degrades to a no-op when the flag or deps are absent. First rule: Rust shell-spawn command injection (CWE-78). Anchoring on real AST nodes means comments/strings can't false-match.
 

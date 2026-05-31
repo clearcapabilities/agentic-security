@@ -1,5 +1,31 @@
 # Changelog
 
+## 0.98.0 — Kotlin recall: close all 6 corpus false-negatives (roadmap Tier 1)
+
+First execution of the "perfect SAST" PRD, which leads with **recall** (the
+measured CVE-replay F1 ≈ 0.50 is a missed-detection problem). Kotlin was the
+worst single language — 6 FNs across SQLi/cmdi/path/SSRF/XXE/deser — because
+those fixtures are standalone DAO/handler methods with a tainted-by-convention
+parameter and no in-file taint source, so the taint engine saw nothing.
+
+- **`sast/kotlin.js`** gains taint-independent **structural** detectors: a
+  dangerous sink built with a Kotlin string template (`${x}`) or concat
+  (`"…" +`) is the injection shape regardless of variable names —
+  SQLi (CWE-89), command injection (CWE-78), path traversal (CWE-22). Plus
+  guarded SSRF (CWE-918, suppressed when a host allow/deny check is present),
+  insecure XML config XXE (CWE-611, suppressed when secure-processing is set),
+  and `ObjectInputStream.readObject` deserialization (CWE-502).
+- High precision: a parameterized query / array-form exec / literal URL / XML
+  factory with `setFeature(...)` does **not** match. Verified on the corpus
+  pre/post pairs — all 6 vulnerable fixtures fire, all 6 fixed versions stay
+  clean (scanner-level).
+- **Measured result: 6 Kotlin FN → TP; total corpus false-negatives 35 → 29.**
+  No regressions (purely additive, `.kt`-scoped). New `kotlin-structural.test.js`
+  + fixtures; full gate green.
+
+Establishes the per-family/per-language porting pattern; next: Rails/Laravel/
+Symfony/Gin/Spring SQLi+cmdi and the remaining second-tier FNs.
+
 ## 0.97.0 — Tree-sitter foundation for long-tail languages (roadmap #8)
 
 First step of bringing languages with no first-class IR parser
