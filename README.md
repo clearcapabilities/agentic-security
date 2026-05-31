@@ -53,11 +53,14 @@ No CVE jargon. The stakes, the cost, the fix.
 
 ## Install
 
-In **Claude Code** (recommended):
+In **Claude Code** (recommended) — two steps:
 
 ```
 /plugin marketplace add https://github.com/Clear-Capabilities/agentic-security
+/plugin install agentic-security@clearcapabilities
 ```
+
+The first command registers the marketplace as a source; the second actually installs the plugin. Then restart Claude Code (or `/reload-plugins`). To update later: `/plugin marketplace update clearcapabilities` followed by `/plugin install agentic-security@clearcapabilities`.
 
 In your **terminal** (no Claude Code required):
 
