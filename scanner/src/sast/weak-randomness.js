@@ -9,12 +9,18 @@
 //   Go: rand.Intn(), rand.Int(), rand.Float64(), rand.Int31(), rand.Int63()
 //   Ruby: rand(), Random.rand, Random.new.rand
 //   PHP: rand(), mt_rand(), array_rand(), shuffle()
+//   Java: new Random(), Math.random(), ThreadLocalRandom.current().nextInt()
+//   Kotlin: Random.next*, kotlin.random.Random, java.util.Random
+//   C#: new Random()
 
 const SECURITY_CONTEXT = /\b(token|session|nonce|key|secret|password|otp|csrf|salt|code|pin|auth|reset|verify|captcha|challenge|ticket)\b/i;
 // camelCase carrier: a security term as the suffix of an identifier
 // (`newToken`, `genSecret`, `sessionId`) — `\bword\b` misses these. Case
 // sensitive so it only fires on the CamelCase boundary, not generic prose.
 const SECURITY_CONTEXT_CAMEL = /[a-z](?:Token|Secret|Nonce|Salt|Otp|Password|Passwd|ApiKey|SessionId|Csrf|Cookie|Jwt|Nonce)\b/;
+// snake_case carrier: same idea for `session_token`, `reset_token`,
+// `api_secret` — `\btoken\b` misses these because `_` is a word char.
+const SECURITY_CONTEXT_SNAKE = /_(?:token|secret|nonce|salt|otp|password|passwd|key|session|csrf|seed|cookie|jwt)\b/i;
 
 function _line(raw, idx) {
   return raw.slice(0, idx).split('\n').length;
@@ -51,6 +57,28 @@ const LANG_PATTERNS = {
       { re: /\b(?:rand|mt_rand|array_rand)\s*\(/g, label: 'rand() / mt_rand()' },
     ],
   },
+  java: {
+    ext: /\.java$/i,
+    patterns: [
+      { re: /\bnew\s+Random\s*\(/g, label: 'java.util.Random' },
+      { re: /\bMath\.random\s*\(\s*\)/g, label: 'Math.random()' },
+      { re: /\bThreadLocalRandom\.current\s*\(\s*\)\s*\.\s*next\w*\s*\(/g, label: 'ThreadLocalRandom (non-crypto)' },
+    ],
+  },
+  kotlin: {
+    ext: /\.kt$/i,
+    patterns: [
+      { re: /\bRandom\s*\(\s*\)\s*\.\s*next\w*\s*\(/g, label: 'Random() (non-crypto)' },
+      { re: /\bRandom\s*\.\s*(?:next\w+|Default)\b/g, label: 'kotlin.random.Random' },
+      { re: /\bnew\s+(?:java\.util\.)?Random\s*\(/g, label: 'java.util.Random' },
+    ],
+  },
+  csharp: {
+    ext: /\.cs$/i,
+    patterns: [
+      { re: /\bnew\s+Random\s*\(/g, label: 'System.Random' },
+    ],
+  },
 };
 
 export function scanWeakRandomness(fp, raw) {
@@ -71,7 +99,7 @@ export function scanWeakRandomness(fp, raw) {
       const lineStart = raw.lastIndexOf('\n', m.index) + 1;
       const lineEnd = raw.indexOf('\n', m.index);
       const lineText = raw.slice(lineStart, lineEnd > 0 ? lineEnd : raw.length);
-      if (!SECURITY_CONTEXT.test(lineText) && !SECURITY_CONTEXT_CAMEL.test(lineText)) {
+      if (!SECURITY_CONTEXT.test(lineText) && !SECURITY_CONTEXT_CAMEL.test(lineText) && !SECURITY_CONTEXT_SNAKE.test(lineText)) {
         // Widen the lookback to the enclosing block: the security keyword is
         // often on the function signature a few lines up (`function newToken()
         // { … Math.random() … }`), not the line immediately before the call.
@@ -80,7 +108,7 @@ export function scanWeakRandomness(fp, raw) {
           winStart = raw.lastIndexOf('\n', winStart - 2) + 1;
         }
         const window = raw.slice(winStart, lineStart - 1);
-        if (!SECURITY_CONTEXT.test(window) && !SECURITY_CONTEXT_CAMEL.test(window)) continue;
+        if (!SECURITY_CONTEXT.test(window) && !SECURITY_CONTEXT_CAMEL.test(window) && !SECURITY_CONTEXT_SNAKE.test(window)) continue;
       }
       findings.push({
         id: `weak-rng:${fp}:${line}`,

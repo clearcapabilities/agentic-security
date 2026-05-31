@@ -14,6 +14,18 @@ test('weak-rng: Math.random with no security context stays silent', () => {
   assert.deepEqual(scanWeakRandomness('a.js', 'const jitter = Math.random() * 100;'), []);
 });
 
+test('weak-rng: snake_case carrier (session_token) fires', () => {
+  const out = scanWeakRandomness('t.rb', 'def make\n  session_token = rand(1000000).to_s\n  session_token\nend\n');
+  assert.ok(out.length >= 1 && out[0].cwe === 'CWE-338');
+});
+
+test('weak-rng: JVM / C# Random in a security context fire CWE-338; SecureRandom is clean', () => {
+  assert.ok(scanWeakRandomness('T.java', 'class T { String csrfToken(){ return Integer.toString(new Random().nextInt()); } }').some(f => f.cwe === 'CWE-338'));
+  assert.ok(scanWeakRandomness('T.kt', 'class T { fun resetToken(): Int { return Random().nextInt() } }').some(f => f.cwe === 'CWE-338'));
+  assert.ok(scanWeakRandomness('T.cs', 'class T { string SessionToken(){ return new Random().Next().ToString(); } }').some(f => f.cwe === 'CWE-338'));
+  assert.deepEqual(scanWeakRandomness('T.java', 'class T { String csrfToken(){ return Integer.toString(new SecureRandom().nextInt()); } }'), []);
+});
+
 test('Weak randomness detector: vulnerable fixtures fire, clean fixtures are silent', async () => {
   await evaluateF1({
     name: 'weak-randomness',

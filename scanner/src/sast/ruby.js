@@ -30,6 +30,11 @@ const RE = {
   // on the sink line, which misses `name = params[:x]; where("... #{name}")`.
   sqlInjectionStructural: /\.(?:where|find_by_sql|having|order|group|joins|select|from|pluck|update_all|delete_all|exec_query|execute|select_all|select_value|find_by)\s*\(\s*(?:"[^"\n]*#\{|['"][^'"\n]*['"]\s*\+)/g,
   cmdInjectionStructural: /(?:`[^`\n]*#\{|\b(?:system|exec)\s*\(\s*"[^"\n]*#\{|\bIO\.popen\s*\(\s*"[^"\n]*#\{|\b(?:system|exec)\s*\(\s*['"][^'"\n]*['"]\s*\+)/g,
+  // Structural path traversal: File/IO op whose path is built by interpolation
+  // (#{...}) or concat. `File.read("/data/" + name)` routes through a local var
+  // so the `params[`-on-sink fileRead rule misses it. Containment-guarded forms
+  // (File.expand_path + start_with?) are dropped by engine.js dropGuardedFindings.
+  pathTraversalStructural: /\b(?:File|IO)\s*\.\s*(?:read|open|new|readlines|binread|write|foreach)\s*\(\s*(?:"[^"\n]*#\{|['"][^'"\n]*['"]\s*\+)/g,
 };
 
 function lineOf(raw, idx) { return raw.substring(0, idx).split('\n').length; }
@@ -108,6 +113,11 @@ export function scanRuby(fp, raw) {
           vuln: 'Command Injection: shell command built with string interpolation / concat',
           severity: 'critical', cwe: 'CWE-78',
           remediation: 'Use `Open3.capture2("cmd", arg1, arg2)` with separate arguments (no shell). Backticks and `system("... #{x}")` run through the shell.',
+        },
+        pathTraversalStructural: {
+          vuln: 'Path Traversal: File/IO operation built with interpolated/concatenated path',
+          severity: 'high', cwe: 'CWE-22',
+          remediation: 'Canonicalize and assert containment: `path = File.expand_path(File.join(base, name)); raise unless path.start_with?(base)`. Never interpolate/concatenate request input straight into a file path.',
         },
       }[key];
       push({

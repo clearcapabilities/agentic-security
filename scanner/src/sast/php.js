@@ -25,6 +25,10 @@ const RE = {
   // (`$f = $r->query->get('x'); shell_exec('gzip ' . $f)`).
   cmdInjectionStructural: /\b(?:shell_exec|exec|system|passthru|popen|proc_open|pcntl_exec)\s*\(\s*(?:"[^"\n]*\$|'[^'\n]*'\s*\.|"[^"\n]*"\s*\.)/g,
   sqlInjectionStructural: /\b(?:DB::raw|DB::select|DB::statement|DB::insert|DB::update|DB::delete|whereRaw|orWhereRaw|havingRaw|selectRaw|orderByRaw|mysqli_query|mysql_query|pg_query|pg_send_query|sqlite_query|->query|->rawQuery)\s*\(\s*(?:DB::raw\s*\(\s*)?(?:"[^"\n]*\$|"[^"\n]*"\s*\.|'[^'\n]*'\s*\.)/g,
+  // Structural path traversal: a filesystem read/write built by concatenating
+  // or interpolating into the path. Containment-guarded forms (basename) are
+  // dropped centrally by engine.js dropGuardedFindings (CWE-22).
+  pathTraversalStructural: /\b(?:readfile|file_get_contents|file_put_contents|fopen|fpassthru|fgets|file|copy|unlink|highlight_file|show_source)\s*\(\s*(?:"[^"\n]*"\s*\.|'[^'\n]*'\s*\.|"[^"\n]*\$(?:_(?:REQUEST|GET|POST|COOKIE)|[A-Za-z_]))/g,
 };
 
 function lineOf(raw, idx) { return raw.substring(0, idx).split('\n').length; }
@@ -91,6 +95,11 @@ export function scanPhp(fp, raw) {
           vuln: 'SQL Injection: raw query built with string concat / interpolation',
           severity: 'critical', cwe: 'CWE-89',
           remediation: 'Use parameter bindings: DB::select("SELECT … WHERE name = ?", [$name]) or the query builder with bindings. Never concatenate/interpolate into DB::raw / whereRaw / mysqli_query.',
+        },
+        pathTraversalStructural: {
+          vuln: 'Path Traversal: filesystem operation built with concatenated/interpolated input',
+          severity: 'high', cwe: 'CWE-22', family: 'path-traversal',
+          remediation: 'Strip directory components with basename() and resolve against a fixed root: $full = realpath($base . "/" . basename($name)); if (strpos($full, $base) !== 0) abort(). Never concatenate request input straight into a file path.',
         },
       }[key];
       push({

@@ -44,6 +44,20 @@ test('PHP SQLi — deprecated mysql_query with concat (CWE-89)', () => {
   assert.ok(noneCwe(scanPhp('q.php', '<?php $stmt = $pdo->prepare("SELECT * FROM users WHERE name = ?"); $stmt->execute([$user]);'), 'CWE-89'));
 });
 
+test('PHP path traversal — readfile/file_get_contents with concat; basename-guarded clean', () => {
+  assert.ok(has(scanPhp('d.php', `<?php $f = $_GET['file']; readfile("/var/data/" . $f);`), 'CWE-22'));
+  assert.ok(has(scanPhp('d.php', `<?php $f = $_GET['file']; $c = file_get_contents("/var/data/" . $f);`), 'CWE-22'));
+  // basename containment → dropped by the central guard pass (not asserted here);
+  // a bare literal path must not match at all
+  assert.ok(noneCwe(scanPhp('d.php', `<?php readfile("/var/data/config.txt");`), 'CWE-22'));
+});
+
+test('Ruby path traversal — File.read with interpolation/concat; literal clean', () => {
+  assert.ok(has(scanRuby('f.rb', 'def show; name = params[:file]; File.read("/var/data/" + name); end'), 'CWE-22'));
+  assert.ok(has(scanRuby('f.rb', 'def show; name = params[:file]; File.read("/var/data/#{name}"); end'), 'CWE-22'));
+  assert.ok(noneCwe(scanRuby('f.rb', 'def show; File.read("/var/data/config.txt"); end'), 'CWE-22'));
+});
+
 test('Symfony CSRF — POST-body controller with no token check; guarded clean', () => {
   const vuln = '<?php class T { public function transfer(Request $r){ $a = $r->request->get("amount"); return new Response("ok " . $a); } }';
   assert.ok(scanCSRF('T.php', vuln).some((f) => f.cwe === 'CWE-352'));
