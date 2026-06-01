@@ -44,6 +44,11 @@ export function normalizeFindings(scan){
       dataClasses: f.dataClasses || [],
       chain: Array.isArray(f.chain) ? f.chain : null,
       confidence: typeof f.confidence === 'number' ? f.confidence : null,
+      // R17: corroboration ("one issue, many signals") — count of independent
+      // analyses that agreed, and which ones.
+      corroborationCount: typeof f.corroborationCount === 'number' ? f.corroborationCount : null,
+      corroboration: f.corroboration || null,
+      multiSignal: f.multiSignal === true ? true : null,
       // 0.6.0 Feat-2
       toxicity: f.toxicityScore ?? null,
       toxicityFactors: f.toxicityFactors || null,

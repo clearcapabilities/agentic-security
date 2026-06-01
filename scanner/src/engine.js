@@ -144,6 +144,7 @@ import { annotatePersonaScores } from './posture/persona-prioritization.js';
 import { annotateMitigationComposite } from './posture/mitigation-composite.js';
 import { annotateCompositeRisk } from './posture/composite-risk.js';
 import { annotateScaVerdicts } from './posture/sca-verdict.js';
+import { annotateFindingProvenance } from './posture/provenance.js';
 
 // ── Integration block: world-class scaffolded modules ──────────────────────
 // Each module is opt-in via its own env var so partial adoption is safe.
@@ -8225,7 +8226,12 @@ async function runFullScan({fileContents={}, depFileContents={}, scanRoot=null},
   try{const dpf=scanDeployPlatform(scanRoot);aLogic.push(...dpf);}catch(_){}
   // Stack-specific security playbook
   try{const sp=runStackPlaybook(scanRoot);if(sp&&sp.findings)aLogic.push(...sp.findings);}catch(_){}
-  finalFindings.sort((a,b)=>(b.toxicityScore||0)-(a.toxicityScore||0)||(b.triageScore||0)-(a.triageScore||0)||({critical:0,high:1,medium:2,low:3}[a.severity]??4)-({critical:0,high:1,medium:2,low:3}[b.severity]??4));
+  // R17 (PRD §5): annotate per-finding corroboration ("one issue, many signals")
+  // after evidence + validator verdicts are populated, then use it as a final
+  // tiebreaker so multi-signal findings rank above single-signal ones at equal
+  // severity. Does not alter calibrated confidence.
+  try { annotateFindingProvenance(finalFindings); } catch (_) {}
+  finalFindings.sort((a,b)=>(b.toxicityScore||0)-(a.toxicityScore||0)||(b.triageScore||0)-(a.triageScore||0)||({critical:0,high:1,medium:2,low:3}[a.severity]??4)-({critical:0,high:1,medium:2,low:3}[b.severity]??4)||((b.corroborationCount||1)-(a.corroborationCount||1)));
   // Auto-PoC filter: tag whether a concrete payload+test can be derived. When
   // AGENTIC_SECURITY_POC=1, demote ≥medium findings that fail this check.
   // Used as a precision lever for users who want to ship clean reports —
