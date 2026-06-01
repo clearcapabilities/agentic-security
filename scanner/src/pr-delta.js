@@ -170,6 +170,19 @@ export async function computePrDelta(root, { baseRef, headRef = 'HEAD' } = {}) {
 /**
  * Lightweight text summary used as a CLI fallback when --json isn't set.
  */
+// R24 (PRD §5) — net-new CI gate. Blocks the build ONLY on findings the PR
+// INTRODUCED (delta.introduced), at or above `failOn` severity — never on the
+// pre-existing backlog. This is the only SAST CI posture teams tolerate
+// long-term. Pure + deterministic: takes a delta, returns the gate decision.
+const _NETNEW_SEV_RANK = { critical: 3, high: 2, medium: 1, low: 0, info: -1 };
+export function netNewGate(delta, failOn = 'critical') {
+  const introduced = (delta && Array.isArray(delta.introduced)) ? delta.introduced : [];
+  if (failOn === 'none') return { fail: false, failOn, introducedCount: introduced.length, blocked: [] };
+  const threshold = _NETNEW_SEV_RANK[failOn] ?? 3;
+  const blocked = introduced.filter((f) => (_NETNEW_SEV_RANK[f.severity] ?? -1) >= threshold);
+  return { fail: blocked.length > 0, failOn, introducedCount: introduced.length, blocked };
+}
+
 export function renderPrDeltaText(delta) {
   const i = delta.summary.introduced;
   const r = delta.summary.resolved;

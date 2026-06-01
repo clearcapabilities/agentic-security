@@ -82,6 +82,8 @@ Options:
   --pack <name>                Focus on a curated rule pack (repeatable): owasp-top-10 | cwe-top-25 | llm-security | supply-chain
   --baseline <ref>             Diff against a git ref; only findings new vs. that ref count (ci subcommand)
   --fail-on critical|high|medium|low|none  ci-mode exit policy (default: critical)
+  --fail-on-new                (ci) block ONLY on findings this PR introduced vs
+                               the baseline ref — never the pre-existing backlog
   --policy <file.rego>         ci-mode policy-as-code gate; deny[] rules fail the build (FR-SDLC-9)
   --columns standard|mitre|capec|owasp  Pro-mode column set (default: standard)
   --confidence <0..1>          Override per-profile confidence threshold
@@ -657,6 +659,29 @@ async function cmdCi(args) {
       return 1;
     }
     process.stderr.write(`[ci] policy gate PASSED (${r.runner}, 0 denials)\n`);
+  }
+  // R24 (PRD §5): PR-native net-new gate. With --fail-on-new and a baseline
+  // ref, block ONLY on findings this PR INTRODUCED (vs the base ref), never on
+  // the pre-existing backlog — the posture teams actually leave enabled.
+  if (args.flags['fail-on-new']) {
+    const baseRef = baseline;
+    if (!baseRef) {
+      process.stderr.write('[ci] --fail-on-new requires a baseline ref (--baseline <ref> or a CI base-branch env var)\n');
+      return 1;
+    }
+    try {
+      const { computePrDelta, netNewGate } = await import('../src/pr-delta.js');
+      const delta = await computePrDelta(target, { baseRef });
+      const gate = netNewGate(delta, failOn);
+      process.stderr.write(
+        `[ci] net-new vs ${baseRef}: +${delta.introduced.length} introduced · -${delta.resolved.length} resolved · ${delta.persistent.length} pre-existing (not gated)\n` +
+        `[ci] net-new gate fail-on=${failOn} → ${gate.fail ? 'FAIL' : 'pass'}${gate.blocked.length ? ' (' + gate.blocked.length + ' blocking)' : ''}\n`);
+      for (const f of gate.blocked.slice(0, 20)) process.stderr.write(`  + [${(f.severity || '').toUpperCase()}] ${f.vuln || f.type} ${f.file}:${f.line}\n`);
+      return gate.fail ? 1 : 0;
+    } catch (e) {
+      process.stderr.write(`[ci] net-new gate error: ${(e && e.message) || e} — falling back to full --fail-on gate\n`);
+      // Fall through to the full gate rather than passing silently.
+    }
   }
   return ciExitCode(scanCode, failOn);
 }
