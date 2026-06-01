@@ -102,6 +102,7 @@ import { scanRAGPoisoning } from './sast/rag-poisoning.js';
 import { scanAgentToolEscalation } from './sast/agent-tool-escalation.js';
 import { scanAgentUntrustedFlow } from './sast/agent-untrusted-flow.js';
 import { scanInstallScripts } from './sca/install-script-analysis.js';
+import { scanEventEntrypoints } from './sast/event-entrypoint.js';
 import { scanDbTaint, scanDbTaintCrossFile } from './sast/db-taint.js';
 import { scanSSRFCloudMetadata } from './sast/ssrf-cloud-metadata.js';
 import { scanMutationXSS } from './sast/mutation-xss.js';
@@ -7470,6 +7471,7 @@ async function runFullScan({fileContents={}, depFileContents={}, scanRoot=null},
       aF.push(...scanRAGPoisoning(p,c));
       aF.push(...scanAgentToolEscalation(p,c));
       aF.push(...scanAgentUntrustedFlow(p,c));
+      aF.push(...scanEventEntrypoints(p,c));
       aF.push(...scanDbTaint(p,c));
       aF.push(...scanSSRFCloudMetadata(p,c));
       aF.push(...scanMutationXSS(p,c));
