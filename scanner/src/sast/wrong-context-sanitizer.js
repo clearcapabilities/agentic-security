@@ -48,6 +48,61 @@ function lineOf(raw, idx) { return raw.substring(0, idx).split('\n').length; }
 function isJsLike(fp) { return /\.(?:js|jsx|ts|tsx|mjs|cjs)$/i.test(fp); }
 function isPhp(fp) { return /\.php$/i.test(fp); }
 
+// R5 (PRD §5) — context-aware sanitizer ADEQUACY. The model: a sanitizer
+// neutralizes a specific context; using it before a sink of a DIFFERENT context
+// is a no-op that looks safe. The highest-signal mismatches beyond the URL case
+// above: an HTML-entity encoder applied to a value that then reaches a SHELL or
+// SQL sink — HTML-escaping does nothing for command/SQL injection.
+const _SHELL_SINK = /\b(?:exec|execSync|execFile|execFileSync|spawn|spawnSync|system|popen|shell_exec|child_process\.\w+)\s*\(/;
+const _SQL_SINK = /\.(?:query|execute|raw|exec)\s*\(|\bdb\.raw\s*\(|sequelize\.query\s*\(/i;
+const _HTML_ENC_CALL = new RegExp(HTML_ENCODER + "\\s*\\(", "g");
+
+export function scanSanitizerContextMismatch(fp, raw) {
+  if (!raw || raw.length > 500_000) return [];
+  if (!isJsLike(fp) && !isPhp(fp) && !/\.py$/i.test(fp)) return [];
+  if (!/escapeHtml|escapeHTML|htmlspecialchars|htmlentities|he\.encode|he\.escape|_\.escape|lodash\.escape/i.test(raw)) return [];
+  if (!_SHELL_SINK.test(raw) && !_SQL_SINK.test(raw)) return [];
+  const code = blankComments(raw);
+  const lines = code.split('\n');
+  const findings = [];
+  const seen = new Set();
+  // Track vars assigned directly from an HTML encoder (one hop).
+  const htmlVars = new Set();
+  const VAR_ASSIGN = new RegExp("(?:\\b(?:const|let|var)\\s+)?([A-Za-z_$][\\w$]*)\\s*=\\s*" + HTML_ENCODER + "\\s*\\(", "g");
+  let m;
+  while ((m = VAR_ASSIGN.exec(code))) htmlVars.add(m[1]);
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i];
+    const isShell = _SHELL_SINK.test(line);
+    const isSql = !isShell && _SQL_SINK.test(line);
+    if (!isShell && !isSql) continue;
+    const argRegion = line.slice(line.search(isShell ? _SHELL_SINK : _SQL_SINK));
+    _HTML_ENC_CALL.lastIndex = 0;
+    const inline = _HTML_ENC_CALL.test(argRegion);
+    const viaVar = !inline && [...htmlVars].some((v) => new RegExp(`\\b${v}\\b`).test(argRegion));
+    if (!inline && !viaVar) continue;
+    if (seen.has(i + 1)) continue;
+    seen.add(i + 1);
+    const ctx = isShell ? { cwe: 'CWE-78', kind: 'command', vuln: 'Command Injection' }
+      : { cwe: 'CWE-89', kind: 'SQL', vuln: 'SQL Injection' };
+    findings.push({
+      id: `wrong-context-sanitizer:sink:${fp}:${i + 1}`,
+      severity: 'high',
+      file: fp,
+      line: i + 1,
+      vuln: `Wrong-context sanitizer (HTML-encoded value used in a ${ctx.kind} sink)`,
+      cwe: ctx.cwe,
+      family: ctx.kind === 'command' ? 'command-injection' : 'sql-injection',
+      parser: 'SAST',
+      description: `An HTML-entity encoder was applied to a value that then flows into a ${ctx.kind} sink. HTML escaping neutralizes HTML markup, NOT ${ctx.kind} metacharacters — the value is still ${ctx.vuln}-exploitable while appearing sanitized.`,
+      remediation: ctx.kind === 'command'
+        ? 'Use an argv-form API (execFile/spawn with an args array), never a shell string; HTML escaping is irrelevant here.'
+        : 'Use parameterized queries / prepared statements; HTML escaping does not prevent SQL injection.',
+    });
+  }
+  return findings;
+}
+
 export function scanWrongContextSanitizer(fp, raw) {
   if (!raw || raw.length > 500_000) return [];
   if (!isJsLike(fp) && !isPhp(fp)) return [];

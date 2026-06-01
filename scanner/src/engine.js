@@ -82,7 +82,7 @@ import { scanLDAPInjection } from './sast/ldap-injection.js';
 import { scanXPathInjection } from './sast/xpath-injection.js';
 import { scanSSTI } from './sast/ssti.js';
 import { scanOpenRedirect } from './sast/open-redirect.js';
-import { scanWrongContextSanitizer } from './sast/wrong-context-sanitizer.js';
+import { scanWrongContextSanitizer, scanSanitizerContextMismatch } from './sast/wrong-context-sanitizer.js';
 import { scanFrontendHygiene } from './sast/frontend-hygiene.js';
 import { scanCsvInjection } from './sast/csv-injection.js';
 import { scanStoredTaint } from './sast/stored-taint.js';
@@ -7415,6 +7415,7 @@ async function runFullScan({fileContents={}, depFileContents={}, scanRoot=null},
       aF.push(...scanSSTI(p,c));
       aF.push(...scanOpenRedirect(p,c));
       aF.push(...scanWrongContextSanitizer(p,c));
+      aF.push(...scanSanitizerContextMismatch(p,c));
       aF.push(...scanFrontendHygiene(p,c));
       aF.push(...scanCsvInjection(p,c));
       aF.push(...scanStoredTaint(p,c));
