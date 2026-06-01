@@ -76,6 +76,11 @@ export function annotateProofGate(findings, opts = {}) {
 
     // proven-clean | proven-infeasible → recall-preserving demotion.
     if (verdict === 'proven-clean') stats.provenClean++; else stats.provenInfeasible++;
+    // R13 (PRD §5): make "provably safe" a first-class, queryable verdict — not
+    // just a quiet confidence demotion. "We proved this can't fire" is a
+    // stronger, rarer claim than any confidence score, and lets the report
+    // optionally hide discharged findings (--hide-proven-safe).
+    f.provablySafe = true;
 
     if (typeof f.confidence === 'number') {
       f._confidenceBeforeProofGate = f.confidence;

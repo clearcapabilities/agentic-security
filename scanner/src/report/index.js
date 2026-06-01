@@ -49,6 +49,10 @@ export function normalizeFindings(scan){
       corroborationCount: typeof f.corroborationCount === 'number' ? f.corroborationCount : null,
       corroboration: f.corroboration || null,
       multiSignal: f.multiSignal === true ? true : null,
+      // R13: proof verdict — `provablySafe` means a flow proof discharged this
+      // finding (parameterizer on every path / sanitizer excludes metachars).
+      proof: f.proof || null,
+      provablySafe: f.provablySafe === true ? true : null,
       // 0.6.0 Feat-2
       toxicity: f.toxicityScore ?? null,
       toxicityFactors: f.toxicityFactors || null,

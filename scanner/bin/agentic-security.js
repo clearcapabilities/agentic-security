@@ -111,6 +111,7 @@ Options:
   --incremental                Reuse taint summaries from prior scans (speeds up deep mode in CI)
   --set-baseline               Save current findings as baseline (suppresses pre-existing issues)
   --since-baseline             Only show findings NOT in the saved baseline
+  --hide-proven-safe           Drop findings discharged by a flow proof (provably safe)
   --secret-history             Also sweep recent git history for committed secrets
                                (removed from HEAD but recoverable from .git)
   --history-depth <n>          Commits to sweep with --secret-history (default 50)
@@ -398,6 +399,15 @@ async function cmdScan(args) {
       scan.findings = (scan.findings || []).filter(f => !baselineSet.has(f.stableId || f.id));
       process.stderr.write(`[baseline] filtered ${before - scan.findings.length} baseline findings, ${scan.findings.length} new\n`);
     } catch { /* baseline file unreadable, skip */ }
+  }
+
+  // R13 (PRD §5): --hide-proven-safe drops findings a flow proof discharged
+  // (parameterizer on every path / sanitizer excludes metacharacters) for a
+  // clean report. They are kept (demoted) by default so nothing is hidden silently.
+  if (args.flags['hide-proven-safe']) {
+    const before = (scan.findings || []).length;
+    scan.findings = (scan.findings || []).filter(f => !f.provablySafe);
+    process.stderr.write(`[proof] hid ${before - (scan.findings || []).length} provably-safe finding(s)\n`);
   }
 
   // R15 (PRD §5): --secret-history sweeps recent git history for secrets that
