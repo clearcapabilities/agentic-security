@@ -6696,6 +6696,42 @@ function _parseMavenDependencyTree(text, filePath){
   return out;
 }
 
+// R10 (PRD §5): Gradle transitive graph. `gradle dependencies` (or
+// `gradle :app:dependencies`) prints the FULL resolved tree; build.gradle alone
+// only declares direct deps. Canonical committed path: `gradle-dependencies.txt`.
+// Format (tree-drawing prefixes we strip), version may be conflict-resolved:
+//   +--- group:artifact:1.0
+//   |    \--- group:artifact:1.0 -> 1.2   (resolved to 1.2)
+// Config headers ("compileClasspath - …"), project deps, and (*)/(c) markers skipped.
+function _parseGradleDependencies(text, filePath) {
+  const out = [];
+  const seen = new Set();
+  for (const rawLine of String(text).split('\n')) {
+    if (!rawLine.trim()) continue;
+    const indent = rawLine.length - rawLine.replace(/^[\s|+\\-]+/, '').length;
+    const stripped = rawLine.replace(/^[\s|+\\-]+/, '').trim();
+    if (!stripped || stripped.startsWith('project ') || /\bproject\s+[':]/.test(stripped)) continue;
+    // group:artifact:version, with optional `-> resolved` and trailing (*)/(c)/(n).
+    const m = stripped.match(/^([A-Za-z0-9._-]+):([A-Za-z0-9._-]+):([^\s(]+?)(?:\s*->\s*([^\s(]+))?\s*(?:\([*cn]\))?\s*$/);
+    if (!m) continue;
+    const group = m[1], artifact = m[2];
+    let ver = (m[4] || m[3] || '').replace(/[{}]/g, '');
+    ver = ver.replace(/^(?:strictly|require|prefer)\s+/, '');
+    if (!group || !artifact || !ver) continue;
+    const key = `${group}:${artifact}:${ver}`;
+    if (seen.has(key)) continue;
+    seen.add(key);
+    out.push({
+      name: `${group}:${artifact}`, version: ver, group, scope: 'required',
+      purl: _makePurl('maven', artifact, ver, group), ecosystem: 'maven', filePath,
+      isUnpinned: false,
+      isTransitive: indent > 6,
+      pomSource: 'gradle-dependencies',
+    });
+  }
+  return out;
+}
+
 function _parseBuildGradle(text,filePath){
   const out=[];
   const pat=/(?:implementation|api|compile|runtimeOnly|testImplementation|testCompile|compileOnly|classpath)\s*(?:\(|['"])\s*['"]?([a-zA-Z0-9._\-]+):([a-zA-Z0-9._\-]+):([^'")\s,]+)/g;
@@ -6974,6 +7010,8 @@ function parseManifests(allFileContents){
     // `target/dependency-tree.txt` (per `mvn dependency:tree -DoutputFile=...`)
     // but users sometimes commit it as `dependency-tree.txt` at repo root.
     'dependency-tree.txt':_parseMavenDependencyTree,
+    // R10: Gradle resolved transitive graph — `gradle dependencies > gradle-dependencies.txt`.
+    'gradle-dependencies.txt':_parseGradleDependencies,
   };
   const out=[],seen=new Set();
   for(const[fp,content]of Object.entries(allFileContents)){
