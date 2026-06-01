@@ -177,3 +177,33 @@ app.get('/h', (req, res) => {
   // The .replace stripping CR/LF should suppress the flag.
   assert.equal(out.length, 0, 'CRLF strip should suppress the response-splitting flag');
 });
+
+// ─── HTTP response splitting (cross-language: PHP/Go/Ruby/C#/Kotlin) ─────────
+
+const rsFires = (fp, code) => scanResponseSplitting(fp, code).some((f) => f.cwe === 'CWE-113');
+const rsClean = (fp, code) => scanResponseSplitting(fp, code).every((f) => f.cwe !== 'CWE-113');
+
+test('response-splitting — PHP header() with $_GET fires; literal clean', () => {
+  assert.ok(rsFires('h.php', '<?php header("X-Custom: " . $_GET["v"]);'));
+  assert.ok(rsClean('h.php', '<?php header("X-Custom: HIT");'));
+});
+
+test('response-splitting — Go w.Header().Set with query fires; literal clean', () => {
+  assert.ok(rsFires('h.go', 'package main\nimport "net/http"\nfunc h(w http.ResponseWriter, r *http.Request){ w.Header().Set("X-Custom", r.URL.Query().Get("v")) }'));
+  assert.ok(rsClean('h.go', 'package main\nimport "net/http"\nfunc h(w http.ResponseWriter){ w.Header().Set("X-Custom", "HIT") }'));
+});
+
+test('response-splitting — Ruby response.headers[…] = params fires; literal clean', () => {
+  assert.ok(rsFires('h.rb', 'def show\n  response.headers["X-Custom"] = params[:v]\nend\n'));
+  assert.ok(rsClean('h.rb', 'def show\n  response.headers["X-Custom"] = "HIT"\nend\n'));
+});
+
+test('response-splitting — C# Response.Headers.Add with param fires; local literal clean', () => {
+  assert.ok(rsFires('H.cs', 'class H { void Set(string v){ Response.Headers.Add("X-Custom", v); } }'));
+  assert.ok(rsClean('H.cs', 'class H { void Set(){ var v = "static"; Response.Headers.Add("X-Custom", v); } }'));
+});
+
+test('response-splitting — Kotlin setHeader with param fires; literal clean', () => {
+  assert.ok(rsFires('H.kt', 'fun h(v: String, resp: HttpServletResponse) { resp.setHeader("X-Custom", v) }'));
+  assert.ok(rsClean('H.kt', 'fun h(resp: HttpServletResponse) { resp.setHeader("X-Custom", "HIT") }'));
+});

@@ -24,25 +24,43 @@
 
 import { blankComments } from './_comment-strip.js';
 
+// Each pattern captures the header VALUE expression in its LAST group (the
+// code reads the last defined group, so header-name groups can come first).
 const PATTERNS = [
   // res.setHeader('name', val) | res.set('name', val) | ctx.response.set(…)
   ['js', /\b(?:res|reply|response|ctx\.response)\s*\.\s*(?:setHeader|set|append)\s*\(\s*[`"'][^`"']+[`"']\s*,\s*([^)]+?)\s*\)/g, 'res.setHeader'],
   // response.setHeader / response.addHeader  (Java Servlet API). Accept any
   // identifier as the receiver — `resp`, `response`, `httpResponse`, etc.
-  ['java', /\b(?:[A-Za-z_][\w]*)\s*\.\s*(?:setHeader|addHeader)\s*\(\s*"[^"]+"\s*,\s*([^)]+?)\s*\)/g, 'setHeader'],
+  ['java', /\b(?:[A-Za-z_][\w]*)\s*\.\s*(?:setHeader|addHeader|addIntHeader|setDateHeader)\s*\(\s*"[^"]+"\s*,\s*([^)]+?)\s*\)/g, 'setHeader'],
   // Django/Flask response.headers['X-…'] = userValue
   ['py', /\b(?:response|resp|r)\s*(?:\.\s*headers)?\s*\[\s*['"][^'"]+['"]\s*\]\s*=\s*([^\n;]+)/g, 'response.headers[…] = …'],
   // PHP header("X-Foo: " . $_GET[…])  (Location: variants handled by open-redirect)
   ['php', /\bheader\s*\(\s*['"](?!Location)([^'"]+):\s*['"]\s*\.\s*(\$\w[\w\[\]'"]*)/g, 'PHP header()'],
+  // Go net/http: w.Header().Set/Add("X-…", value) | w.Header()["X-…"] = …
+  ['go', /\.\s*Header\s*\(\s*\)\s*\.\s*(?:Set|Add)\s*\(\s*"[^"]+"\s*,\s*([^)]+?)\s*\)/g, 'Header().Set'],
+  // Ruby Rack/Rails: response.headers["X-…"] = … | headers["X-…"] = … | response["X-…"] = …
+  ['rb', /\b(?:response\s*(?:\.\s*headers)?|headers)\s*\[\s*['"][^'"]+['"]\s*\]\s*=\s*([^\n;]+)/g, 'response headers[…] = …'],
+  // C#: Response.Headers.Add/Append("X-…", value) | Response.AddHeader(…) | Response.AppendHeader(…)
+  ['cs', /\bResponse\s*\.\s*(?:Headers\s*\.\s*(?:Add|Append)|AddHeader|AppendHeader)\s*\(\s*"[^"]+"\s*,\s*([^)]+?)\s*\)/g, 'Response.Headers.Add'],
+  // Kotlin: resp.setHeader("X-…", value) | resp.addHeader(…) — JVM servlet API
+  ['kt', /\b(?:[A-Za-z_][\w]*)\s*\.\s*(?:setHeader|addHeader)\s*\(\s*"[^"]+"\s*,\s*([^)]+?)\s*\)/g, 'setHeader'],
 ];
 
 const TAINT_HINT_RE =
-  /\b(?:req\.|request\.|params\.|query\.|body\.|ctx\.query|ctx\.request|reply\.query|c\.Query|r\.URL\.Query|_GET|_POST|_REQUEST|getParameter|getHeader)\b/;
+  /\b(?:req\.|request\.|params\.|params\s*\[|query\.|body\.|ctx\.query|ctx\.request|reply\.query|c\.Query|r\.URL\.Query|_GET|_POST|_REQUEST|getParameter|getHeader)\b|\b(?:params|query|cookies|session)\s*\[/;
 
 const SANITIZER_PATTERNS = [
   /\.replace\s*\(\s*\/\\r\?\\?n/i,                // .replace(/\r?\n/, '')
   /\.replace\s*\(\s*\/[\[]\\r\\n[\]]/i,           // .replace(/[\r\n]/, '')
+  /\.replace\s*\(\s*['"]\\r['"]/,                 // .replace("\r", "") (Python/JS chain)
+  /\.replace\s*\(\s*['"]\\n['"]/,                 // .replace("\n", "")
   /\.replaceAll\s*\(\s*['"]\\r?\\?n?['"]/,
+  /\bgsub\s*\(\s*\/[\[]?\\r/i,                    // Ruby .gsub(/[\r\n]/, '') or /\r\n/
+  /\bgsub\s*\(\s*\/[\[]\\r\\n[\]]/i,
+  /\bdelete\s*\(\s*['"]\\r\\n['"]\s*\)/,          // Ruby .delete("\r\n")
+  /\bstrings\.NewReplacer\s*\([^)]*\\r/,          // Go strings.NewReplacer("\r","","\n","")
+  /\bstrings\.ReplaceAll\s*\([^,]+,\s*['"]\\[rn]['"]/,
+  /\bstr_replace\s*\(\s*\[[^\]]*\\[rn]/,          // PHP str_replace(["\r","\n"], …)
   /\bstripNewlines\b/i,
   /\bsanitizeHeader\b/i,
   /\bescapeCRLF\b/i,
@@ -63,7 +81,11 @@ function _lang(fp) {
   if (/\.(?:js|jsx|ts|tsx|mjs|cjs)$/i.test(fp)) return 'js';
   if (/\.py$/i.test(fp)) return 'py';
   if (/\.java$/i.test(fp)) return 'java';
-  if (/\.php$/i.test(fp)) return 'php';
+  if (/\.(?:php|phtml)$/i.test(fp)) return 'php';
+  if (/\.go$/i.test(fp)) return 'go';
+  if (/\.rb$/i.test(fp)) return 'rb';
+  if (/\.cs$/i.test(fp)) return 'cs';
+  if (/\.kt$/i.test(fp)) return 'kt';
   return null;
 }
 
@@ -79,8 +101,8 @@ export function scanResponseSplitting(fp, raw) {
   if (!raw || raw.length > 500_000) return [];
   const lang = _lang(fp);
   if (!lang) return [];
-  const code = blankComments(raw, lang === 'py' ? 'py' : undefined);
-  if (!/\b(?:setHeader|addHeader|response\s*\.\s*headers|response\s*\[|reply\s*\.\s*set|\bheader\s*\()/i.test(code)) return [];
+  const code = blankComments(raw, (lang === 'py' || lang === 'rb') ? 'py' : undefined);
+  if (!/\b(?:setHeader|addHeader|addIntHeader|setDateHeader|AddHeader|AppendHeader|response\s*\.\s*headers|response\s*\[|headers\s*\[|reply\s*\.\s*set|\.\s*Header\s*\(\s*\)\s*\.\s*(?:Set|Add)|Response\s*\.\s*Headers|\bheader\s*\()/i.test(code)) return [];
   const findings = [];
   const seen = new Set();
   for (const [plang, pat, label] of PATTERNS) {
@@ -88,23 +110,30 @@ export function scanResponseSplitting(fp, raw) {
     const re = new RegExp(pat.source, pat.flags);
     let m;
     while ((m = re.exec(code))) {
-      const value = (m[1] || '').trim();
+      // Use the LAST defined capture group as the header VALUE (php's pattern
+      // captures the header NAME first, the value second).
+      const value = ((m[m.length - 1] ?? m[1]) || '').trim();
       let tainted = TAINT_HINT_RE.test(value);
-      // Java-handler-context heuristic: if the receiver looks like an
-      // HttpServletResponse and `value` is a plain ident that appears in
-      // the enclosing method's param list, treat it as user-derived. Same
-      // signature pattern as a real SAST tool's "request-scope param" rule.
-      if (!tainted && plang === 'java' && /^[A-Za-z_][\w]*$/.test(value)) {
-        const callIdx = m.index;
-        // Find the start of the enclosing method by walking back to the
-        // most recent `(...)`-style signature followed by `{`.
-        const before = code.slice(0, callIdx);
-        const sigRe = /\b(?:public|private|protected|static)[^;{]*\(([^)]*)\)\s*(?:throws[^{]+)?\{/g;
-        let sig = null;
-        let sm;
+      // Handler-context heuristic: when `value` is a plain identifier that is a
+      // parameter of the enclosing method/function, treat it as user-derived
+      // (same "request-scope param" rule a real SAST tool applies). Covers the
+      // single-file `void h(String v, … resp){ resp.setHeader("X", v); }` shape
+      // for Java / Kotlin / C#.
+      if (!tainted && (plang === 'java' || plang === 'kt' || plang === 'cs') && /^[A-Za-z_][\w]*$/.test(value)) {
+        const before = code.slice(0, m.index);
+        // Most recent signature `(...)` immediately followed by `{` — matches
+        // Java/C# (`… name(params) {`) and Kotlin (`fun name(params) … {`).
+        const sigRe = /\b(?:fun\s+\w+|[A-Za-z_][\w<>\[\],.\s]*\b\w+)\s*\(([^)]*)\)\s*(?::[^={]+)?(?:throws[^{]+)?\{/g;
+        let sig = null, sm;
         while ((sm = sigRe.exec(before)) !== null) sig = sm;
         if (sig) {
-          const params = sig[1].split(',').map(p => (p.trim().split(/\s+/).pop() || '').trim());
+          // Param name is the last token of each `Type name` / first of Kotlin `name: Type`.
+          const params = sig[1].split(',').map((p) => {
+            const t = p.trim();
+            if (!t) return '';
+            if (t.includes(':')) return t.split(':')[0].trim();      // Kotlin `name: Type`
+            return (t.split(/\s+/).pop() || '').trim();              // Java/C# `Type name`
+          });
           if (params.includes(value)) tainted = true;
         }
       }
