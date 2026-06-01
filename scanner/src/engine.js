@@ -143,6 +143,7 @@ import { annotateFeatureFlagGating } from './posture/feature-flags.js';
 import { annotatePersonaScores } from './posture/persona-prioritization.js';
 import { annotateMitigationComposite } from './posture/mitigation-composite.js';
 import { annotateCompositeRisk } from './posture/composite-risk.js';
+import { annotateScaVerdicts } from './posture/sca-verdict.js';
 
 // ── Integration block: world-class scaffolded modules ──────────────────────
 // Each module is opt-in via its own env var so partial adoption is safe.
@@ -8207,6 +8208,17 @@ async function runFullScan({fileContents={}, depFileContents={}, scanRoot=null},
   // apply accept-risk / SLA / major-version-freeze rules. supplyChain
   // findings get suppressed/tagged in place.
   try { const sp = loadScaPolicy(scanRoot); if (sp && !sp._error) applyScaPolicy(supplyChain, sp); } catch (_) {}
+  // R12 (PRD §5): deterministic decision-first verdict per dep, derived from the
+  // signals enriched above (composite risk × KEV × EPSS × reachability × policy).
+  // testsDetected is read from the UNFILTERED fileContents because shouldScan()
+  // strips test files out of `fc`.
+  try {
+    const _testsDetected = Object.keys(fileContents).some(f =>
+      /(?:^|\/)(?:tests?|spec|__tests__)\//i.test(f) ||
+      /\.(?:test|spec)\.[cm]?[jt]sx?$/i.test(f) ||
+      /(?:^|\/)test_[^/]*\.py$/i.test(f) || /_test\.(?:py|go)$/i.test(f));
+    annotateScaVerdicts(supplyChain, { testsDetected: _testsDetected });
+  } catch (_) {}
   // 0.9.0 Feat-15: dep confusion
   try{const dc=detectDepConfusion(annotatedComponents,scanRoot);aF.push(...dc);}catch(_){}
   // Deployment-platform security checklist
