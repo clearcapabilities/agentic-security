@@ -35,6 +35,7 @@ import { scanMobileManifest } from './sast/mobile-manifest.js';
 import { scanQuarkusHardening } from './sast/quarkus-hardening.js';
 import { scanFastapiHardening } from './sast/fastapi-hardening.js';
 import { scanAuthZ } from './sast/authz.js';
+import { scanApiBrokenAuthz } from './sast/api-authz.js';
 import { scanModelLoad } from './sast/model-load.js';
 import { scanPromptTemplate } from './sast/prompt-template.js';
 import { scanXXE } from './sast/xxe.js';
@@ -7591,6 +7592,8 @@ async function runFullScan({fileContents={}, depFileContents={}, scanRoot=null},
   setProgress({current:i,total:files.length,file:"Stored taint...",phase:"Linking"});const storedRegistry=buildStoredTaintRegistry(fc);const stf=crossStoredTaint(fc,storedRegistry);aF.push(...stf);
   setProgress({current:i,total:files.length,file:"Session taint...",phase:"Linking"});const sess=crossSessionTaint(fc);aF.push(...sess);
   setProgress({current:i,total:files.length,file:"Call graph...",phase:"Linking"});const callGraph=buildCallGraph(fc);
+  // R19 (PRD §5): cross-route BOLA/BFLA over the aggregated route inventory.
+  try{aF.push(...scanApiBrokenAuthz(aR));}catch(_){}
   setProgress({current:i,total:files.length,file:"Reachability + guards...",phase:"Linking"});annotateReachability(aF,aR,callGraph,fc);aF.forEach(f=>detectGuardsForFinding(f,fc));
   setProgress({current:i,total:files.length,file:"Inferring sanitizers...",phase:"Linking"});const learned=inferSanitizers(fc);applyLearnedSanitizers(aF,learned,fc);
   setProgress({current:i,total:files.length,file:"Sanitizer effectiveness...",phase:"Linking"});applySanitizerEffectiveness(aF);
