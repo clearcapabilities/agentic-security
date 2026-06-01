@@ -54,7 +54,7 @@ function _shape(file, line, ruleId, vuln, fam, sev, cwe, remediation, descriptio
   };
 }
 
-const _RELEVANCE = /\bTLS\b|\bSSL\b|\btls\b|tls_version|tls_minimum|min[_-]?version|min[_-]?protocol|verify|ciph(?:er|ersuite)|NODE_TLS|InsecureSkipVerify|rejectUnauthor|trust[_-]?all|allow[_-]?all|jwt\.|jsonwebtoken|jose|PyJWT|jwt\b|MD5|SHA1|sha-?1\b|md5\b|DES\b|3DES|RC4|Blowfish|ECB|pbkdf2|PBKDF2|bcrypt|scrypt|argon2|Math\.random|random\.random|java\.util\.Random|new Random/i;
+const _RELEVANCE = /\bTLS\b|\bSSL\b|\btls\b|tls_version|tls_minimum|min[_-]?version|min[_-]?protocol|verify|ciph(?:er|ersuite)|NODE_TLS|InsecureSkipVerify|rejectUnauthor|trust[_-]?all|allow[_-]?all|jwt\.|jsonwebtoken|jose|PyJWT|jwt\b|MD5|SHA1|sha-?1\b|md5\b|DES\b|3DES|RC4|Blowfish|ECB|pbkdf2|PBKDF2|bcrypt|scrypt|argon2|Math\.random|random\.random|java\.util\.Random|new Random|IvParameterSpec|GCMParameterSpec|openssl_encrypt|createCipher|\bAES\b|\baes\b|\.iv\s*=|\bIV\b/i;
 
 function _isCryptoRelevant(text) { return _RELEVANCE.test(text); }
 
@@ -201,8 +201,36 @@ function detectStaticIv(file, raw, code, out, seen) {
     { re: /\biv\s*=\s*b['"](?:\\x00|\\0|0)+['"]\s*\*\s*\d+/gi },
     { re: /\biv\s*=\s*b['"](?:\\x00|\\0){8,}['"]/gi },
     { re: /\bmodes\.(?:CBC|CTR|CFB|OFB|GCM)\s*\(\s*b['"]/g },  // modes.CBC(b'…') literal IV/nonce
+    // Java/Kotlin: IvParameterSpec / GCMParameterSpec built from a freshly
+    // zero-initialized array (`new byte[16]` / `ByteArray(16)`) — no CSPRNG.
+    { re: /\b(?:Iv|GCM)ParameterSpec\s*\(\s*new\s+byte\s*\[\s*\d+\s*\]/g },          // Java
+    { re: /\b(?:Iv|GCM)ParameterSpec\s*\(\s*ByteArray\s*\(\s*\d+\s*\)/g },           // Kotlin
+    // Go: an IV/nonce that is `iv := make([]byte, …)` (all-zero, never filled
+    // from a CSPRNG) used with a stream/block-mode constructor. The `make`
+    // assignment usually precedes the NewXxx call, so gate on both being
+    // present in the file (NewXxx hint) and flag the make line.
+    { re: /\b\w*iv\w*\s*:?=\s*make\s*\(\s*\[\]byte\s*,/gi,
+      goGate: /\bcipher\.New(?:CBCEncrypter|CBCDecrypter|CTR|CFBEncrypter|CFBDecrypter|OFB)\b/,
+      // Safe if the file fills the IV from a CSPRNG — rand.Read(iv) /
+      // io.ReadFull(rand.Reader, iv) / crypto/rand usage.
+      goSafe: /\brand\.Read\s*\(|\bio\.ReadFull\s*\(\s*rand\.Reader|\bcrypto\/rand\b/ },
+    // C#: a zero/static IV assigned to .IV or passed to CreateEncryptor/Decryptor.
+    { re: /\.\s*IV\s*=\s*new\s+byte\s*\[\s*\d+\s*\]/g },                              // C# aes.IV = new byte[16]
+    { re: /\bCreateEncryptor\s*\(\s*[^,]+,\s*new\s+byte\s*\[\s*\d+\s*\]/g },          // C# CreateEncryptor(key, new byte[16])
+    // PHP: openssl_encrypt with an empty-string IV or a str_repeat("\0",N) IV.
+    { re: /\bopenssl_encrypt\s*\([^;]*,\s*(?:""|''|str_repeat\s*\(\s*["']\\?0["']\s*,)/g },
+    { re: /\$iv\s*=\s*str_repeat\s*\(\s*["']\\?0["']\s*,\s*\d+\s*\)/g },
+    // Ruby: cipher.iv = a zero / fixed literal string.
+    { re: /\.\s*iv\s*=\s*["']\\x?0(?:\\x?0|0)*["']\s*\*\s*\d+/gi },                    // cipher.iv = "\x00" * 16
+    { re: /\.\s*iv\s*=\s*["'](?:\\x00){4,}["']/gi },                                  // cipher.iv = "\x00\x00…"
+    { re: /\.\s*iv\s*=\s*["'][0]{8,}["']/g },                                         // cipher.iv = "0000…"
   ];
   for (const p of patterns) {
+    // Some patterns only make sense in the presence of a companion construct
+    // (e.g. a Go `iv := make([]byte,…)` is only suspicious when a CBC/CTR/…
+    // mode constructor uses it). Skip the pattern when its gate is absent.
+    if (p.goGate && !p.goGate.test(code)) continue;
+    if (p.goSafe && p.goSafe.test(code)) continue;
     let m;
     while ((m = p.re.exec(code))) {
       const ln = _line(raw, m.index);

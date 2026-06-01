@@ -51,6 +51,26 @@ test('crypto-proto: pyca/cryptography zero IV (iv = b\'\\x00\' * 16) flagged sta
   assert.ok(out.some(f => f.family === 'crypto-static-iv' && f.cwe === 'CWE-329'), 'zero IV flagged');
 });
 
+test('crypto-proto: cross-language static-IV — JVM/Go/PHP/Ruby/C# fire; CSPRNG clean', () => {
+  const fires = (fp, code) => scanCryptoProtocol(fp, code).some(f => f.cwe === 'CWE-329');
+  const clean = (fp, code) => scanCryptoProtocol(fp, code).every(f => f.cwe !== 'CWE-329');
+  // Java / Kotlin IvParameterSpec from a zero array
+  assert.ok(fires('C.java', 'import javax.crypto.spec.IvParameterSpec;\nclass C { IvParameterSpec iv(){ return new IvParameterSpec(new byte[16]); } }'));
+  assert.ok(clean('C.java', 'import javax.crypto.spec.IvParameterSpec;\nimport java.security.SecureRandom;\nclass C { IvParameterSpec iv(){ byte[] b = new byte[16]; new SecureRandom().nextBytes(b); return new IvParameterSpec(b); } }'));
+  assert.ok(fires('C.kt', 'import javax.crypto.spec.IvParameterSpec\nclass C { fun iv() = IvParameterSpec(ByteArray(16)) }'));
+  // C# zero IV assignment / CreateEncryptor
+  assert.ok(fires('C.cs', 'using System.Security.Cryptography;\nclass C { void e(Aes aes){ aes.IV = new byte[16]; } }'));
+  // PHP openssl_encrypt with str_repeat / empty IV
+  assert.ok(fires('c.php', '<?php $iv = str_repeat("\\0", 16); openssl_encrypt($d, "aes-128-cbc", $k, 0, $iv);'));
+  assert.ok(clean('c.php', '<?php $iv = random_bytes(16); openssl_encrypt($d, "aes-128-cbc", $k, 0, $iv);'));
+  // Ruby cipher.iv = zero literal
+  assert.ok(fires('c.rb', 'require "openssl"\ndef e(d,k)\n  c = OpenSSL::Cipher.new("aes-128-cbc"); c.encrypt; c.key = k\n  c.iv = "\\x00" * 16\n  c.update(d)\nend\n'));
+  assert.ok(clean('c.rb', 'require "openssl"\ndef e(d,k)\n  c = OpenSSL::Cipher.new("aes-128-cbc"); c.encrypt; c.key = k\n  c.iv = c.random_iv\n  c.update(d)\nend\n'));
+  // Go: zero make([]byte) IV fires; rand.Read-filled clean
+  assert.ok(fires('c.go', 'package main\nimport ("crypto/aes";"crypto/cipher")\nfunc e(k,d []byte){ b,_ := aes.NewCipher(k); iv := make([]byte, aes.BlockSize); m := cipher.NewCBCEncrypter(b, iv); _ = m }'));
+  assert.ok(clean('c.go', 'package main\nimport ("crypto/aes";"crypto/cipher";"crypto/rand")\nfunc e(k,d []byte){ b,_ := aes.NewCipher(k); iv := make([]byte, aes.BlockSize); rand.Read(iv); m := cipher.NewCBCEncrypter(b, iv); _ = m }'));
+});
+
 test('crypto-proto: Go InsecureSkipVerify + TLS 1.0 flagged', () => {
   const out = scanCryptoProtocol('insecure.go', read(path.join(FIX, 'vulnerable/insecure.go')));
   assert.ok(out.some(f => f.family === 'crypto-tls-no-verify'));
