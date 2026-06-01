@@ -9,7 +9,7 @@ const __require = createRequire(import.meta.url);
 const PKG_VERSION = __require('../package.json').version;
 import { signLastScan as _signLastScan, verifyLastScan as _verifyLastScanShared } from '../src/posture/integrity.js';
 import { runScan } from '../src/runScan.js';
-import { toJSON, toMarkdown, toSARIF, toSTIX, toCSV, toJUnit, toCLI, toCLIByProfile, toShipVerdict, toProTable, toHTML, toSummary, exitCodeFor, normalizeFindings } from '../src/report/index.js';
+import { toJSON, toMarkdown, toSARIF, toSTIX, toCSV, toJUnit, toCLI, toCLIByProfile, toShipVerdict, toProTable, toHTML, toSummary, toVex, exitCodeFor, normalizeFindings } from '../src/report/index.js';
 import { toCycloneDX, toSPDX } from '../src/posture/sbom.js';
 import { toPBOM } from '../src/sast/pipeline.js';
 import { buildAIBOM, aibomToMarkdown } from '../src/posture/aibom.js';
@@ -504,6 +504,7 @@ async function cmdScan(args) {
   else if (format === 'html') body = toHTML(scan, meta);
   else if (format === 'cyclonedx' || format === 'sbom') body = JSON.stringify(toCycloneDX(scan, meta), null, 2);
   else if (format === 'spdx')                            body = JSON.stringify(toSPDX(scan, meta), null, 2);
+  else if (format === 'vex' || format === 'openvex')     body = JSON.stringify(toVex(scan, meta), null, 2);
   else if (format === 'pbom')                            body = JSON.stringify(toPBOM(scan.fc || {}, meta), null, 2);
   else if (format === 'aibom')                           body = JSON.stringify(buildAIBOM(scan, scan.fc || {}, meta), null, 2);
   else if (format === 'aibom-md')                        body = aibomToMarkdown(buildAIBOM(scan, scan.fc || {}, meta));

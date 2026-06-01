@@ -635,6 +635,47 @@ function _esc(s) {
     .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
 }
 
+// R11 (PRD §5) — OpenVEX export. Turns our reachability verdict (R7/R12) into a
+// standard interchange statement per CVE: unreachable tiers → not_affected with
+// the `vulnerable_code_not_in_execute_path` justification; reachable tiers →
+// affected with an action statement; unknown → under_investigation. Lets
+// downstream tools and auditors inherit "this CVE can't fire here" in a format
+// they accept, instead of re-triaging our transitive noise.
+const _VEX_REACHABLE = new Set(['route-reachable-via-function', 'function-reachable', 'import-reachable']);
+const _VEX_NOT_AFFECTED = new Set(['unreachable', 'build-only', 'manifest-only', 'transitive-only']);
+export function toVex(scan, meta = {}) {
+  const deps = (scan.supplyChain || []).filter(s => s && s.type === 'vulnerable_dep');
+  const statements = [];
+  for (const s of deps) {
+    const cves = (Array.isArray(s.cveAliases) && s.cveAliases.length ? s.cveAliases : [s.osvId]).filter(Boolean);
+    if (!cves.length) continue;
+    const purl = s.purl || `pkg:${s.ecosystem || 'generic'}/${s.name}@${s.version || '0'}`;
+    const stmt = {};
+    if (_VEX_NOT_AFFECTED.has(s.reachabilityTier)) {
+      stmt.status = 'not_affected';
+      stmt.justification = 'vulnerable_code_not_in_execute_path';
+      stmt.impact_statement = `agentic-security reachability: ${s.reachabilityTier}`;
+    } else if (_VEX_REACHABLE.has(s.reachabilityTier)) {
+      stmt.status = 'affected';
+      stmt.action_statement = s.scaVerdictReason || s.remediation ||
+        (Array.isArray(s.fixedVersions) && s.fixedVersions.length ? `upgrade ${s.name} to ${s.fixedVersions[0]}` : 'review and remediate');
+    } else {
+      stmt.status = 'under_investigation';
+    }
+    for (const cve of cves) {
+      statements.push({ vulnerability: { name: cve }, products: [{ '@id': purl }], ...stmt });
+    }
+  }
+  return {
+    '@context': 'https://openvex.dev/ns/v0.2.0',
+    '@id': `https://agentic-security/vex/${(meta && meta.scanId) || 'scan'}`,
+    author: 'agentic-security',
+    timestamp: (meta && meta.startedAt) || new Date().toISOString(),
+    version: 1,
+    statements,
+  };
+}
+
 export function toHTML(scan, meta = {}) {
   const findings = normalizeFindings(scan);
   const counts = { critical: 0, high: 0, medium: 0, low: 0, info: 0 };
