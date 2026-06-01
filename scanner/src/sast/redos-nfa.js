@@ -305,6 +305,73 @@ export function extractJavaRegexBodies(code) {
   return out;
 }
 
+// Go: regexp.MustCompile / Compile / MatchString("…") — Go string literals use
+// "…" (interpreted) or `…` (raw). Both carry the pattern verbatim.
+export function extractGoRegexBodies(code) {
+  const out = [];
+  for (const m of code.matchAll(/\bregexp\.(?:MustCompile|Compile|CompilePOSIX|MatchString|Match)\s*\(\s*"((?:\\.|[^"\n])+)"/g)) {
+    out.push({ body: m[1].replace(/\\\\/g, '\\'), line: code.slice(0, m.index).split('\n').length });
+  }
+  for (const m of code.matchAll(/\bregexp\.(?:MustCompile|Compile|CompilePOSIX|MatchString|Match)\s*\(\s*`([^`]+)`/g)) {
+    out.push({ body: m[1], line: code.slice(0, m.index).split('\n').length });
+  }
+  return out;
+}
+
+// PHP: preg_match / preg_match_all / preg_replace("/…/flags", …) — the regex is
+// a delimited string; strip the delimiter + trailing flags.
+export function extractPhpRegexBodies(code) {
+  const out = [];
+  for (const m of code.matchAll(/\bpreg_(?:match|match_all|replace|replace_callback|split)\s*\(\s*(['"])(.+?)\1/g)) {
+    let lit = m[2];
+    // delimited: first char is the delimiter (e.g. / # ~), trailing flags after it
+    const delim = lit[0];
+    const close = lit.lastIndexOf(delim);
+    if (close > 0) lit = lit.slice(1, close);
+    out.push({ body: lit, line: code.slice(0, m.index).split('\n').length });
+  }
+  return out;
+}
+
+// Ruby: a regex literal /…/ used with =~ / .match / .match? / Regexp.new("…").
+export function extractRubyRegexBodies(code) {
+  const out = [];
+  for (const m of code.matchAll(/(?:=~|\.match\??|\.scan|\.gsub|\.sub|grep)\s*\(?\s*\/((?:\\.|[^\/\n])+)\//g)) {
+    out.push({ body: m[1], line: code.slice(0, m.index).split('\n').length });
+  }
+  for (const m of code.matchAll(/\bRegexp\.new\s*\(\s*['"]((?:\\.|[^'"\n])+)['"]/g)) {
+    out.push({ body: m[1], line: code.slice(0, m.index).split('\n').length });
+  }
+  return out;
+}
+
+// C#: new Regex("…") / Regex.IsMatch(s, "…") / Regex.Match / Regex.Replace.
+export function extractCsharpRegexBodies(code) {
+  const out = [];
+  for (const m of code.matchAll(/\bnew\s+Regex\s*\(\s*@?"((?:\\.|""|[^"\n])+)"/g)) {
+    out.push({ body: m[1].replace(/""/g, '"'), line: code.slice(0, m.index).split('\n').length });
+  }
+  for (const m of code.matchAll(/\bRegex\.(?:IsMatch|Match|Matches|Replace|Split)\s*\(\s*[^,]+,\s*@?"((?:\\.|""|[^"\n])+)"/g)) {
+    out.push({ body: m[1].replace(/""/g, '"'), line: code.slice(0, m.index).split('\n').length });
+  }
+  return out;
+}
+
+// Kotlin: Regex("…") / "…".toRegex() / Pattern.compile("…").
+export function extractKotlinRegexBodies(code) {
+  const out = [];
+  for (const m of code.matchAll(/\bRegex\s*\(\s*"((?:\\.|[^"\n])+)"/g)) {
+    out.push({ body: m[1].replace(/\\\\/g, '\\'), line: code.slice(0, m.index).split('\n').length });
+  }
+  for (const m of code.matchAll(/"((?:\\.|[^"\n])+)"\s*\.\s*toRegex\s*\(/g)) {
+    out.push({ body: m[1].replace(/\\\\/g, '\\'), line: code.slice(0, m.index).split('\n').length });
+  }
+  for (const m of code.matchAll(/\bPattern\.compile\s*\(\s*"((?:\\.|[^"\n])+)"/g)) {
+    out.push({ body: m[1].replace(/\\\\/g, '\\'), line: code.slice(0, m.index).split('\n').length });
+  }
+  return out;
+}
+
 export function scanRegexReDoS(file, raw) {
   if (!file || !raw || typeof raw !== 'string') return [];
   if (raw.length > 500_000) return [];
@@ -313,6 +380,14 @@ export function scanRegexReDoS(file, raw) {
   if (/\.(?:js|jsx|ts|tsx|mjs|cjs)$/i.test(file)) bodies = extractJsRegexBodies(raw);
   else if (/\.py$/i.test(file)) bodies = extractPyRegexBodies(raw);
   else if (/\.java$/i.test(file)) bodies = extractJavaRegexBodies(raw);
+  // NOTE: Go's regexp package uses RE2 (guaranteed linear time, no catastrophic
+  // backtracking), so Go is intentionally NOT scanned for ReDoS — a "vulnerable"
+  // pattern there is not actually exploitable. (extractGoRegexBodies is exported
+  // for completeness / third-party regexp libs but not wired into the default.)
+  else if (/\.(?:php|phtml)$/i.test(file)) bodies = extractPhpRegexBodies(raw);
+  else if (/\.rb$/i.test(file)) bodies = extractRubyRegexBodies(raw);
+  else if (/\.cs$/i.test(file)) bodies = extractCsharpRegexBodies(raw);
+  else if (/\.kt$/i.test(file)) bodies = extractKotlinRegexBodies(raw);
   else return [];
 
   for (const { body, line } of bodies) {

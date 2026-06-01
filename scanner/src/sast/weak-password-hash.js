@@ -32,6 +32,34 @@ const PATTERNS = {
       { re: /\bsha1\.(?:Sum|New)\s*\(\s*(?:\[\]byte\s*\(\s*)?(\w+)/g, label: 'sha1.Sum/New' },
     ],
   },
+  ruby: {
+    ext: /\.rb$/i,
+    rules: [
+      { re: /\bDigest::(?:MD5|SHA1)\s*\.\s*(?:hexdigest|digest|base64digest)\s*\(\s*(\w+)/g, label: 'Digest::MD5/SHA1' },
+      { re: /\b(?:Digest::)?(?:MD5|SHA1)\.new[\s\S]{0,40}\.update\s*\(\s*(\w+)/g, label: 'Digest MD5/SHA1 new+update' },
+    ],
+  },
+  csharp: {
+    ext: /\.cs$/i,
+    rules: [
+      // MD5.Create()…ComputeHash(<var>) / MD5.HashData(<var>) — capture hashed var.
+      { re: /\b(?:MD5|SHA1)\s*\.\s*(?:Create\s*\(\s*\)\s*\.\s*ComputeHash|HashData)\s*\([\s\S]{0,120}?(\w+)\s*\)/g, label: 'MD5/SHA1 ComputeHash/HashData' },
+      { re: /\bnew\s+(?:MD5|SHA1)(?:CryptoServiceProvider|Managed)?\s*\(/g, label: 'MD5/SHA1 provider' },
+    ],
+  },
+  kotlin: {
+    ext: /\.kt$/i,
+    rules: [
+      { re: /\bMessageDigest\.getInstance\s*\(\s*"(?:MD5|SHA-?1)"\s*\)[\s\S]{0,80}?\.digest\s*\(\s*(\w+)/g, label: 'MessageDigest MD5/SHA-1' },
+    ],
+  },
+  php: {
+    ext: /\.(?:php|phtml)$/i,
+    rules: [
+      { re: /\b(?:md5|sha1)\s*\(\s*\$?(\w+)/g, label: 'md5()/sha1()' },
+      { re: /\bhash\s*\(\s*['"](?:md5|sha1)['"]\s*,\s*\$?(\w+)/g, label: 'hash("md5"/"sha1", …)' },
+    ],
+  },
 };
 
 export function scanWeakPasswordHash(fp, raw) {

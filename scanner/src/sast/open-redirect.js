@@ -33,11 +33,20 @@ const PATTERNS = [
   ['java', /\bnew\s+RedirectView\s*\(\s*(\w[\w.]*)\s*\)/g, 'Spring RedirectView'],
   // PHP header("Location: " . $...)
   ['php', /\bheader\s*\(\s*['"]\s*Location\s*:\s*['"]\s*\.\s*(\$\w[\w\[\]'"]*)/g, 'PHP Location'],
+  // Go net/http: http.Redirect(w, r, <target>, code) — target is the 3rd arg
+  // (may contain calls/parens); status is a digit or an http.Status* constant.
+  ['go', /\bhttp\.Redirect\s*\(\s*[^,]+,\s*[^,]+,\s*([\s\S]+?)\s*,\s*(?:\d|http\.Status)/g, 'Go net/http'],
+  // Ruby on Rails: redirect_to <target> (params/var).
+  ['rb', /\bredirect_to\s+(?!.*\bonly_path:\s*true)([^\n,]+?)(?:\s+status:|\s*$|\n)/gm, 'Rails redirect_to'],
+  // C#: Response.Redirect(<target>) / return Redirect(<target>) / RedirectPermanent.
+  ['cs', /\b(?:Response\.Redirect|return\s+Redirect|return\s+RedirectPermanent|RedirectPermanent)\s*\(\s*([^)]+?)\s*\)/g, 'ASP.NET Redirect'],
+  // Kotlin/Servlet: resp.sendRedirect(<target>).
+  ['kt', /\.\s*sendRedirect\s*\(\s*([^)]+?)\s*\)/g, 'Servlet sendRedirect'],
 ];
 
 // What counts as "user-derived" inside the captured target expression.
 const TAINT_HINT_RE =
-  /\b(?:req\.|request\.|params\.|query\.|body\.|ctx\.query|ctx\.request|ctx\.params|reply\.query|r\.URL\.Query|c\.Query|next\b|_GET|_POST|_REQUEST|getParameter|getHeader)\b/;
+  /\b(?:req\.|request\.|params\.|params\s*\[|query\.|body\.|ctx\.query|ctx\.request|ctx\.params|reply\.query|r\.URL\.Query|c\.Query|c\.Param|next\b|_GET|_POST|_REQUEST|getParameter|getHeader|Request\.(?:Query|Form|Params|QueryString))\b|\b(?:params|query|cookies)\s*\[/;
 
 // What counts as an allow-list check earlier in the function. We look back
 // up to 30 lines before the redirect call for any of these patterns.
@@ -54,6 +63,12 @@ const ALLOWLIST_PATTERNS = [
   /allowedRedirectTargets/i,
   /\babort\s*\(\s*4\d\d/,                        // any abort(4xx) earlier
   /\bres\s*\.\s*status\s*\(\s*4\d\d\b/,
+  /\bin_array\s*\(/i,                            // PHP in_array(...) allow-list check
+  /\bonly_path:\s*true/,                         // Rails redirect_to …, only_path: true
+  /\bUrl\.IsLocalUrl\b|\bLocalRedirect\b/,       // ASP.NET local-only redirect
+  /\bin\s+(?:allowed|allow|ALLOWED)\b/,          // Kotlin/Ruby `next in allowed`
+  /\bstrings\.HasPrefix\s*\(\s*\w+\s*,\s*"\/"/,  // Go relative-path check
+  /\bset(?:Of)?\s*\([^)]*\)\.contains\b/,        // Kotlin allowed.contains(next)
 ];
 
 function _lineOf(raw, idx) { return raw.substring(0, idx).split('\n').length; }
@@ -61,8 +76,32 @@ function _lang(fp) {
   if (/\.(?:js|jsx|ts|tsx|mjs|cjs)$/i.test(fp)) return 'js';
   if (/\.py$/i.test(fp)) return 'py';
   if (/\.java$/i.test(fp)) return 'java';
-  if (/\.php$/i.test(fp)) return 'php';
+  if (/\.(?:php|phtml)$/i.test(fp)) return 'php';
+  if (/\.go$/i.test(fp)) return 'go';
+  if (/\.rb$/i.test(fp)) return 'rb';
+  if (/\.cs$/i.test(fp)) return 'cs';
+  if (/\.kt$/i.test(fp)) return 'kt';
   return null;
+}
+
+// For C#/Kotlin/Go a bare-identifier redirect target is user-derived when it is
+// a parameter of the enclosing method/handler (the single-file handler shape).
+const _PARAM_LANGS = new Set(['cs', 'kt', 'go']);
+function _isEnclosingParam(code, callIdx, target) {
+  if (!/^[A-Za-z_]\w*$/.test(target)) return false;
+  const before = code.slice(0, callIdx);
+  const sigRe = /\b(?:fun\s+\w+|func\s+\w*|[A-Za-z_][\w<>\[\],.\s]*\b\w+)\s*\(([^)]*)\)\s*(?::[^={]+|[A-Za-z_][\w.<>\[\]* ]*)?\{/g;
+  let sig = null, sm;
+  while ((sm = sigRe.exec(before)) !== null) sig = sm;
+  if (!sig) return false;
+  const params = sig[1].split(',').map((p) => {
+    const t = p.trim(); if (!t) return '';
+    if (t.includes(':')) return t.split(':')[0].trim();      // Kotlin name: Type
+    return (t.split(/\s+/)[t.includes(' ') ? (t.trim().split(/\s+/).length - 1) : 0] || '').trim();
+  });
+  // Go params are `name Type` (name first); JVM/C# are `Type name` (name last).
+  const goParams = sig[1].split(',').map((p) => (p.trim().split(/\s+/)[0] || '').trim());
+  return params.includes(target) || goParams.includes(target);
 }
 
 function _allowListedPrior(raw, callLine, target) {
@@ -79,8 +118,8 @@ export function scanOpenRedirect(fp, raw) {
   if (!raw || raw.length > 500_000) return [];
   const lang = _lang(fp);
   if (!lang) return [];
-  const code = blankComments(raw, lang === 'py' ? 'py' : undefined);
-  if (!/\bredirect\b|RedirectView|HttpResponseRedirect|Location\s*:/i.test(code)) return [];
+  const code = blankComments(raw, (lang === 'py' || lang === 'rb') ? 'py' : undefined);
+  if (!/\bredirect|RedirectView|HttpResponseRedirect|Location\s*:|sendRedirect|http\.Redirect/i.test(code)) return [];
   const findings = [];
   const seen = new Set();
   for (const [plang, pat, framework] of PATTERNS) {
@@ -90,7 +129,10 @@ export function scanOpenRedirect(fp, raw) {
     while ((m = re.exec(code))) {
       const target = (m[1] || '').trim();
       if (!target) continue;
-      if (!TAINT_HINT_RE.test(target)) continue;
+      // Literal-string target ("/home", "https://fixed") is never user-derived.
+      if (/^["'`][^"'`]*["'`]$/.test(target)) continue;
+      if (!TAINT_HINT_RE.test(target) &&
+          !(_PARAM_LANGS.has(plang) && _isEnclosingParam(code, m.index, target))) continue;
       const line = _lineOf(raw, m.index);
       // Suppress if an allow-list check appears in the preceding window.
       if (_allowListedPrior(raw, line, target)) continue;

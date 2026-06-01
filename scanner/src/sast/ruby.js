@@ -35,6 +35,12 @@ const RE = {
   // so the `params[`-on-sink fileRead rule misses it. Containment-guarded forms
   // (File.expand_path + start_with?) are dropped by engine.js dropGuardedFindings.
   pathTraversalStructural: /\b(?:File|IO)\s*\.\s*(?:read|open|new|readlines|binread|write|foreach)\s*\(\s*(?:"[^"\n]*#\{|['"][^'"\n]*['"]\s*\+)/g,
+  // Structural deserialization (taint-independent): Marshal.load / YAML.load /
+  // YAML.unsafe_load are unsafe on ANY non-trivial argument — the danger is the
+  // sink, not the source. The `params`-on-sink marshalLoad/yamlUnsafe rules
+  // above miss `data = request.body.read; Marshal.load(data)`. A bare string
+  // literal arg (Marshal.load("...")) won't match (`\w` requires an identifier).
+  deserStructural: /\bMarshal\s*\.\s*load\s*\(\s*[A-Za-z_@]\w*|\bYAML\s*\.\s*(?:load|unsafe_load)\s*\(\s*[A-Za-z_@]\w*/g,
 };
 
 function lineOf(raw, idx) { return raw.substring(0, idx).split('\n').length; }
@@ -118,6 +124,11 @@ export function scanRuby(fp, raw) {
           vuln: 'Path Traversal: File/IO operation built with interpolated/concatenated path',
           severity: 'high', cwe: 'CWE-22',
           remediation: 'Canonicalize and assert containment: `path = File.expand_path(File.join(base, name)); raise unless path.start_with?(base)`. Never interpolate/concatenate request input straight into a file path.',
+        },
+        deserStructural: {
+          vuln: 'Insecure Deserialization: Marshal.load / YAML.load on a non-literal value',
+          severity: 'critical', cwe: 'CWE-502', family: 'insecure-deserialization',
+          remediation: 'Marshal and YAML.load instantiate arbitrary Ruby objects (RCE gadget chains). Use JSON for data crossing a trust boundary, or YAML.safe_load(input, permitted_classes: [Symbol]). Never Marshal.load attacker-controlled bytes.',
         },
       }[key];
       push({

@@ -531,6 +531,9 @@ function detectOpenRedirect(file, raw, ir, analysis, out, seen) {
       // URL is non-local. We still flag it because Juliet expects the
       // detection — but downgrade the severity.
       const isLocalRedirect = call.method === 'LocalRedirect';
+      // A LocalRedirect / Redirect guarded by Url.IsLocalUrl is the documented
+      // safe pattern — don't flag it (avoids FP on hardened handlers).
+      if ((isLocalRedirect || /\bUrl\.IsLocalUrl\b/.test(raw)) && /\bUrl\.IsLocalUrl\b/.test(raw)) continue;
       const id = `csharp-open-redirect:${file}:${call.line}`;
       if (seen.has(id)) continue;
       seen.add(id);

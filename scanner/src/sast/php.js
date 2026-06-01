@@ -29,6 +29,10 @@ const RE = {
   // or interpolating into the path. Containment-guarded forms (basename) are
   // dropped centrally by engine.js dropGuardedFindings (CWE-22).
   pathTraversalStructural: /\b(?:readfile|file_get_contents|file_put_contents|fopen|fpassthru|fgets|file|copy|unlink|highlight_file|show_source)\s*\(\s*(?:"[^"\n]*"\s*\.|'[^'\n]*'\s*\.|"[^"\n]*\$(?:_(?:REQUEST|GET|POST|COOKIE)|[A-Za-z_]))/g,
+  // SSRF: a network fetch whose URL is user-controlled. cURL is unambiguously
+  // network; file_get_contents/fopen with a $_GET/$_POST value direct (not a
+  // path-base concat) is the PHP fopen-wrapper SSRF (http:// / ftp:// / phar://).
+  ssrfFetch: /\bcurl_init\s*\(\s*\$(?:_(?:REQUEST|GET|POST|COOKIE)|\w*url\w*)|\bcurl_setopt\s*\([^,]+,\s*CURLOPT_URL\s*,\s*\$(?:_(?:REQUEST|GET|POST|COOKIE)|\w*url\w*)|\b(?:file_get_contents|fopen)\s*\(\s*\$_(?:REQUEST|GET|POST|COOKIE)\b/g,
 };
 
 function lineOf(raw, idx) { return raw.substring(0, idx).split('\n').length; }
@@ -100,6 +104,11 @@ export function scanPhp(fp, raw) {
           vuln: 'Path Traversal: filesystem operation built with concatenated/interpolated input',
           severity: 'high', cwe: 'CWE-22', family: 'path-traversal',
           remediation: 'Strip directory components with basename() and resolve against a fixed root: $full = realpath($base . "/" . basename($name)); if (strpos($full, $base) !== 0) abort(). Never concatenate request input straight into a file path.',
+        },
+        ssrfFetch: {
+          vuln: 'SSRF: network fetch (cURL / fopen-wrapper) to a user-controlled URL',
+          severity: 'high', cwe: 'CWE-918', family: 'ssrf',
+          remediation: 'Validate the URL host against an allow-list and reject RFC1918 / link-local / metadata (169.254.169.254) addresses before fetching. Disable fopen URL wrappers (allow_url_fopen=0) and only allow https:// to known hosts.',
         },
       }[key];
       push({

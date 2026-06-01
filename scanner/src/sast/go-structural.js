@@ -44,5 +44,17 @@ export function scanGoStructural(fp, raw) {
     remediation: 'Strip the path with filepath.Base and assert containment: want := filepath.Join(base, filepath.Base(name)); if !strings.HasPrefix(filepath.Clean(want), base) { reject }.',
   });
 
+  // Insecure deserialization: encoding/gob decoding attacker-controlled bytes
+  // into an interface{} / any target — gob will instantiate registered concrete
+  // types, a deserialization gadget surface. Gated on encoding/gob being used.
+  if (/\bencoding\/gob\b|\bgob\.NewDecoder\b/.test(code)) {
+    const GOB_RE = /\bgob\.NewDecoder\s*\([\s\S]*?\)\s*\.\s*Decode\s*\(|\b\w+\s*:?=\s*gob\.NewDecoder\s*\(/g;
+    while ((m = GOB_RE.exec(code))) emit('gob-deser', lineOf(code, m.index), {
+      vuln: 'Insecure Deserialization — encoding/gob decoding untrusted input (Go)',
+      severity: 'high', cwe: 'CWE-502', family: 'insecure-deserialization', confidence: 0.6,
+      remediation: 'Do not gob-decode data from an untrusted source — gob instantiates registered concrete types and is not designed for adversarial input. Use a schema-validated format (JSON with a fixed struct, protobuf) and validate before use.',
+    });
+  }
+
   return findings;
 }
