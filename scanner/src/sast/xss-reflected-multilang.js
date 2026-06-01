@@ -72,6 +72,17 @@ const LANGS = {
     ],
     escaper: /\b(?:htmlEscape|escapeHtml|HtmlUtils\.htmlEscape|encodeHTML)\s*\(/,
   },
+  java: {
+    ext: /\.java$/i,
+    // Servlet: response.getWriter().write/print/println(...) or a PrintWriter
+    // `out`, building an HTML string ("<…") by concatenation. The concat (`"<…"
+    // +`) is the reflected-XSS shape — a static literal has no `+`.
+    sinks: [
+      /\.\s*(?:getWriter\s*\(\s*\)\s*\.\s*)?(?:write|print|println|append|format|printf)\s*\(\s*"<[^"\n]*"\s*\+/,
+      /\b(?:out|writer|pw|w)\s*\.\s*(?:write|print|println|append)\s*\(\s*"<[^"\n]*"\s*\+/,
+    ],
+    escaper: /\b(?:encodeForHTML|forHtml|forHtmlContent|htmlEscape|escapeHtml4?|StringEscapeUtils|HtmlUtils\.htmlEscape|Encode\.forHtml|ESAPI|OWASP)\b/,
+  },
 };
 
 export function scanXssReflectedMultilang(fp, raw) {

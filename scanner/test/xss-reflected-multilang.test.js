@@ -37,6 +37,13 @@ test('Kotlin — Ktor respondText interpolation fires; htmlEscape clean', () => 
   assert.ok(clean(['A.kt', 'call.respondText("<h1>${htmlEscape(call.parameters["q"])}</h1>", ContentType.Text.Html)']));
 });
 
+test('Java — servlet getWriter/out concat fires; literal / OWASP-encoded clean', () => {
+  assert.ok(fires(['S.java', 'class S { void h(String q, javax.servlet.http.HttpServletResponse resp) throws Exception { resp.getWriter().write("<h1>" + q + "</h1>"); } }']));
+  assert.ok(fires(['S.java', 'class S { void h(String q, java.io.PrintWriter out){ out.println("<div>" + q + "</div>"); } }']));
+  assert.ok(clean(['S.java', 'class S { void h(javax.servlet.http.HttpServletResponse resp) throws Exception { resp.getWriter().write("<h1>static</h1>"); } }']));
+  assert.ok(clean(['S.java', 'import org.owasp.encoder.Encode;\nclass S { void h(String q, javax.servlet.http.HttpServletResponse resp) throws Exception { resp.getWriter().write("<h1>" + Encode.forHtml(q) + "</h1>"); } }']));
+});
+
 test('non-matching languages / files produce nothing', () => {
   assert.deepEqual(x('a.js', 'res.send("<h1>" + req.query.q + "</h1>")'), []);
   assert.deepEqual(x('ok.go', 'func add(a, b int) int { return a + b }'), []);
