@@ -100,6 +100,7 @@ import { scanStoredPromptInjection, scanStoredPromptInjectionCrossFile } from '.
 import { scanRAGPoisoning } from './sast/rag-poisoning.js';
 import { scanAgentToolEscalation } from './sast/agent-tool-escalation.js';
 import { scanAgentUntrustedFlow } from './sast/agent-untrusted-flow.js';
+import { scanInstallScripts } from './sca/install-script-analysis.js';
 import { scanDbTaint, scanDbTaintCrossFile } from './sast/db-taint.js';
 import { scanSSRFCloudMetadata } from './sast/ssrf-cloud-metadata.js';
 import { scanMutationXSS } from './sast/mutation-xss.js';
@@ -7355,6 +7356,7 @@ async function runFullScan({fileContents={}, depFileContents={}, scanRoot=null},
       aLogic.push(...scanBusinessLogic(p,c));
       aF.push(...scanPipeline(p,c));
       aF.push(...scanContainer(p,c));
+      aF.push(...scanInstallScripts(p,c));
       aF.push(...scanMCP(p,c));
       aF.push(...scanClaudeSettings(p,c));
       aF.push(...scanClaudeMdPromptInjection(p,c));

